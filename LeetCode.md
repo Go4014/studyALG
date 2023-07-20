@@ -743,6 +743,415 @@ class Solution {
 
 
 
+### [289. 生命游戏](https://leetcode.cn/problems/game-of-life/)
+
+难度中等
+
+根据 [百度百科](https://baike.baidu.com/item/生命游戏/2926434?fr=aladdin) ， **生命游戏** ，简称为 **生命** ，是英国数学家约翰·何顿·康威在 1970 年发明的细胞自动机。
+
+给定一个包含 `m × n` 个格子的面板，每一个格子都可以看成是一个细胞。每个细胞都具有一个初始状态： `1` 即为 **活细胞** （live），或 `0` 即为 **死细胞** （dead）。每个细胞与其八个相邻位置（水平，垂直，对角线）的细胞都遵循以下四条生存定律：
+
+1. 如果活细胞周围八个位置的活细胞数少于两个，则该位置活细胞死亡；
+2. 如果活细胞周围八个位置有两个或三个活细胞，则该位置活细胞仍然存活；
+3. 如果活细胞周围八个位置有超过三个活细胞，则该位置活细胞死亡；
+4. 如果死细胞周围正好有三个活细胞，则该位置死细胞复活；
+
+下一个状态是通过将上述规则同时应用于当前状态下的每个细胞所形成的，其中细胞的出生和死亡是同时发生的。给你 `m x n` 网格面板 `board` 的当前状态，返回下一个状态。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/12/26/grid1.jpg)
+
+C++版本
+
+```c++
+class Solution {
+public:
+    void gameOfLife(vector<vector<int>>& board) {
+        int neighbors[3] = {0, 1, -1};
+
+        int rows = board.size();
+        int cols = board[0].size();
+
+        // 遍历面板每一个格子里的细胞
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+
+                // 对于每一个细胞统计其八个相邻位置里的活细胞数量
+                int liveNeighbors = 0;
+
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+
+                        if (!(neighbors[i] == 0 && neighbors[j] == 0)) {
+                            // 相邻位置的坐标
+                            int r = (row + neighbors[i]);
+                            int c = (col + neighbors[j]);
+
+                            // 查看相邻的细胞是否是活细胞
+                            if ((r < rows && r >= 0) && (c < cols && c >= 0) && (abs(board[r][c]) == 1)) {
+                                liveNeighbors += 1;
+                            }
+                        }
+                    }
+                }
+
+                // 规则 1 或规则 3 
+                if ((board[row][col] == 1) && (liveNeighbors < 2 || liveNeighbors > 3)) {
+                    // -1 代表这个细胞过去是活的现在死了
+                    board[row][col] = -1;
+                }
+                // 规则 4
+                if (board[row][col] == 0 && liveNeighbors == 3) {
+                    // 2 代表这个细胞过去是死的现在活了
+                    board[row][col] = 2;
+                }
+            }
+        }
+
+        // 遍历 board 得到一次更新后的状态
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                if (board[row][col] > 0) {
+                    board[row][col] = 1;
+                } else {
+                    board[row][col] = 0;
+                }
+            }
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public void gameOfLife(int[][] board) {
+        int[] neighbors = {0, 1, -1};
+
+        int rows = board.length;
+        int cols = board[0].length;
+
+        // 遍历面板每一个格子里的细胞
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+
+                // 对于每一个细胞统计其八个相邻位置里的活细胞数量
+                int liveNeighbors = 0;
+
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+
+                        if (!(neighbors[i] == 0 && neighbors[j] == 0)) {
+                            // 相邻位置的坐标
+                            int r = (row + neighbors[i]);
+                            int c = (col + neighbors[j]);
+
+                            // 查看相邻的细胞是否是活细胞
+                            if ((r < rows && r >= 0) && (c < cols && c >= 0) && (Math.abs(board[r][c]) == 1)) {
+                                liveNeighbors += 1;
+                            }
+                        }
+                    }
+                }
+
+                // 规则 1 或规则 3 
+                if ((board[row][col] == 1) && (liveNeighbors < 2 || liveNeighbors > 3)) {
+                    // -1 代表这个细胞过去是活的现在死了
+                    board[row][col] = -1;
+                }
+                // 规则 4
+                if (board[row][col] == 0 && liveNeighbors == 3) {
+                    // 2 代表这个细胞过去是死的现在活了
+                    board[row][col] = 2;
+                }
+            }
+        }
+
+        // 遍历 board 得到一次更新后的状态
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                if (board[row][col] > 0) {
+                    board[row][col] = 1;
+                } else {
+                    board[row][col] = 0;
+                }
+            }
+        }
+    }
+}
+```
+
+## 数组排序题目
+
+### [剑指 Offer 45. 把数组排成最小的数](https://leetcode.cn/problems/ba-shu-zu-pai-cheng-zui-xiao-de-shu-lcof/)
+
+难度中等
+
+输入一个非负整数数组，把数组里所有数字拼接起来排成一个数，打印能拼接出的所有数字中最小的一个。
+
+解题思路：
+此题求拼接起来的最小数字，本质上是一个排序问题。设数组 nums 中任意两数字的字符串为 *x* 和 *y* ，则规定 **排序判断规则** 为：
+
+- 若拼接字符串 **x+y** > **y+x** ，则 x “大于” y ；
+- 反之，若 **x+y** < **y+x** ，则 x “小于” y ；
+
+**示例 1:**
+
+```
+输入: [10,2]
+输出: "102"
+```
+
+C++版本
+
+```c++
+// 个人版
+class Solution {
+public:
+    string minNumber(vector<int>& nums) {
+        vector<string> strVec;
+        int len = nums.size();
+        for(int i = 0; i < len; i++) {
+            strVec.push_back(to_string(nums[i]));
+        }
+        quickSort(strVec, 0, len - 1);
+        string res;
+        for(string s : strVec) {
+            res.append(s);
+        }
+        return res;
+    }
+
+    void quickSort(vector<string>& strVec, int left, int right){
+        if(left < right) {
+            int pi = partition(strVec, left, right);
+            quickSort(strVec, left, pi - 1);
+            quickSort(strVec, pi + 1, right);
+        }
+    }
+
+    int partition(vector<string>& strVec, int left, int right){
+        string pivot = strVec[left];
+        int i = left + 1;
+        string temp;
+        for(int j = i; j <= right; j++) {
+            if(strVec[j] + pivot < pivot + strVec[j]) {
+                temp = strVec[i];
+                strVec[i] = strVec[j];
+                strVec[j] = temp;
+                i++;
+            }
+        }
+        temp = strVec[i - 1];
+        strVec[i -1] = strVec[left];
+        strVec[left] = temp;
+        return i - 1;
+    }
+};
+
+// 快速排序
+class Solution {
+public:
+    string minNumber(vector<int>& nums) {
+        vector<string> strs;
+        for(int i = 0; i < nums.size(); i++)
+            strs.push_back(to_string(nums[i]));
+        quickSort(strs, 0, strs.size() - 1);
+        string res;
+        for(string s : strs)
+            res.append(s);
+        return res;
+    }
+private:
+    void quickSort(vector<string>& strs, int l, int r) {
+        if(l >= r) return;
+        int i = l, j = r;
+        while(i < j) {
+            while(strs[j] + strs[l] >= strs[l] + strs[j] && i < j) j--;
+            while(strs[i] + strs[l] <= strs[l] + strs[i] && i < j) i++;
+            swap(strs[i], strs[j]);
+        }
+        swap(strs[i], strs[l]);
+        quickSort(strs, l, i - 1);
+        quickSort(strs, i + 1, r);
+    }
+};
+
+// 内置排序
+class Solution {
+public:
+    string minNumber(vector<int>& nums) {
+        vector<string> strs;
+        string res;
+        for(int i = 0; i < nums.size(); i++)
+            strs.push_back(to_string(nums[i]));
+        sort(strs.begin(), strs.end(), [](string& x, string& y){ return x + y < y + x; });
+        for(int i = 0; i < strs.size(); i++)
+            res.append(strs[i]);
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 快速排序
+class Solution {
+    public String minNumber(int[] nums) {
+        String[] strs = new String[nums.length];
+        for(int i = 0; i < nums.length; i++)
+            strs[i] = String.valueOf(nums[i]);
+        quickSort(strs, 0, strs.length - 1);
+        StringBuilder res = new StringBuilder();
+        for(String s : strs)
+            res.append(s);
+        return res.toString();
+    }
+    
+    void quickSort(String[] strs, int l, int r) {
+        if(l >= r) return;
+        int i = l, j = r;
+        String tmp = strs[i];
+        while(i < j) {
+            while((strs[j] + strs[l]).compareTo(strs[l] + strs[j]) >= 0 && i < j) j--;
+            while((strs[i] + strs[l]).compareTo(strs[l] + strs[i]) <= 0 && i < j) i++;
+            tmp = strs[i];
+            strs[i] = strs[j];
+            strs[j] = tmp;
+        }
+        strs[i] = strs[l];
+        strs[l] = tmp;
+        quickSort(strs, l, i - 1);
+        quickSort(strs, i + 1, r);
+    }
+}
+
+// 内置排序
+class Solution {
+    public String minNumber(int[] nums) {
+        String[] strs = new String[nums.length];
+        for(int i = 0; i < nums.length; i++)
+            strs[i] = String.valueOf(nums[i]);
+        Arrays.sort(strs, (x, y) -> (x + y).compareTo(y + x));
+        StringBuilder res = new StringBuilder();
+        for(String s : strs)
+            res.append(s);
+        return res.toString();
+    }
+}
+```
+
+#### [283. 移动零](https://leetcode.cn/problems/move-zeroes/)
+
+难度简单
+
+给定一个数组 `nums`，编写一个函数将所有 `0` 移动到数组的末尾，同时保持非零元素的相对顺序。
+
+**请注意** ，必须在不复制数组的情况下原地对数组进行操作。
+
+**示例 1:**
+
+```
+输入: nums = [0,1,0,3,12]
+输出: [1,3,12,0,0]
+```
+
+C++版本
+
+```c++
+// 快慢指针
+class Solution {
+public:
+    void moveZeroes(vector<int>& nums) {
+        int n = nums.size(), left = 0, right = 0;
+        while (right < n) {
+            if (nums[right]) {
+                swap(nums[left], nums[right]);
+                left++;
+            }
+            right++;
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+// 快慢指针
+class Solution {
+    public void moveZeroes(int[] nums) {
+        int n = nums.length, left = 0, right = 0;
+        while (right < n) {
+            if (nums[right] != 0) {
+                swap(nums, left, right);
+                left++;
+            }
+            right++;
+        }
+    }
+
+    public void swap(int[] nums, int left, int right) {
+        int temp = nums[left];
+        nums[left] = nums[right];
+        nums[right] = temp;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
