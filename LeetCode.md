@@ -1044,7 +1044,7 @@ class Solution {
 }
 ```
 
-#### [283. 移动零](https://leetcode.cn/problems/move-zeroes/)
+### [283. 移动零](https://leetcode.cn/problems/move-zeroes/)
 
 难度简单
 
@@ -1104,21 +1104,538 @@ class Solution {
 
 
 
+### [215. 数组中的第K个最大元素](https://leetcode.cn/problems/kth-largest-element-in-an-array/)
 
+难度中等
 
+给定整数数组 `nums` 和整数 `k`，请返回数组中第 `k` 个最大的元素。
 
+请注意，你需要找的是数组排序后的第 `k` 个最大的元素，而不是第 `k` 个不同的元素。
 
+你必须设计并实现时间复杂度为 `O(n)` 的算法解决此问题。
 
+C++版本
 
+```c++
+// 快速排序
+class Solution {
+public:
+    int findKthLargest(vector<int>& nums, int k) {
+        return quickSort(nums, 0, nums.size() - 1, k);
+    }
 
+    int quickSort(vector<int>& nums, int left, int right,int k) {
+        if(left < right) {
+            int point = partion(nums,left,right);
+            if(nums.size() - k == point) {
+                return nums[nums.size() - k];
+            } else if(nums.size() - k < point) {
+                return quickSort(nums, left, point-1, k);
+            } else {
+                return quickSort(nums, point+1, right, k);
+            }
+        }
+        return nums[nums.size() - k];
+    }
 
+    int partion(vector<int>& nums, int left, int right) {
+        int temp, key = nums[left];
+        int index = left + 1;
+        for(int i = index; i <= right; i++) {
+            if(nums[i] < key) {
+                temp = nums[i];
+                nums[i] = nums[index];
+                nums[index] = temp;
+                index++;
+            }
+        }
+        temp = nums[index - 1];
+        nums[index - 1] = nums[left];
+        nums[left] = temp;
+        return index - 1;
+    }
+};
 
+// 堆排序
+class Solution {
+public:
+    int findKthLargest(vector<int>& nums, int k) {
+        buildMaxHeap(nums);
+        int len = nums.size();
+        for(int i = 0; i < len; i++) {
+            swap(nums[0], nums[len - i - 1]);
+            headify(nums, 0, len - i - 2);
+        }
+        return nums[len - k];
+    }
 
+    void buildMaxHeap(vector<int>& nums) {
+        int len = nums.size();
+        for(int i = (len - 2) / 2; i >= 0 ; i--) {
+            headify(nums, i, len - 1);
+        }
+    }
 
+    void headify(vector<int>& nums, int index, int end) {
+        int left = index * 2 + 1;
+        int right = left + 1;
+        while(left <= end) {
+            int max_index = index;
+            if(nums[left] > nums[max_index]) {
+                max_index = left;
+            }
+            if(right <= end && nums[right] > nums[max_index]) {
+                max_index = right;
+            }
+            if(index == max_index){
+                break;
+            }
+            swap(nums[index], nums[max_index]);
+            index = max_index;
+            left = index * 2 + 1;
+            right = left + 1;
+        }
+    }
+};
+```
 
+Java版本
 
+```java
+// 快速排序
+class Solution {
+    Random random = new Random();
 
+    public int findKthLargest(int[] nums, int k) {
+        return quickSelect(nums, 0, nums.length - 1, nums.length - k);
+    }
 
+    public int quickSelect(int[] a, int l, int r, int index) {
+        int q = randomPartition(a, l, r);
+        if (q == index) {
+            return a[q];
+        } else {
+            return q < index ? quickSelect(a, q + 1, r, index) : quickSelect(a, l, q - 1, index);
+        }
+    }
+
+    public int randomPartition(int[] a, int l, int r) {
+        int i = random.nextInt(r - l + 1) + l;
+        swap(a, i, r);
+        return partition(a, l, r);
+    }
+
+    public int partition(int[] a, int l, int r) {
+        int x = a[r], i = l - 1;
+        for (int j = l; j < r; ++j) {
+            if (a[j] <= x) {
+                swap(a, ++i, j);
+            }
+        }
+        swap(a, i + 1, r);
+        return i + 1;
+    }
+
+    public void swap(int[] a, int i, int j) {
+        int temp = a[i];
+        a[i] = a[j];
+        a[j] = temp;
+    }
+}
+
+// 堆排序
+class Solution {
+    public int findKthLargest(int[] nums, int k) {
+        int heapSize = nums.length;
+        buildMaxHeap(nums, heapSize);
+        for (int i = nums.length - 1; i >= nums.length - k + 1; --i) {
+            swap(nums, 0, i);
+            --heapSize;
+            maxHeapify(nums, 0, heapSize);
+        }
+        return nums[0];
+    }
+
+    public void buildMaxHeap(int[] a, int heapSize) {
+        for (int i = heapSize / 2; i >= 0; --i) {
+            maxHeapify(a, i, heapSize);
+        } 
+    }
+
+    public void maxHeapify(int[] a, int i, int heapSize) {
+        int l = i * 2 + 1, r = i * 2 + 2, largest = i;
+        if (l < heapSize && a[l] > a[largest]) {
+            largest = l;
+        } 
+        if (r < heapSize && a[r] > a[largest]) {
+            largest = r;
+        }
+        if (largest != i) {
+            swap(a, i, largest);
+            maxHeapify(a, largest, heapSize);
+        }
+    }
+
+    public void swap(int[] a, int i, int j) {
+        int temp = a[i];
+        a[i] = a[j];
+        a[j] = temp;
+    }
+}
+```
+
+### [75. 颜色分类](https://leetcode.cn/problems/sort-colors/)
+
+难度中等
+
+给定一个包含红色、白色和蓝色、共 `n` 个元素的数组 `nums` ，**[原地](https://baike.baidu.com/item/原地算法)**对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。
+
+我们使用整数 `0`、 `1` 和 `2` 分别表示红色、白色和蓝色。
+
+必须在不使用库内置的 sort 函数的情况下解决这个问题。
+
+**示例 1：**
+
+```
+输入：nums = [2,0,2,1,1,0]
+输出：[0,0,1,1,2,2]
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        int left = 0, index = 0, right = nums.size() - 1;
+        while(index <= right) {
+            if(index < left) {
+                index++;
+            } else if(nums[index] == 0) {
+                swap(nums[index], nums[left++]);
+            } else if(nums[index] == 2) {
+                swap(nums[index],nums[right--]);
+            } else {
+                index++;
+            }
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public void sortColors(int[] nums) {
+        int left = 0, index = 0, right = nums.length - 1;
+        while(index <= right) {
+            if(index < left) {
+                index++;
+            } else if(nums[index] == 0) {
+                int temp = nums[index];
+                nums[index] = nums[left];
+                nums[left] = temp;
+                left++;
+            } else if(nums[index] == 2) {
+                int temp = nums[index];
+                nums[index] = nums[right];
+                nums[right] = temp;
+                right--;
+            } else {
+                index++;
+            }
+        }
+    }
+}
+```
+
+### [912. 排序数组](https://leetcode.cn/problems/sort-an-array/)
+
+难度中等
+
+给你一个整数数组 `nums`，请你将该数组升序排列。
+
+**示例 1：**
+
+```
+输入：nums = [5,2,3,1]
+输出：[1,2,3,5]
+```
+
+C++版本
+
+```c++
+// 希尔排序
+class Solution {
+public:
+    vector<int> sortArray(vector<int>& nums) {
+        int gap = nums.size() / 2;
+        while(gap > 0) {
+            for(int i = gap; i < nums.size(); i++) {
+                int temp = nums[i];
+                int j = i;
+                while(j >= gap && nums[j - gap] > temp) {
+                    nums[j] = nums[j - gap];
+                    j -= gap;
+                }
+                nums[j] = temp;
+            }
+            gap /= 2;
+        }
+        return nums;
+    }
+};
+
+// 快速排序（超时）
+class Solution {
+public:
+    vector<int> sortArray(vector<int>& nums) {
+        quickSort(nums, 0, nums.size() - 1);
+        return nums;
+    }
+
+    void quickSort(vector<int>& nums, int left, int right) {
+        if(left < right) {
+            int point = partion(nums,left,right);
+            quickSort(nums, left, point-1);
+            quickSort(nums, point+1, right);
+        }
+    }
+
+    int partion(vector<int>& nums, int left, int right) {
+        int index = rand() % (right - left + 1) + left;
+        swap(nums[left], nums[index]);
+        int key = nums[left];
+        while(left < right) {
+            while(left < right && nums[right] >= key) right--;
+            if(left < right) nums[left] = nums[right];
+            while(left < right && nums[left] <= key) left++;
+            if(left < right) nums[right] = nums[left];
+        }
+        nums[left] = key;
+        return left;
+    }
+};
+
+// 堆排序
+class Solution {
+public:
+    vector<int> sortArray(vector<int>& nums) {
+        int len = nums.size();
+        buildMaxHeap(nums);
+        for(int i = 0; i < len; i++) {
+            swap(nums[0], nums[len - i - 1]);
+            heapify(nums, 0, len - i - 2);
+        }
+        return nums;
+    }
+
+    void buildMaxHeap(vector<int>& nums) {
+        int len = nums.size();
+        for(int i = (len - 2) / 2; i >= 0; i--) {
+            heapify(nums, i, len - 1);
+        }
+    }
+
+    void heapify(vector<int>& nums, int index, int end) {
+        int left = index * 2 + 1;
+        int right = left + 1;
+        while(left <= end) {
+            int maxIndex = index;
+            if(nums[left] > nums[maxIndex]) {
+                maxIndex = left;
+            }
+            if(right <= end && nums[right] > nums[maxIndex]) {
+                maxIndex = right;
+            }
+            if(maxIndex == index) {
+                break;
+            }
+            swap(nums[index], nums[maxIndex]);
+            index = maxIndex;
+            left = index * 2 + 1;
+            right = left + 1;
+        }
+    }
+};
+
+// 归并排序
+class Solution {
+public:
+    vector<int> sortArray(vector<int>& nums) {
+        mergeSort(nums, 0, nums.size() - 1);
+        return nums;
+    }
+
+    void mergeSort(vector<int>& nums, int left, int right) {
+        if(left >= right) {
+            return;
+        }
+        int mid = (left + right) / 2;
+        mergeSort(nums, left, mid);
+        mergeSort(nums, mid+1, right);
+        merge(nums, left, right);
+    }
+
+    void merge(vector<int>& nums, int left, int right) {
+        int mid = (left + right) / 2;
+        int start = left, end = mid + 1, cnt = 0;
+        vector<int> tmp(right - left + 1);
+        while (start <= mid && end <= right) {
+            if (nums[start] <= nums[end]) {
+                tmp[cnt++] = nums[start++];
+            } else {
+                tmp[cnt++] = nums[end++];
+            }
+        }
+        while (start <= mid) {
+            tmp[cnt++] = nums[start++];
+        }
+        while (end <= right) {
+            tmp[cnt++] = nums[end++];
+        }
+        for (int i = 0; i < right - left + 1; ++i) {
+            nums[i + left] = tmp[i];
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+// 快速排序
+class Solution {
+    public int[] sortArray(int[] nums) {
+        randomizedQuicksort(nums, 0, nums.length - 1);
+        return nums;
+    }
+
+    public void randomizedQuicksort(int[] nums, int l, int r) {
+        if (l < r) {
+            int pos = randomizedPartition(nums, l, r);
+            randomizedQuicksort(nums, l, pos - 1);
+            randomizedQuicksort(nums, pos + 1, r);
+        }
+    }
+
+    public int randomizedPartition(int[] nums, int l, int r) {
+        int i = new Random().nextInt(r - l + 1) + l; // 随机选一个作为我们的主元
+        swap(nums, r, i);
+        return partition(nums, l, r);
+    }
+
+    public int partition(int[] nums, int l, int r) {
+        int pivot = nums[r];
+        int i = l - 1;
+        for (int j = l; j <= r - 1; ++j) {
+            if (nums[j] <= pivot) {
+                i = i + 1;
+                swap(nums, i, j);
+            }
+        }
+        swap(nums, i + 1, r);
+        return i + 1;
+    }
+
+    private void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+}
+
+// 堆排序
+class Solution {
+    public int[] sortArray(int[] nums) {
+        heapSort(nums);
+        return nums;
+    }
+
+    public void heapSort(int[] nums) {
+        int len = nums.length - 1;
+        buildMaxHeap(nums, len);
+        for (int i = len; i >= 1; --i) {
+            swap(nums, i, 0);
+            len -= 1;
+            maxHeapify(nums, 0, len);
+        }
+    }
+
+    public void buildMaxHeap(int[] nums, int len) {
+        for (int i = len / 2; i >= 0; --i) {
+            maxHeapify(nums, i, len);
+        }
+    }
+
+    public void maxHeapify(int[] nums, int i, int len) {
+        for (; (i << 1) + 1 <= len;) {
+            int lson = (i << 1) + 1;
+            int rson = (i << 1) + 2;
+            int large;
+            if (lson <= len && nums[lson] > nums[i]) {
+                large = lson;
+            } else {
+                large = i;
+            }
+            if (rson <= len && nums[rson] > nums[large]) {
+                large = rson;
+            }
+            if (large != i) {
+                swap(nums, i, large);
+                i = large;
+            } else {
+                break;
+            }
+        }
+    }
+
+    private void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+}
+
+// 归并排序
+class Solution {
+    int[] tmp;
+
+    public int[] sortArray(int[] nums) {
+        tmp = new int[nums.length];
+        mergeSort(nums, 0, nums.length - 1);
+        return nums;
+    }
+
+    public void mergeSort(int[] nums, int l, int r) {
+        if (l >= r) {
+            return;
+        }
+        int mid = (l + r) >> 1;
+        mergeSort(nums, l, mid);
+        mergeSort(nums, mid + 1, r);
+        int i = l, j = mid + 1;
+        int cnt = 0;
+        while (i <= mid && j <= r) {
+            if (nums[i] <= nums[j]) {
+                tmp[cnt++] = nums[i++];
+            } else {
+                tmp[cnt++] = nums[j++];
+            }
+        }
+        while (i <= mid) {
+            tmp[cnt++] = nums[i++];
+        }
+        while (j <= r) {
+            tmp[cnt++] = nums[j++];
+        }
+        for (int k = 0; k < r - l + 1; ++k) {
+            nums[k + l] = tmp[k];
+        }
+    }
+}
+```
 
 
 
