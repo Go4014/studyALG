@@ -1637,6 +1637,193 @@ class Solution {
 }
 ```
 
+### [506. 相对名次](https://leetcode.cn/problems/relative-ranks/)
+
+难度简单
+
+给你一个长度为 `n` 的整数数组 `score` ，其中 `score[i]` 是第 `i` 位运动员在比赛中的得分。所有得分都 **互不相同** 。
+
+运动员将根据得分 **决定名次** ，其中名次第 `1` 的运动员得分最高，名次第 `2` 的运动员得分第 `2` 高，依此类推。运动员的名次决定了他们的获奖情况：
+
+- 名次第 `1` 的运动员获金牌 `"Gold Medal"` 。
+- 名次第 `2` 的运动员获银牌 `"Silver Medal"` 。
+- 名次第 `3` 的运动员获铜牌 `"Bronze Medal"` 。
+- 从名次第 `4` 到第 `n` 的运动员，只能获得他们的名次编号（即，名次第 `x` 的运动员获得编号 `"x"`）。
+
+使用长度为 `n` 的数组 `answer` 返回获奖，其中 `answer[i]` 是第 `i` 位运动员的获奖情况。
+
+**示例 1：**
+
+```
+输入：score = [5,4,3,2,1]
+输出：["Gold Medal","Silver Medal","Bronze Medal","4","5"]
+解释：名次为 [1st, 2nd, 3rd, 4th, 5th] 。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    vector<string> findRelativeRanks(vector<int>& score) {
+        int n = score.size();
+        string desc[3] = {"Gold Medal", "Silver Medal", "Bronze Medal"};
+        vector<pair<int, int>> arr;
+
+        for (int i = 0; i < n; ++i) {
+            arr.emplace_back(make_pair(-score[i], i));
+        }
+        sort(arr.begin(), arr.end());
+        vector<string> ans(n);
+        for (int i = 0; i < n; ++i) {
+            if (i >= 3) {
+                ans[arr[i].second] = to_string(i + 1);
+            } else {
+                ans[arr[i].second] = desc[i];
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public String[] findRelativeRanks(int[] score) {
+        int n = score.length;
+        String[] desc = {"Gold Medal", "Silver Medal", "Bronze Medal"};
+        int[][] arr = new int[n][2];
+
+        for (int i = 0; i < n; ++i) {
+            arr[i][0] = score[i];
+            arr[i][1] = i;
+        }
+        Arrays.sort(arr, (a, b) -> b[0] - a[0]);
+        String[] ans = new String[n];
+        for (int i = 0; i < n; ++i) {
+            if (i >= 3) {
+                ans[arr[i][1]] = Integer.toString(i + 1);
+            } else {
+                ans[arr[i][1]] = desc[i];
+            }
+        }
+        return ans;
+    }
+}
+```
+
+### [88. 合并两个有序数组](https://leetcode.cn/problems/merge-sorted-array/)
+
+难度简单
+
+给你两个按 **非递减顺序** 排列的整数数组 `nums1` 和 `nums2`，另有两个整数 `m` 和 `n` ，分别表示 `nums1` 和 `nums2` 中的元素数目。
+
+请你 **合并** `nums2` 到 `nums1` 中，使合并后的数组同样按 **非递减顺序** 排列。
+
+**注意：**最终，合并后数组不应由函数返回，而是存储在数组`nums1`中。为了应对这种情况，`nums1` 的初始长度为`m + n`，其中前`m`个元素表示应合并的元素，后 `n` 个元素为 `0` ，应忽略。`nums2` 的长度为`n`。
+
+C++版本
+
+```c++
+class Solution {
+public:
+    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+        int num = (m--) + (n--) -1;
+        while(n >= 0 && m >= 0) {
+            nums1[num--] = nums1[m] > nums2[n] ? nums1[m--] : nums2[n--];
+        }
+        while(n >= 0) {
+            nums1[num--] = nums2[n--];
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public void merge(int[] nums1, int m, int[] nums2, int n) {
+        int p = m-- + n-- - 1;
+        while (m >= 0 && n >= 0) {
+            nums1[p--] = nums1[m] > nums2[n] ? nums1[m--] : nums2[n--];
+        }
+        
+        while (n >= 0) {
+            nums1[p--] = nums2[n--];
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
