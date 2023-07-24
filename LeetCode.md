@@ -8,6 +8,17 @@
 
 给定一个整数数组 `nums`，将数组中的元素向右轮转 `k` 个位置，其中 `k` 是非负数。
 
+**示例 1:**
+
+```
+输入: nums = [1,2,3,4,5,6,7], k = 3
+输出: [5,6,7,1,2,3,4]
+解释:
+向右轮转 1 步: [7,1,2,3,4,5,6]
+向右轮转 2 步: [6,7,1,2,3,4,5]
+向右轮转 3 步: [5,6,7,1,2,3,4]
+```
+
 C++版本
 
 ```c++
@@ -67,6 +78,14 @@ class Solution {
 
 你可以假设除了整数 0 之外，这个整数不会以零开头。
 
+**示例 1：**
+
+```
+输入：digits = [1,2,3]
+输出：[1,2,4]
+解释：输入数组表示数字 123。
+```
+
 C++版本
 
 ```c++
@@ -120,12 +139,24 @@ public int[] plusOne(int[] digits) {
 
 如果数组有多个中心下标，应该返回 **最靠近左边** 的那一个。如果数组不存在中心下标，返回 `-1` 。
 
+**示例 1：**
+
+```
+输入：nums = [1, 7, 3, 6, 5, 6]
+输出：3
+解释：
+中心下标是 3 。
+左侧数之和 sum = nums[0] + nums[1] + nums[2] = 1 + 7 + 3 = 11 ，
+右侧数之和 sum = nums[4] + nums[5] = 5 + 6 = 11 ，二者相等。
+```
+
 C++版本
 
 ```c++
 class Solution {
 public:
     int pivotIndex(vector<int> &nums) {
+        // 求出数组总和
         int total = accumulate(nums.begin(), nums.end(), 0);
         int sum = 0;
         for (int i = 0; i < nums.size(); ++i) {
@@ -144,6 +175,7 @@ Java版本
 ```java
 class Solution {
     public int pivotIndex(int[] nums) {
+        // 求出数组总和
         int total = Arrays.stream(nums).sum();
         int sum = 0;
         for (int i = 0; i < nums.length; ++i) {
@@ -157,11 +189,21 @@ class Solution {
 }
 ```
 
+
+
 ### [485. 最大连续 1 的个数](https://leetcode.cn/problems/max-consecutive-ones/)
 
 难度简单
 
 给定一个二进制数组 `nums` ， 计算其中最大连续 `1` 的个数。
+
+**示例 1：**
+
+```
+输入：nums = [1,1,0,1,1,1]
+输出：3
+解释：开头的两位和最后的三位都是连续 1 ，所以最大连续 1 的个数是 3.
+```
 
 C++版本
 
@@ -205,6 +247,8 @@ class Solution {
 }
 ```
 
+
+
 ### [238. 除自身以外数组的乘积](https://leetcode.cn/problems/product-of-array-except-self/)
 
 难度中等
@@ -215,9 +259,16 @@ class Solution {
 
 请**不要使用除法，**且在 `O(*n*)` 时间复杂度内完成此题。
 
-C++版本
+**示例 1:**
 
 ```
+输入: nums = [1,2,3,4]
+输出: [24,12,8,6]
+```
+
+C++版本
+
+```c++
 class Solution {
 public:
     vector<int> productExceptSelf(vector<int>& nums) {
@@ -240,7 +291,7 @@ public:
 
 Java版本
 
-```
+```java
 class Solution {
     public int[] productExceptSelf(int[] nums) {
         int[] res = new int[nums.length];
@@ -261,8 +312,6 @@ class Solution {
 
 
 
-
-
 ## 二维数组题目
 
 ### [498. 对角线遍历](https://leetcode.cn/problems/diagonal-traverse/)
@@ -274,6 +323,11 @@ class Solution {
 **示例 1：**
 
 ![img](https://assets.leetcode.com/uploads/2021/04/10/diag1-grid.jpg)
+
+```
+输入：mat = [[1,2,3],[4,5,6],[7,8,9]]
+输出：[1,2,4,7,5,3,6,8,9]
+```
 
 C++版本
 
@@ -361,6 +415,11 @@ class Solution {
 
 ![img](https://assets.leetcode.com/uploads/2020/08/28/mat1.jpg)
 
+```
+输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]
+输出：[[7,4,1],[8,5,2],[9,6,3]]
+```
+
 C++版本
 
 ```c++
@@ -421,6 +480,8 @@ public:
 };
 ```
 
+
+
 ### [73. 矩阵置零](https://leetcode.cn/problems/set-matrix-zeroes/)
 
 难度中等
@@ -430,6 +491,11 @@ public:
 **示例 1：**
 
 ![img](https://assets.leetcode.com/uploads/2020/08/17/mat1.jpg)
+
+```
+输入：matrix = [[1,1,1],[1,0,1],[1,1,1]]
+输出：[[1,0,1],[0,0,0],[1,0,1]]
+```
 
 C++版本
 
@@ -591,6 +657,11 @@ class Solution {
 **示例 1：**
 
 ![img](https://assets.leetcode.com/uploads/2020/11/13/spiral1.jpg)
+
+```
+输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]
+输出：[1,2,3,6,9,8,7,4,5]
+```
 
 C++版本
 
@@ -762,6 +833,11 @@ class Solution {
 
 ![img](https://assets.leetcode.com/uploads/2020/12/26/grid1.jpg)
 
+```
+输入：board = [[0,1,0],[0,0,1],[1,1,1],[0,0,0]]
+输出：[[0,0,0],[1,0,1],[0,1,1],[0,1,0]]
+```
+
 C++版本
 
 ```c++
@@ -882,6 +958,8 @@ class Solution {
     }
 }
 ```
+
+
 
 ## 数组排序题目
 
@@ -1044,6 +1122,8 @@ class Solution {
 }
 ```
 
+
+
 ### [283. 移动零](https://leetcode.cn/problems/move-zeroes/)
 
 难度简单
@@ -1113,6 +1193,13 @@ class Solution {
 请注意，你需要找的是数组排序后的第 `k` 个最大的元素，而不是第 `k` 个不同的元素。
 
 你必须设计并实现时间复杂度为 `O(n)` 的算法解决此问题。
+
+**示例 1:**
+
+```
+输入: [3,2,1,5,6,4], k = 2
+输出: 5
+```
 
 C++版本
 
@@ -1284,6 +1371,8 @@ class Solution {
 }
 ```
 
+
+
 ### [75. 颜色分类](https://leetcode.cn/problems/sort-colors/)
 
 难度中等
@@ -1349,6 +1438,8 @@ class Solution {
     }
 }
 ```
+
+
 
 ### [912. 排序数组](https://leetcode.cn/problems/sort-an-array/)
 
@@ -1660,6 +1751,13 @@ class Solution {
 解释：名次为 [1st, 2nd, 3rd, 4th, 5th] 。
 ```
 
+**提示：**
+
+- `n == score.length`
+- `1 <= n <= 104`
+- `0 <= score[i] <= 106`
+- `score` 中的所有值 **互不相同**
+
 C++版本
 
 ```c++
@@ -1714,6 +1812,8 @@ class Solution {
 }
 ```
 
+
+
 ### [88. 合并两个有序数组](https://leetcode.cn/problems/merge-sorted-array/)
 
 难度简单
@@ -1724,9 +1824,19 @@ class Solution {
 
 **注意：**最终，合并后数组不应由函数返回，而是存储在数组`nums1`中。为了应对这种情况，`nums1` 的初始长度为`m + n`，其中前`m`个元素表示应合并的元素，后 `n` 个元素为 `0` ，应忽略。`nums2` 的长度为`n`。
 
+**示例 1：**
+
+```
+输入：nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3
+输出：[1,2,2,3,5,6]
+解释：需要合并 [1,2,3] 和 [2,5,6] 。
+合并结果是 [1,2,2,3,5,6] ，其中斜体加粗标注的为 nums1 中的元素。
+```
+
 C++版本
 
 ```c++
+// 归并思想
 class Solution {
 public:
     void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
@@ -1744,6 +1854,7 @@ public:
 Java版本
 
 ```java
+// 归并思想
 class Solution {
     public void merge(int[] nums1, int m, int[] nums2, int n) {
         int p = m-- + n-- - 1;
@@ -1757,6 +1868,8 @@ class Solution {
     }
 }
 ```
+
+
 
 ### [剑指 Offer 51. 数组中的逆序对](https://leetcode.cn/problems/shu-zu-zhong-de-ni-xu-dui-lcof/)
 
@@ -1993,6 +2106,18 @@ class BIT {
 难度困难
 
 给你一个整数数组 `nums` ，按要求返回一个新数组 `counts` 。数组 `counts` 有该性质： `counts[i]` 的值是 `nums[i]` 右侧小于 `nums[i]` 的元素的数量。
+
+**示例 1：**
+
+```
+输入：nums = [5,2,6,1]
+输出：[2,1,1,0] 
+解释：
+5 的右侧有 2 个更小的元素 (2 和 1)
+2 的右侧仅有 1 个更小的元素 (1)
+6 的右侧有 1 个更小的元素 (1)
+1 的右侧有 0 个更小的元素
+```
 
 C++版本
 
@@ -2282,6 +2407,13 @@ class Solution {
 
 你可以假设数组是非空的，并且给定的数组总是存在多数元素。
 
+**示例 1：**
+
+```
+输入：nums = [3,2,3]
+输出：3
+```
+
 C++版本
 
 ```c++
@@ -2441,6 +2573,8 @@ class Solution {
     }
 }
 ```
+
+
 
 ### [剑指 Offer 40. 最小的k个数](https://leetcode.cn/problems/zui-xiao-de-kge-shu-lcof/)
 
@@ -2633,6 +2767,8 @@ class Solution {
     }
 };
 ```
+
+
 
 ### [1122. 数组的相对排序](https://leetcode.cn/problems/relative-sort-array/)
 
