@@ -2000,13 +2000,13 @@ C++版本
 // 归并思想
 class Solution {
 private:
-    std::vector<int> index;
-    std::vector<int> temp;
-    std::vector<int> tempIndex;
-    std::vector<int> ans;
+    vector<int> index;
+    vector<int> temp;
+    vector<int> tempIndex;
+    vector<int> ans;
 
 public:
-    std::vector<int> countSmaller(std::vector<int>& nums) {
+    vector<int> countSmaller(vector<int>& nums) {
         int n = nums.size();
         index.resize(n);
         temp.resize(n);
@@ -2073,6 +2073,7 @@ public:
         }
     }
 };
+
 // 离散化树状数组（难）
 class Solution {
 private:
@@ -2270,6 +2271,731 @@ class Solution {
     }
 }
 ```
+
+
+
+### [169. 多数元素](https://leetcode.cn/problems/majority-element/)
+
+难度简单
+
+给定一个大小为 `n` 的数组 `nums` ，返回其中的多数元素。多数元素是指在数组中出现次数 **大于** `⌊ n/2 ⌋` 的元素。
+
+你可以假设数组是非空的，并且给定的数组总是存在多数元素。
+
+C++版本
+
+```c++
+// 方法一：分治
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        int len = nums.size();
+        return getMajorityElement(nums, 0, len-1);
+    }
+
+    int getMajorityElement(vector<int>& nums, int left, int right) {
+        if(left == right) {
+            return nums[left];
+        }
+
+        int mid = left + (right - left) / 2;
+        int left_mode = getMajorityElement(nums, left, mid);
+        int right_mode = getMajorityElement(nums, mid+1, right);
+
+        if(left_mode == right_mode) {
+            return left_mode;
+        }
+
+        int left_mode_cnt = 0, right_mode_cnt = 0;
+        for(int i = left; i <= right; i++) {
+            if(nums[i] == left_mode) {
+                left_mode_cnt++;
+            }
+            if(nums[i] == right_mode) {
+                right_mode_cnt++;
+            }
+        }
+        if(left_mode_cnt > right_mode_cnt) {
+            return left_mode;
+        }
+        return right_mode;
+    }
+};
+
+// 方法二:投票算法
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        //boyer-moore投票方法：如果我们把众数记为+1，把其他数记为−1，全部加起来，显然和大于0（众数个数大于n/2）
+        int cand = 0, count = 0;
+        for(auto num: nums){
+            if(count == 0){
+                cand = num;
+            }
+            if(cand == num){
+                count++;
+            }
+            else    count--;
+        }
+        return cand;
+    }
+};
+
+// 方法三：哈希表
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        unordered_map<int, int> counts;
+        int majority = 0, cnt = 0;
+        for (int num: nums) {
+            ++counts[num];
+            if (counts[num] > cnt) {
+                majority = num;
+                cnt = counts[num];
+            }
+        }
+        return majority;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：分治
+class Solution {
+    public int majorityElement(int[] nums) {
+        return getMajorityElement(nums, 0, nums.length-1);
+    }
+
+    public int getMajorityElement(int[] nums, int left, int right) {
+        if(left == right) {
+            return nums[left];
+        }
+
+        int mid = left + (right - left) / 2;
+        int left_mode = getMajorityElement(nums, left, mid);
+        int right_mode = getMajorityElement(nums, mid+1, right);
+
+        if(left_mode == right_mode) {
+            return left_mode;
+        }
+
+        int left_mode_cnt = 0, right_mode_cnt = 0;
+        for(int i = left; i <= right; i++) {
+            if(nums[i] == left_mode) {
+                left_mode_cnt++;
+            }
+            if(nums[i] == right_mode) {
+                right_mode_cnt++;
+            }
+        }
+        if(left_mode_cnt > right_mode_cnt) {
+            return left_mode;
+        }
+        return right_mode;
+    }
+}
+
+// 方法二：投票算法
+class Solution {
+    public int majorityElement(int[] nums) {
+        int count = 0;
+        Integer candidate = null;
+
+        for (int num : nums) {
+            if (count == 0) {
+                candidate = num;
+            }
+            count += (num == candidate) ? 1 : -1;
+        }
+        return candidate;
+    }
+}
+
+// 方法三：哈希表
+class Solution {
+    private Map<Integer, Integer> countNums(int[] nums) {
+        Map<Integer, Integer> counts = new HashMap<Integer, Integer>();
+        for (int num : nums) {
+            if (!counts.containsKey(num)) {
+                counts.put(num, 1);
+            } else {
+                counts.put(num, counts.get(num) + 1);
+            }
+        }
+        return counts;
+    }
+
+    public int majorityElement(int[] nums) {
+        Map<Integer, Integer> counts = countNums(nums);
+
+        Map.Entry<Integer, Integer> majorityEntry = null;
+        for (Map.Entry<Integer, Integer> entry : counts.entrySet()) {
+            if (majorityEntry == null || entry.getValue() > majorityEntry.getValue()) {
+                majorityEntry = entry;
+            }
+        }
+
+        return majorityEntry.getKey();
+    }
+}
+```
+
+### [剑指 Offer 40. 最小的k个数](https://leetcode.cn/problems/zui-xiao-de-kge-shu-lcof/)
+
+简单
+
+输入整数数组 `arr` ，找出其中最小的 `k` 个数。例如，输入4、5、1、6、2、7、3、8这8个数字，则最小的4个数字是1、2、3、4。
+
+**示例 1：**
+
+```
+输入：arr = [3,2,1], k = 2
+输出：[1,2] 或者 [2,1]
+```
+
+C++版本
+
+```c++
+// 大根堆
+class Solution {
+public:
+    vector<int> getLeastNumbers(vector<int>& arr, int k) {
+        buildMaxHeap(arr);
+        int len = arr.size();
+        vector<int> nums(k);
+        for(int i = 0; i < len; i++) {
+            swap(arr[0], arr[len-i-1]);
+            heapify(arr, 0, len-i-2);
+        }
+        for(int i = 0; i < k; i++) {
+            nums[i] = arr[i];
+        }
+        return nums;
+    }
+
+    void buildMaxHeap(vector<int>& arr) {
+        int len = arr.size();
+        for(int i = (len - 2) / 2; i >= 0; i--) {
+            heapify(arr, i, len-1);
+        }
+    }
+
+    void heapify(vector<int>& arr, int index, int end) {
+        int left = index * 2 + 1;
+        int right = left + 1;
+        while(left <= end) {
+            int maxIndex = index;
+            if(arr[left] > arr[maxIndex]) {
+                maxIndex = left;
+            }
+            if(right <= end && arr[right] > arr[maxIndex]) {
+                maxIndex = right;
+            }
+            if(maxIndex == index) {
+                break;
+            }
+            swap(arr[maxIndex], arr[index]);
+            index = maxIndex;
+            left = index * 2 + 1;
+            right = left + 1;
+        }
+    }
+};
+
+// 快排
+class Solution {
+public:
+    vector<int> getLeastNumbers(vector<int>& arr, int k) {
+        quickSort(arr, 0, arr.size() - 1);
+        vector<int> res(k);
+        for(int i = 0; i < k; i++) {
+            res[i] = arr[i];
+        }
+        return res;
+    }
+private:
+    int partion(vector<int>& arr, int left, int right) {
+        int key = arr[left];
+        while(left < right) {
+            while(left < right && arr[right] >= key) right--;
+            arr[left] = arr[right];
+            while(left < right && arr[left] <= key) left++;
+            arr[right] = arr[left];
+        }
+        arr[left] = key;
+        return left;
+    }
+
+    void quickSort(vector<int>& arr, int left, int right) {
+        if(left >= right) {
+            return;
+        }
+        int point = partion(arr, left, right);
+        // 递归左（右）子数组执行哨兵划分
+        quickSort(arr, left, point - 1);
+        quickSort(arr, point + 1, right);
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int[] getLeastNumbers(int[] arr, int k) {
+        int[] vec = new int[k];
+        if (k == 0) { // 排除 0 的情况
+            return vec;
+        }
+        int len = arr.length;
+        buildMaxHeap(arr);
+        for(int i = 0; i < len; i++) {
+            int temp = arr[len-i-1];
+            arr[len-i-1]= arr[0];
+            arr[0] = temp;
+            heapify(arr, 0, len-i-2);
+        }
+        
+        for(int i = 0; i < k; i++) {
+            vec[i] = arr[i];
+        }
+        return vec;
+    }
+    
+    public void buildMaxHeap(int[] arr) {
+        int len = arr.length;
+        for(int i = (len - 2) / 2; i >= 0; i--) {
+            heapify(arr, i, len-1);
+        }
+    }
+
+    public void heapify(int[] arr, int index, int end) {
+        int left = index * 2 + 1;
+        int right = left + 1;
+        while(left <= end) {
+            int maxIndex = index;
+            if(arr[left] > arr[maxIndex]) {
+                maxIndex = left;
+            }
+            if(right <= end && arr[right] > arr[maxIndex]) {
+                maxIndex = right;
+            }
+            if(maxIndex == index) {
+                break;
+            }
+            int temp = arr[maxIndex];
+            arr[maxIndex]= arr[index];
+            arr[index] = temp;
+            index = maxIndex;
+            left = index * 2 + 1;
+            right = left + 1;
+        }
+    }
+}
+
+// 快排
+class Solution {
+    public int[] getLeastNumbers(int[] arr, int k) {
+        int[] vec = new int[k];
+        if (k == 0) { // 排除 0 的情况
+            return vec;
+        }
+        int len = arr.length;
+        quickSort(arr, 0, len-1);
+        for(int i = 0; i < k; i++) {
+            vec[i] = arr[i];
+        }
+        return vec;
+    }
+
+    public int partion(int[] arr, int left, int right) {
+        int key = arr[left];
+        while(left < right) {
+            while(left < right && arr[right] >= key) right--;
+            arr[left] = arr[right];
+            while(left < right && arr[left] <= key) left++;
+            arr[right] = arr[left];
+        }
+        arr[left] = key;
+        return left;
+    }
+
+    public void quickSort(int[] arr, int left, int right) {
+        if(left >= right) {
+            return;
+        }
+        int point = partion(arr, left, right);
+        // 递归左（右）子数组执行哨兵划分
+        quickSort(arr, left, point - 1);
+        quickSort(arr, point + 1, right);
+    }
+};
+```
+
+### [1122. 数组的相对排序](https://leetcode.cn/problems/relative-sort-array/)
+
+简单
+
+相关企业
+
+给你两个数组，`arr1` 和 `arr2`，`arr2` 中的元素各不相同，`arr2` 中的每个元素都出现在 `arr1` 中。
+
+对 `arr1` 中的元素进行排序，使 `arr1` 中项的相对顺序和 `arr2` 中的相对顺序相同。未在 `arr2` 中出现过的元素需要按照升序放在 `arr1` 的末尾。
+
+**示例 1：**
+
+```
+输入：arr1 = [2,3,1,3,2,4,6,7,9,2,19], arr2 = [2,1,4,3,9,6]
+输出：[2,2,2,1,4,3,3,9,6,7,19]
+```
+
+**提示：**
+
+- `1 <= arr1.length, arr2.length <= 1000`
+- `0 <= arr1[i], arr2[i] <= 1000`
+
+C++版本
+
+```c++
+// 计数排序
+class Solution {
+public:
+    vector<int> relativeSortArray(vector<int>& arr1, vector<int>& arr2) {
+        int max = 0, min = 1000;
+        for(int num : arr1) {
+            if(num >= max) {
+                max = num;
+            }
+            if(num <= min) {
+                min = num;
+            }
+        }
+        int size = max - min + 1;
+        vector<int> counts(size, 0);
+        for(int num : arr1) {
+            counts[num - min] += 1;
+        }
+
+        vector<int> res;
+        for(int num : arr2) {
+            while(counts[num - min]-- > 0) {
+                res.push_back(num);
+            }
+        }
+
+        for(int q = 0; q < size; q++) {
+            while(counts[q]-- > 0) {
+                res.push_back(q + min);
+            }
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int[] relativeSortArray(int[] arr1, int[] arr2) {
+        int max = 0, min = 1000;
+        for(int num : arr1) {
+            if(num >= max) {
+                max = num;
+            }
+            if(num <= min) {
+                min = num;
+            }
+        }
+        int size = max - min + 1;
+        int[] counts = new int[size];
+        for(int num : arr1) {
+            counts[num - min] += 1;
+        }
+
+        int[] res = new int[arr1.length];
+        int index = 0;
+        for(int num : arr2) {
+            while(counts[num - min]-- > 0) {
+                res[index++] = num;
+            }
+        }
+
+        for(int q = 0; q < size; q++) {
+            while(counts[q]-- > 0) {
+                res[index++] = q + min;
+            }
+        }
+        return res;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
