@@ -644,7 +644,7 @@ void bucketSort(vector<int>& arr, int bucketSize = 5) {
     }
 
     int bucketCount = (max_element - min_element) / bucketSize + 1;
-    vector<svector<int>> buckets(bucketCount);
+    vector<vector<int>> buckets(bucketCount);
 
     for (int num : arr) {
         int bucketIndex = (num - min_element) / bucketSize;
