@@ -2871,13 +2871,220 @@ class Solution {
 
 
 
+### [220. 存在重复元素 III](https://leetcode.cn/problems/contains-duplicate-iii/)
 
+困难
 
+给你一个整数数组 `nums` 和两个整数 `indexDiff` 和 `valueDiff` 。
 
+找出满足下述条件的下标对 `(i, j)`：
 
+- `i != j`,
+- `abs(i - j) <= indexDiff`
+- `abs(nums[i] - nums[j]) <= valueDiff`
 
+如果存在，返回 `true` *；*否则，返回 `false` 。
 
+**示例 1：**
 
+```
+输入：nums = [1,2,3,1], indexDiff = 3, valueDiff = 0
+输出：true
+解释：可以找出 (i, j) = (0, 3) 。
+满足下述 3 个条件：
+i != j --> 0 != 3
+abs(i - j) <= indexDiff --> abs(0 - 3) <= 3
+abs(nums[i] - nums[j]) <= valueDiff --> abs(1 - 1) <= 0
+```
+
+C++版本
+
+```c++
+// 桶排序
+class Solution {
+public:
+    int getID(int num, long valueDiff) {
+        return num < 0 ? (num + 1ll) / valueDiff - 1 : num / valueDiff;
+    }
+
+    bool containsNearbyAlmostDuplicate(vector<int>& nums, int indexDiff, int valueDiff) {
+        unordered_map<int, int> mp;
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            long x = nums[i];
+            int id = getID(x, valueDiff + 1ll);
+            if (mp.count(id)) {
+                return true;
+            }
+            if (mp.count(id - 1) && abs(x - mp[id - 1]) <= valueDiff) {
+                return true;
+            }
+            if (mp.count(id + 1) && abs(x - mp[id + 1]) <= valueDiff) {
+                return true;
+            }
+            mp[id] = x;
+            if (i >= indexDiff) {
+                mp.erase(getID(nums[i - indexDiff], valueDiff + 1ll));
+            }
+        }
+        return false;
+    }
+};
+
+// 滑动窗口 + 有序集合
+class Solution {
+public:
+    bool containsNearbyAlmostDuplicate(vector<int>& nums, int k, int t) {
+        int n = nums.size();
+        set<int> rec;
+        for (int i = 0; i < n; i++) {
+            auto iter = rec.lower_bound(max(nums[i], INT_MIN + t) - t);
+            if (iter != rec.end() && *iter <= min(nums[i], INT_MAX - t) + t) {
+                return true;
+            }
+            rec.insert(nums[i]);
+            if (i >= k) {
+                rec.erase(nums[i - k]);
+            }
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+// 桶排序
+class Solution {
+    public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
+        int n = nums.length;
+        Map<Long, Long> map = new HashMap<Long, Long>();
+        long w = (long) t + 1;
+        for (int i = 0; i < n; i++) {
+            long id = getID(nums[i], w);
+            if (map.containsKey(id)) {
+                return true;
+            }
+            if (map.containsKey(id - 1) && Math.abs(nums[i] - map.get(id - 1)) < w) {
+                return true;
+            }
+            if (map.containsKey(id + 1) && Math.abs(nums[i] - map.get(id + 1)) < w) {
+                return true;
+            }
+            map.put(id, (long) nums[i]);
+            if (i >= k) {
+                map.remove(getID(nums[i - k], w));
+            }
+        }
+        return false;
+    }
+
+    public long getID(long x, long w) {
+        if (x >= 0) {
+            return x / w;
+        }
+        return (x + 1) / w - 1;
+    }
+}
+
+// 滑动窗口 + 有序集合
+class Solution {
+    public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
+        int n = nums.length;
+        TreeSet<Long> set = new TreeSet<Long>();
+        for (int i = 0; i < n; i++) {
+            Long ceiling = set.ceiling((long) nums[i] - (long) t);
+            if (ceiling != null && ceiling <= (long) nums[i] + (long) t) {
+                return true;
+            }
+            set.add((long) nums[i]);
+            if (i >= k) {
+                set.remove((long) nums[i - k]);
+            }
+        }
+        return false;
+    }
+}
+```
+
+### [164. 最大间距](https://leetcode.cn/problems/maximum-gap/)
+
+困难
+
+给定一个无序的数组 `nums`，返回 *数组在排序之后，相邻元素之间最大的差值* 。如果数组元素个数小于 2，则返回 `0` 。
+
+您必须编写一个在「线性时间」内运行并使用「线性额外空间」的算法。
+
+**示例 1:**
+
+```
+输入: nums = [3,6,9,1]
+输出: 3
+解释: 排序后的数组是 [1,3,6,9], 其中相邻元素 (3,6) 和 (6,9) 之间都存在最大差值 3。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int maximumGap(vector<int>& nums) {
+        int len = nums.size();
+        if(len < 2) {
+            return 0;
+        }
+        radixSort(nums);
+        int maximumGap = 0;
+        for(int i = 1; i < len; i++) {
+            maximumGap = maximumGap > nums[i] - nums[i-1] ? maximumGap : nums[i] - nums[i-1];
+        }
+        return maximumGap;
+    }
+
+    // 获取num的第digit位数字
+    int getDigit(int num, int digit) {
+        return (num / static_cast<int>(pow(10, digit - 1))) % 10;
+    }
+
+    // 基数排序
+    void radixSort(vector<int>& arr) {
+        int maxVal = *max_element(arr.begin(), arr.end());
+        int digits = 0;
+        while (maxVal > 0) {
+            maxVal /= 10;
+            digits++;
+    	}
+
+    	vector<int> count(10, 0);
+    	vector<int> output(arr.size());
+
+    	for (int i = 1; i <= digits; ++i) {
+        	fill(count.begin(), count.end(), 0);
+
+        	// 统计每个位的数字出现次数
+        	for (int j = 0; j < arr.size(); ++j) {
+            	int digit = getDigit(arr[j], i);
+            	count[digit]++;
+        	}
+
+        	// 将count[i]更新为包含小于等于i的元素个数
+        	for (int j = 1; j < count.size(); ++j) {
+            	count[j] += count[j - 1];
+        	}
+
+        	// 根据当前位的数字重新排序元素
+        	for (int j = arr.size() - 1; j >= 0; --j) {
+            	int digit = getDigit(arr[j], i);
+            	output[count[digit] - 1] = arr[j];
+            	count[digit]--;
+        	}
+        	// 将输出结果复制回原数组，准备下一轮排序
+        	copy(output.begin(), output.end(), arr.begin());
+    	}
+	}
+};
+```
 
 
 
