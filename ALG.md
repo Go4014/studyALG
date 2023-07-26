@@ -531,24 +531,28 @@ C++ 版本
 
 ```c++
 void countingSort(vector<int>& arr) {
-    // 查找数组中的最大值，以确定计数数组的大小
+    // 查找数组中的最大值/最小值，以确定计数数组的大小
     int max_element = arr[0];
+    int min_element = arr[0];
     for (int num : arr) {
         if (num > max_element) {
             max_element = num;
         }
+        if (num < min_element) {
+            min_element = num;
+        }
     }
 
     // 创建计数数组，并初始化为0
-    vector<int> count_array(max_element + 1, 0);
+    vector<int> count_array(max_element - min_element + 1, 0);
 
     // 统计每个元素出现的次数
     for (int num : arr) {
-        ++count_array[num];
+        ++count_array[num - min_element];
     }
 
     // 更新计数数组，使得 count_array[i] 包含小于等于元素 i 的元素个数
-    for (int i = 1; i <= max_element; ++i) {
+    for (int i = 1; i <= max_element - min_element + 1; ++i) {
         count_array[i] += count_array[i - 1];
     }
 
@@ -557,8 +561,8 @@ void countingSort(vector<int>& arr) {
 
     // 遍历原始数组，将元素放入正确的位置
     for (int i = arr.size() - 1; i >= 0; --i) {
-        sorted_array[count_array[arr[i]] - 1] = arr[i];
-        --count_array[arr[i]];
+        sorted_array[count_array[arr[i] - min_element] - 1] = arr[i];
+        --count_array[arr[i] - min_element];
     }
 
     // 将排序结果拷贝回原始数组
@@ -619,15 +623,21 @@ public class CountingSort {
 C++版本
 
 ```c++
-void insertionSort(vector<int>& arr) {
-    for (int i = 1; i < arr.size(); ++i) {
-        int key = arr[i];
-        int j = i - 1;
-        while (j >= 0 && arr[j] > key) {
-            arr[j + 1] = arr[j];
-            --j;
+void shellSort(vector<int>& arr) {
+    int n = arr.size();
+    // 初始步长设置为数组长度的一半，不断缩小步长
+    for (int gap = n / 2; gap > 0; gap /= 2) {
+        // 对每个子序列进行插入排序
+        for (int i = gap; i < n; ++i) {
+            int temp = arr[i];
+            int j = i;
+            // 插入排序
+            while (j >= gap && arr[j - gap] > temp) {
+                arr[j] = arr[j - gap];
+                j -= gap;
+            }
+            arr[j] = temp;
         }
-        arr[j + 1] = key;
     }
 }
 
@@ -653,7 +663,7 @@ void bucketSort(vector<int>& arr, int bucketSize = 5) {
 
     arr.clear();
     for (vector<int>& bucket : buckets) {
-        insertionSort(bucket);
+        shellSort(bucket);
         arr.insert(arr.end(), bucket.begin(), bucket.end());
     }
 }
