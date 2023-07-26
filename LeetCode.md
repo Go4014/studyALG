@@ -3130,21 +3130,163 @@ class Solution {
 
 
 
+### [217. 存在重复元素](https://leetcode.cn/problems/contains-duplicate/)
+
+简单
+
+给你一个整数数组 `nums` 。如果任一值在数组中出现 **至少两次** ，返回 `true` ；如果数组中每个元素互不相同，返回 `false` 。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,1]
+输出：true
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool containsDuplicate(vector<int>& nums) {
+        unordered_set<int> s;
+        for (int x: nums) {
+            if (s.find(x) != s.end()) {
+                return true;
+            }
+            s.insert(x);
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean containsDuplicate(int[] nums) {
+        Set<Integer> set = new HashSet<Integer>();
+        for (int x : nums) {
+            if (!set.add(x)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
 
 
 
+### [136. 只出现一次的数字](https://leetcode.cn/problems/single-number/)
+
+简单
+
+给你一个 **非空** 整数数组 `nums` ，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
+
+你必须设计并实现线性时间复杂度的算法来解决此问题，且该算法只使用常量额外空间。
+
+**示例 1 ：**
+
+```
+输入：nums = [2,2,1]
+输出：1
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        for(int i = 1; i < nums.size(); i++) {
+            nums[0] ^= nums[i];
+        }
+        return nums[0];
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int singleNumber(int[] nums) {
+        for(int i = 1; i < nums.length; i++) {
+            nums[0] ^= nums[i];
+        }
+        return nums[0];
+    }
+}
+```
 
 
 
+### [56. 合并区间](https://leetcode.cn/problems/merge-intervals/)
 
+中等
 
+以数组 `intervals` 表示若干个区间的集合，其中单个区间为 `intervals[i] = [starti, endi]` 。请你合并所有重叠的区间，并返回 *一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间* 。
 
+**示例 1：**
 
+```
+输入：intervals = [[1,3],[2,6],[8,10],[15,18]]
+输出：[[1,6],[8,10],[15,18]]
+解释：区间 [1,3] 和 [2,6] 重叠, 将它们合并为 [1,6].
+```
 
+C++版本
 
+```c++
+class Solution {
+public:
+    vector<vector<int>> merge(vector<vector<int>>& intervals) {
+        sort(intervals.begin(), intervals.end());
+        int len = intervals.size();
+        vector<vector<int>> merge;
+        int left = 0, right;
+        while(left < len) {
+            right = left + 1;
+            while(right < len && intervals[right][0] <= intervals[right-1][1]) {
+                if(intervals[right][1] < intervals[right-1][1]) {
+                    intervals[right][1] = intervals[right-1][1];
+                }
+                right++;
+            }
+            merge.push_back({intervals[left][0], intervals[right-1][1]});
+            left = right;
+        }
+        return merge;
+    }
+};
+```
 
+Java版本
 
-
+```java
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        Arrays.sort(intervals, (x, y) -> x[0] - y[0]);
+        ArrayList<int []>  merge = new ArrayList<>();
+        int len = intervals.length;
+        int left = 0, right;
+        while(left < len) {
+            right = left + 1;
+            while(right < len && intervals[right][0] <= intervals[right-1][1]) {
+                if(intervals[right][1] < intervals[right-1][1]) {
+                    intervals[right][1] = intervals[right-1][1];
+                }
+                right++;
+            }
+            merge.add(new int[]{intervals[left][0], intervals[right-1][1]});
+            left = right;
+        }
+        return merge.toArray(new int[merge.size()][]);
+    }
+}
+```
 
 
 
