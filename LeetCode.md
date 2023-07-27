@@ -3290,15 +3290,203 @@ class Solution {
 
 
 
+### [179. 最大数](https://leetcode.cn/problems/largest-number/)
+
+中等
+
+给定一组非负整数 `nums`，重新排列每个数的顺序（每个数不可拆分）使之组成一个最大的整数。
+
+**注意：**输出结果可能非常大，所以你需要返回一个字符串而不是整数。
+
+**示例 1：**
+
+```
+输入：nums = [10,2]
+输出："210"
+```
+
+C++版本
+
+```c++
+// 自定义快速排序
+class Solution {
+public:
+    string largestNumber(vector<int>& nums) {
+        int len = nums.size();
+        vector<string> strs;
+        for(int i = 0; i < len; i++) {
+            strs.push_back(to_string(nums[i]));
+        }
+        quickSort(strs, 0, len-1);
+        if(strs[0] == "0") {
+            return "0";
+        }
+        string res;
+        for(int i = 0; i < len; i++) {
+            res.append(strs[i]);
+        }
+        return res;
+    }
+
+    void quickSort(vector<string>& strs, int left, int right) {
+        if(left >= right) {
+            return;
+        }
+        int pivot = partion(strs, left, right);
+        quickSort(strs, left, pivot-1);
+        quickSort(strs, pivot+1, right);
+    }
+
+    int partion(vector<string>& strs, int left, int right) {
+        int index = rand() % (right - left + 1) + left;
+        swap(strs[left], strs[index]);
+        string key = strs[left];
+        while(left < right) {
+            while(left < right && strs[right] + key <= key + strs[right]) right--;
+            strs[left] = strs[right];
+            while(left < right && strs[left] + key >= key + strs[left]) left++;
+            strs[right] = strs[left];
+        }
+        strs[left] = key;
+        return left;
+    }
+};
+
+//调用库函数自定义排序
+class Solution {
+public:
+    string largestNumber(vector<int>& nums) {
+        vector<string> cpy;
+        for(auto x: nums) {
+            cpy.push_back(to_string(x));
+        }
+        sort(cpy.begin(), cpy.end(), [](const string& x, const string& y){ 
+            return x + y > y + x; 
+        });
+        if(cpy[0] == "0") {
+            return "0";
+        }
+        string ans;
+        for(auto& x: cpy) {
+            ans += x;
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public String largestNumber(int[] nums) {
+        /*
+        自定义排序规则
+         */
+        int n = nums.length;
+        String[] ss = new String[n];
+        for (int i = 0; i < n; i++) {
+            ss[i] = String.valueOf(nums[i]);
+        }
+        // 排序 显然当b>a时，(b + a).compareTo(a + b)返回1触发交换，因此目标是最大数
+        Arrays.sort(ss, (a, b) -> (b + a).compareTo(a + b));
+        // 利用""拼接
+        String res = String.join("", ss);
+        // 要注意排除"000"的情况
+        return res.charAt(0) == '0' ? "0" : res;
+    }
+}
+```
 
 
 
+### [384. 打乱数组](https://leetcode.cn/problems/shuffle-an-array/)
 
+中等
 
+给你一个整数数组 `nums` ，设计算法来打乱一个没有重复元素的数组。打乱后，数组的所有排列应该是 **等可能** 的。
 
+实现 `Solution` class:
 
+- `Solution(int[] nums)` 使用整数数组 `nums` 初始化对象
+- `int[] reset()` 重设数组到它的初始状态并返回
+- `int[] shuffle()` 返回数组随机打乱后的结果
 
+**示例 1：**
 
+```
+输入
+["Solution", "shuffle", "reset", "shuffle"]
+[[[1, 2, 3]], [], [], []]
+输出
+[null, [3, 1, 2], [1, 2, 3], [1, 3, 2]]
+
+解释
+Solution solution = new Solution([1, 2, 3]);
+solution.shuffle();    // 打乱数组 [1,2,3] 并返回结果。任何 [1,2,3]的排列返回的概率应该相同。例如，返回 [3, 1, 2]
+solution.reset();      // 重设数组到它的初始状态 [1, 2, 3] 。返回 [1, 2, 3]
+solution.shuffle();    // 随机返回数组 [1, 2, 3] 打乱后的结果。例如，返回 [1, 3, 2]
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    Solution(vector<int>& nums) {
+        this->nums = nums;
+        this->original.resize(nums.size());
+        copy(nums.begin(), nums.end(), original.begin());
+    }
+    
+    vector<int> reset() {
+        copy(original.begin(), original.end(), nums.begin());
+        return nums;
+    }
+    
+    vector<int> shuffle() {
+        for (int i = 0; i < nums.size(); ++i) {
+            int j = i + rand() % (nums.size() - i);
+            swap(nums[i], nums[j]);
+        }
+        return nums;
+    }
+private:
+    vector<int> nums;
+    vector<int> original;
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    int[] nums;
+    int[] original;
+
+    public Solution(int[] nums) {
+        this.nums = nums;
+        this.original = new int[nums.length];
+        System.arraycopy(nums, 0, original, 0, nums.length);
+    }
+    
+    public int[] reset() {
+        System.arraycopy(original, 0, nums, 0, nums.length);
+        return nums;
+    }
+    
+    public int[] shuffle() {
+        Random random = new Random();
+        for (int i = 0; i < nums.length; ++i) {
+            int j = i + random.nextInt(nums.length - i);
+            int temp = nums[i];
+            nums[i] = nums[j];
+            nums[j] = temp;
+        }
+        return nums;
+    }
+}
+```
 
 
 
