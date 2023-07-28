@@ -3490,37 +3490,287 @@ class Solution {
 
 
 
+## 二分查找题目
+
+### [704. 二分查找](https://leetcode.cn/problems/binary-search/)
+
+简单
+
+给定一个 `n` 个元素有序的（升序）整型数组 `nums` 和一个目标值 `target` ，写一个函数搜索 `nums` 中的 `target`，如果目标值存在返回下标，否则返回 `-1`。
+**示例 1:**
+
+```
+输入: nums = [-1,0,3,5,9,12], target = 9
+输出: 4
+解释: 9 出现在 nums 中并且下标为 4
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int search(vector<int>& nums, int target) {
+        int left = 0, right = nums.size()-1;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] == target) {
+                return mid;
+            } else if(nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+        return -1;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int search(int[] nums, int target) {
+        int left = 0, right = nums.length-1;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] == target) {
+                return mid;
+            } else if(nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+        return -1;
+    }
+}
+```
 
 
 
+### [374. 猜数字大小](https://leetcode.cn/problems/guess-number-higher-or-lower/)
+
+简单
+
+猜数字游戏的规则如下：
+
+- 每轮游戏，我都会从 **1** 到 ***n*** 随机选择一个数字。 请你猜选出的是哪个数字。
+- 如果你猜错了，我会告诉你，你猜测的数字比我选出的数字是大了还是小了。
+
+你可以通过调用一个预先定义好的接口 `int guess(int num)` 来获取猜测结果，返回值一共有 3 种可能的情况（`-1`，`1` 或 `0`）：
+
+- -1：我选出的数字比你猜的数字小 `pick < num`
+- 1：我选出的数字比你猜的数字大 `pick > num`
+- 0：我选出的数字和你猜的数字一样。恭喜！你猜对了！`pick == num`
+
+返回我选出的数字。
+
+**示例 1：**
+
+```
+输入：n = 10, pick = 6
+输出：6
+```
+
+C++版本
+
+```c++
+/** 
+ * Forward declaration of guess API.
+ * @param  num   your guess
+ * @return 	     -1 if num is higher than the picked number
+ *			      1 if num is lower than the picked number
+ *               otherwise return 0
+ * int guess(int num);
+ */
+
+class Solution {
+public:
+    int guessNumber(int n) {
+        int m = 1;
+        while(m <= n) {
+            int mid = m + (n - m) / 2;
+            if(guess(mid) == 0) {
+                return mid;
+            } else if(guess(mid) == -1) {
+                n = mid - 1;
+            } else {
+                m = mid + 1;
+            }
+        }
+        return 0;
+    }
+};
+```
+
+Java版本
+
+```java
+/** 
+ * Forward declaration of guess API.
+ * @param  num   your guess
+ * @return 	     -1 if num is higher than the picked number
+ *			      1 if num is lower than the picked number
+ *               otherwise return 0
+ * int guess(int num);
+ */
+
+public class Solution extends GuessGame {
+    public int guessNumber(int n) {
+        int m = 1;
+        while(m <= n) {
+            int mid = m + (n - m) / 2;
+            if(guess(mid) == 0) {
+                return mid;
+            } else if(guess(mid) == -1) {
+                n = mid - 1;
+            } else {
+                m = mid + 1;
+            }
+        }
+        return 0;
+    }
+}
+```
 
 
 
+### [35. 搜索插入位置](https://leetcode.cn/problems/search-insert-position/)
+
+简单
+
+给定一个排序数组和一个目标值，在数组中找到目标值，并返回其索引。如果目标值不存在于数组中，返回它将会被按顺序插入的位置。
+
+请必须使用时间复杂度为 `O(log n)` 的算法。
+
+**示例 1:**
+
+```
+输入: nums = [1,3,5,6], target = 5
+输出: 2
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int searchInsert(vector<int>& nums, int target) {
+        int left = 0, right = nums.size() - 1, res = nums.size();
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(target <= nums[mid]) {
+                res = mid;
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int searchInsert(int[] nums, int target) {
+        int n = nums.length;
+        int left = 0, right = n - 1, ans = n;
+        while (left <= right) {
+            int mid = ((right - left) >> 1) + left;
+            if (target <= nums[mid]) {
+                ans = mid;
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/)
 
+中等
 
+给你一个按照非递减顺序排列的整数数组 `nums`，和一个目标值 `target`。请你找出给定目标值在数组中的开始位置和结束位置。
 
+如果数组中不存在目标值 `target`，返回 `[-1, -1]`。
 
+你必须设计并实现时间复杂度为 `O(log n)` 的算法解决此问题。
 
+**示例 1：**
 
+```
+输入：nums = [5,7,7,8,8,10], target = 8
+输出：[3,4]
+```
 
+C++版本
 
+```c++
+class Solution { 
+public:
+    int binarySearch(vector<int>& nums, int target, bool lower) {
+        int left = 0, right = (int)nums.size() - 1, ans = (int)nums.size();
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            if (nums[mid] > target || (lower && nums[mid] >= target)) {
+                right = mid - 1;
+                ans = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return ans;
+    }
 
+    vector<int> searchRange(vector<int>& nums, int target) {
+        int leftIdx = binarySearch(nums, target, true);
+        int rightIdx = binarySearch(nums, target, false) - 1;
+        if (leftIdx <= rightIdx && rightIdx < nums.size() && nums[leftIdx] == target && nums[rightIdx] == target) {
+            return vector<int>{leftIdx, rightIdx};
+        } 
+        return vector<int>{-1, -1};
+    }
+};
+```
 
+Java版本
 
+```java
+class Solution {
+    public int[] searchRange(int[] nums, int target) {
+        int leftIdx = binarySearch(nums, target, true);
+        int rightIdx = binarySearch(nums, target, false) - 1;
+        if (leftIdx <= rightIdx && rightIdx < nums.length && nums[leftIdx] == target && nums[rightIdx] == target) {
+            return new int[]{leftIdx, rightIdx};
+        } 
+        return new int[]{-1, -1};
+    }
 
-
-
-
-
-
-
-
-
-
-
+    public int binarySearch(int[] nums, int target, boolean lower) {
+        int left = 0, right = nums.length - 1, ans = nums.length;
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            if (nums[mid] > target || (lower && nums[mid] >= target)) {
+                right = mid - 1;
+                ans = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return ans;
+    }
+}
+```
 
 
 
