@@ -3774,13 +3774,179 @@ class Solution {
 
 
 
+### [167. 两数之和 II - 输入有序数组](https://leetcode.cn/problems/two-sum-ii-input-array-is-sorted/)
+
+中等
+
+给你一个下标从 **1** 开始的整数数组 `numbers` ，该数组已按 **非递减顺序排列** ，请你从数组中找出满足相加之和等于目标数 `target` 的两个数。如果设这两个数分别是 `numbers[index1]` 和 `numbers[index2]` ，则 `1 <= index1 < index2 <= numbers.length` 。
+
+以长度为 2 的整数数组 `[index1, index2]` 的形式返回这两个整数的下标 `index1` 和 `index2`。
+
+你可以假设每个输入 **只对应唯一的答案** ，而且你 **不可以** 重复使用相同的元素。
+
+你所设计的解决方案必须只使用常量级的额外空间。
+
+**示例 1：**
+
+```
+输入：numbers = [2,7,11,15], target = 9
+输出：[1,2]
+解释：2 与 7 之和等于目标数 9 。因此 index1 = 1, index2 = 2 。返回 [1, 2] 。
+```
+
+C++版本
+
+```c++
+// 二分查找
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& numbers, int target) {
+        int len  = numbers.size();
+        for(int i = 0; i < len; i++) {
+            int left = i+1, right = len-1, res = i;
+            while(left <= right) {
+                int mid = left + (right - left) / 2;
+                if(target - numbers[i] <= numbers[mid]) {
+                    res = mid;
+                    right = mid - 1;
+                } else {
+                    left = mid + 1;
+                }
+            }
+            if(numbers[res] == target - numbers[i]) {
+                return vector<int>{i+1, res+1};
+            }
+        }
+        return vector<int>{-1, -1};
+    }
+};
+
+// 双指针
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& numbers, int target) {
+        int len  = numbers.size();
+        int left = 0, right = len-1;
+        while(left < right) {
+            if(numbers[left] + numbers[right] == target) {
+                return vector<int>{left+1, right+1};
+            } else if(numbers[left] + numbers[right] < target) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+        return vector<int>{-1, -1};
+    }
+};
+```
+
+Java版本
+
+```java
+// 二分查找
+class Solution {
+    public int[] twoSum(int[] numbers, int target) {
+        for (int i = 0; i < numbers.length; ++i) {
+            int low = i + 1, high = numbers.length - 1;
+            while (low <= high) {
+                int mid = (high - low) / 2 + low;
+                if (numbers[mid] == target - numbers[i]) {
+                    return new int[]{i + 1, mid + 1};
+                } else if (numbers[mid] > target - numbers[i]) {
+                    high = mid - 1;
+                } else {
+                    low = mid + 1;
+                }
+            }
+        }
+        return new int[]{-1, -1};
+    }
+}
+
+// 双指针
+class Solution {
+    public int[] twoSum(int[] numbers, int target) {
+        int low = 0, high = numbers.length - 1;
+        while (low < high) {
+            int sum = numbers[low] + numbers[high];
+            if (sum == target) {
+                return new int[]{low + 1, high + 1};
+            } else if (sum < target) {
+                ++low;
+            } else {
+                --high;
+            }
+        }
+        return new int[]{-1, -1};
+    }
+}
+```
 
 
 
+### [153. 寻找旋转排序数组中的最小值](https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/)
 
+中等
 
+已知一个长度为 `n` 的数组，预先按照升序排列，经由 `1` 到 `n` 次 **旋转** 后，得到输入数组。例如，原数组 `nums = [0,1,2,4,5,6,7]` 在变化后可能得到：
 
+- 若旋转 `4` 次，则可以得到 `[4,5,6,7,0,1,2]`
+- 若旋转 `7` 次，则可以得到 `[0,1,2,4,5,6,7]`
 
+注意，数组 `[a[0], a[1], a[2], ..., a[n-1]]` **旋转一次** 的结果为数组 `[a[n-1], a[0], a[1], a[2], ..., a[n-2]]` 。
+
+给你一个元素值 **互不相同** 的数组 `nums` ，它原来是一个升序排列的数组，并按上述情形进行了多次旋转。请你找出并返回数组中的 **最小元素** 。
+
+你必须设计一个时间复杂度为 `O(log n)` 的算法解决此问题。
+
+**示例 1：**
+
+```
+输入：nums = [3,4,5,1,2]
+输出：1
+解释：原数组为 [1,2,3,4,5] ，旋转 3 次得到输入数组。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int findMin(vector<int>& nums) {
+        int left = 0, right = nums.size() - 1;
+        while(left < right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] < nums[right]) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return nums[left];
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int findMin(int[] nums) {
+        int low = 0;
+        int high = nums.length - 1;
+        while (low < high) {
+            int pivot = low + (high - low) / 2;
+            if (nums[pivot] < nums[high]) {
+                high = pivot;
+            } else {
+                low = pivot + 1;
+            }
+        }
+        return nums[low];
+    }
+}
+```
 
 
 
