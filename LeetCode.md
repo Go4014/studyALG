@@ -4149,23 +4149,338 @@ class Solution {
 
 
 
+### [81. 搜索旋转排序数组 II](https://leetcode.cn/problems/search-in-rotated-sorted-array-ii/)
+
+中等
+
+已知存在一个按非降序排列的整数数组 `nums` ，数组中的值不必互不相同。
+
+在传递给函数之前，`nums` 在预先未知的某个下标 `k`（`0 <= k < nums.length`）上进行了 **旋转** ，使数组变为 `[nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]`（下标 **从 0 开始** 计数）。例如， `[0,1,2,4,4,4,5,6,6,7]` 在下标 `5` 处经旋转后可能变为 `[4,5,6,6,7,0,1,2,4,4]` 。
+
+给你 **旋转后** 的数组 `nums` 和一个整数 `target` ，请你编写一个函数来判断给定的目标值是否存在于数组中。如果 `nums` 中存在这个目标值 `target` ，则返回 `true` ，否则返回 `false` 。
+
+你必须尽可能减少整个操作步骤。
+
+**示例 1：**
+
+```
+输入：nums = [2,5,6,0,0,1,2], target = 0
+输出：true
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool search(vector<int> &nums, int target) {
+        int n = nums.size();
+        if (n == 0) {
+            return false;
+        }
+        if (n == 1) {
+            return nums[0] == target;
+        }
+        int l = 0, r = n - 1;
+        while (l <= r) {
+            int mid = (l + r) / 2;
+            if (nums[mid] == target) {
+                return true;
+            }
+            if (nums[l] == nums[mid] && nums[mid] == nums[r]) {
+                ++l;
+                --r;
+            } else if (nums[l] <= nums[mid]) {
+                if (nums[l] <= target && target < nums[mid]) {
+                    r = mid - 1;
+                } else {
+                    l = mid + 1;
+                }
+            } else {
+                if (nums[mid] < target && target <= nums[n - 1]) {
+                    l = mid + 1;
+                } else {
+                    r = mid - 1;
+                }
+            }
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean search(int[] nums, int target) {
+        int n = nums.length;
+        if (n == 0) {
+            return false;
+        }
+        if (n == 1) {
+            return nums[0] == target;
+        }
+        int l = 0, r = n - 1;
+        while (l <= r) {
+            int mid = (l + r) / 2;
+            if (nums[mid] == target) {
+                return true;
+            }
+            if (nums[l] == nums[mid] && nums[mid] == nums[r]) {
+                ++l;
+                --r;
+            } else if (nums[l] <= nums[mid]) {
+                if (nums[l] <= target && target < nums[mid]) {
+                    r = mid - 1;
+                } else {
+                    l = mid + 1;
+                }
+            } else {
+                if (nums[mid] < target && target <= nums[n - 1]) {
+                    l = mid + 1;
+                } else {
+                    r = mid - 1;
+                }
+            }
+        }
+        return false;
+    }
+}
+```
 
 
 
+### [278. 第一个错误的版本](https://leetcode.cn/problems/first-bad-version/)
+
+简单
+
+你是产品经理，目前正在带领一个团队开发新的产品。不幸的是，你的产品的最新版本没有通过质量检测。由于每个版本都是基于之前的版本开发的，所以错误的版本之后的所有版本都是错的。
+
+假设你有 `n` 个版本 `[1, 2, ..., n]`，你想找出导致之后所有版本出错的第一个错误的版本。
+
+你可以通过调用 `bool isBadVersion(version)` 接口来判断版本号 `version` 是否在单元测试中出错。实现一个函数来查找第一个错误的版本。你应该尽量减少对调用 API 的次数。
+
+**示例 1：**
+
+```
+输入：n = 5, bad = 4
+输出：4
+解释：
+调用 isBadVersion(3) -> false 
+调用 isBadVersion(5) -> true 
+调用 isBadVersion(4) -> true
+所以，4 是第一个错误的版本。
+```
+
+C++版本
+
+```c++
+// The API isBadVersion is defined for you.
+// bool isBadVersion(int version);
+
+class Solution {
+public:
+    int firstBadVersion(int n) {
+        int left = 1, right = n;
+        while(left < right) {
+            int mid = left + (right - left) / 2;
+            if(isBadVersion(mid)) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+};
+```
+
+Java版本
+
+```java
+/* The isBadVersion API is defined in the parent class VersionControl.
+      boolean isBadVersion(int version); */
+
+public class Solution extends VersionControl {
+    public int firstBadVersion(int n) {
+        int left = 1, right = n;
+        while(left < right) {
+            int mid = left + (right - left) / 2;
+            if(isBadVersion(mid)) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+}
+```
 
 
 
+### [162. 寻找峰值](https://leetcode.cn/problems/find-peak-element/)
 
+中等
 
+峰值元素是指其值严格大于左右相邻值的元素。
 
+给你一个整数数组 `nums`，找到峰值元素并返回其索引。数组可能包含多个峰值，在这种情况下，返回 **任何一个峰值** 所在位置即可。
 
+你可以假设 `nums[-1] = nums[n] = -∞` 。
 
+你必须实现时间复杂度为 `O(log n)` 的算法来解决此问题。
 
+**示例 1：**
 
+```
+输入：nums = [1,2,3,1]
+输出：2
+解释：3 是峰值元素，你的函数应该返回其索引 2。
+```
 
+C++版本
 
+```c++
+// 迭代爬坡
+class Solution {
+public:
+    int findPeakElement(vector<int>& nums) {
+        int n = nums.size();
+        int idx = rand() % n;
 
+        // 辅助函数，输入下标 i，返回一个二元组 (0/1, nums[i])
+        // 方便处理 nums[-1] 以及 nums[n] 的边界情况
+        auto get = [&](int i) -> pair<int, int> {
+            if (i == -1 || i == n) {
+                return {0, 0};
+            }
+            return {1, nums[i]};
+        };
 
+        while (!(get(idx - 1) < get(idx) && get(idx) > get(idx + 1))) {
+            if (get(idx) < get(idx + 1)) {
+                idx += 1;
+            }
+            else {
+                idx -= 1;
+            }
+        }
+        
+        return idx;
+    }
+};
+
+// 迭代爬坡的二分查找优化
+class Solution {
+public:
+    int findPeakElement(vector<int>& nums) {
+        int n = nums.size();
+
+        // 辅助函数，输入下标 i，返回一个二元组 (0/1, nums[i])
+        // 方便处理 nums[-1] 以及 nums[n] 的边界情况
+        auto get = [&](int i) -> pair<int, int> {
+            if (i == -1 || i == n) {
+                return {0, 0};
+            }
+            return {1, nums[i]};
+        };
+
+        int left = 0, right = n - 1, ans = -1;
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            if (get(mid - 1) < get(mid) && get(mid) > get(mid + 1)) {
+                ans = mid;
+                break;
+            }
+            if (get(mid) < get(mid + 1)) {
+                left = mid + 1;
+            }
+            else {
+                right = mid - 1;
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 迭代爬坡
+class Solution {
+    public int findPeakElement(int[] nums) {
+        int n = nums.length;
+        int idx = (int) (Math.random() * n);
+
+        while (!(compare(nums, idx - 1, idx) < 0 && compare(nums, idx, idx + 1) > 0)) {
+            if (compare(nums, idx, idx + 1) < 0) {
+                idx += 1;
+            } else {
+                idx -= 1;
+            }
+        }
+        
+        return idx;
+    }
+
+    // 辅助函数，输入下标 i，返回一个二元组 (0/1, nums[i])
+    // 方便处理 nums[-1] 以及 nums[n] 的边界情况
+    public int[] get(int[] nums, int idx) {
+        if (idx == -1 || idx == nums.length) {
+            return new int[]{0, 0};
+        }
+        return new int[]{1, nums[idx]};
+    }
+
+    public int compare(int[] nums, int idx1, int idx2) {
+        int[] num1 = get(nums, idx1);
+        int[] num2 = get(nums, idx2);
+        if (num1[0] != num2[0]) {
+            return num1[0] > num2[0] ? 1 : -1;
+        }
+        if (num1[1] == num2[1]) {
+            return 0;
+        }
+        return num1[1] > num2[1] ? 1 : -1;
+    }
+}
+
+// 迭代爬坡的二分查找优化
+class Solution {
+public:
+    int findPeakElement(vector<int>& nums) {
+        int n = nums.size();
+
+        // 辅助函数，输入下标 i，返回一个二元组 (0/1, nums[i])
+        // 方便处理 nums[-1] 以及 nums[n] 的边界情况
+        auto get = [&](int i) -> pair<int, int> {
+            if (i == -1 || i == n) {
+                return {0, 0};
+            }
+            return {1, nums[i]};
+        };
+
+        int left = 0, right = n - 1, ans = -1;
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            if (get(mid - 1) < get(mid) && get(mid) > get(mid + 1)) {
+                ans = mid;
+                break;
+            }
+            if (get(mid) < get(mid + 1)) {
+                left = mid + 1;
+            }
+            else {
+                right = mid - 1;
+            }
+        }
+        return ans;
+    }
+};
+```
 
 
 
