@@ -5023,6 +5023,200 @@ class Solution {
 
 
 
+### [74. 搜索二维矩阵](https://leetcode.cn/problems/search-a-2d-matrix/)
+
+中等
+
+给你一个满足下述两条属性的 `m x n` 整数矩阵：
+
+- 每行中的整数从左到右按非递减顺序排列。
+- 每行的第一个整数大于前一行的最后一个整数。
+
+给你一个整数 `target` ，如果 `target` 在矩阵中，返回 `true` ；否则，返回 `false` 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/05/mat.jpg)
+
+```
+输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3
+输出：true
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {
+        int n = matrix.size(), m = matrix[0].size();
+        int left = 0, right = n*m - 1;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(matrix[mid/m][mid%m] == target) {
+                return true;
+            } else if(matrix[mid/m][mid%m] > target) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int m = matrix.length, n = matrix[0].length;
+        int low = 0, high = m * n - 1;
+        while (low <= high) {
+            int mid = (high - low) / 2 + low;
+            int x = matrix[mid / n][mid % n];
+            if (x < target) {
+                low = mid + 1;
+            } else if (x > target) {
+                high = mid - 1;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
+
+
+
+### [240. 搜索二维矩阵 II](https://leetcode.cn/problems/search-a-2d-matrix-ii/)
+
+中等
+
+编写一个高效的算法来搜索 `m x n` 矩阵 `matrix` 中的一个目标值 `target` 。该矩阵具有以下特性：
+
+- 每行的元素从左到右升序排列。
+- 每列的元素从上到下升序排列。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/11/25/searchgrid2.jpg)
+
+```
+输入：matrix = [[1,4,7,11,15],[2,5,8,12,19],[3,6,9,16,22],[10,13,14,17,24],[18,21,23,26,30]], target = 5
+输出：true
+```
+
+C++版本
+
+```c++
+// 按行二分查找
+class Solution {
+public:
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {
+        int m = matrix.size();
+        for(int i = 0; i < m; i++) {
+            int left = 0, right = matrix[i].size() - 1;
+            while(left <= right) {
+                int mid = left + (right - left) / 2;
+                if(matrix[i][mid] == target) {
+                    return true;
+                } else if(matrix[i][mid] > target) {
+                    right = mid - 1;
+                } else {
+                    left = mid + 1;
+                }
+            }
+        }
+        return false;
+    }
+};
+// Z 字形查找
+class Solution {
+public:
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {
+        int m = matrix.size(), n = matrix[0].size();
+        int x = 0, y = n - 1;
+        while (x < m && y >= 0) {
+            if (matrix[x][y] == target) {
+                return true;
+            }
+            if (matrix[x][y] > target) {
+                --y;
+            }
+            else {
+                ++x;
+            }
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+// 按行二分查找
+class Solution {
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int m = matrix.length;
+        for(int i = 0; i < m; i++) {
+            int left = 0, right = matrix[i].length - 1;
+            while(left <= right) {
+                int mid = left + (right - left) / 2;
+                if(matrix[i][mid] == target) {
+                    return true;
+                } else if(matrix[i][mid] > target) {
+                    right = mid - 1;
+                } else {
+                    left = mid + 1;
+                }
+            }
+        }
+        return false;
+    }
+}
+
+// Z 字形查找
+class Solution {
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int m = matrix.length, n = matrix[0].length;
+        int x = 0, y = n - 1;
+        while (x < m && y >= 0) {
+            if (matrix[x][y] == target) {
+                return true;
+            }
+            if (matrix[x][y] > target) {
+                --y;
+            } else {
+                ++x;
+            }
+        }
+        return false;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
