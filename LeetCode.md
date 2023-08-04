@@ -5574,25 +5574,352 @@ class Solution {
 
 
 
+### [367. 有效的完全平方数](https://leetcode.cn/problems/valid-perfect-square/)
+
+简单
+
+给你一个正整数 `num` 。如果 `num` 是一个完全平方数，则返回 `true` ，否则返回 `false` 。
+
+**完全平方数** 是一个可以写成某个整数的平方的整数。换句话说，它可以写成某个整数和自身的乘积。
+
+不能使用任何内置的库函数，如 `sqrt` 。
+
+**示例 1：**
+
+```
+输入：num = 16
+输出：true
+解释：返回 true ，因为 4 * 4 = 16 且 4 是一个整数。
+```
+
+C++版本
+
+```
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        int left = 0, right = num;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if((long)mid * mid < num) {
+                left = mid + 1;
+            } else if((long)mid * mid > num){
+                right = mid - 1;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean isPerfectSquare(int num) {
+        int left = 0, right = num;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if((long)mid * mid < num) {
+                left = mid + 1;
+            } else if((long)mid * mid > num){
+                right = mid - 1;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
 
 
 
+### [1300. 转变数组后最接近目标值的数组和](https://leetcode.cn/problems/sum-of-mutated-array-closest-to-target/)
+
+中等
+
+给你一个整数数组 `arr` 和一个目标值 `target` ，请你返回一个整数 `value` ，使得将数组中所有大于 `value` 的值变成 `value` 后，数组的和最接近 `target` （最接近表示两者之差的绝对值最小）。
+
+如果有多种使得和最接近 `target` 的方案，请你返回这些整数中的最小值。
+
+请注意，答案不一定是 `arr` 中的数字。
+
+**示例 1：**
+
+```
+输入：arr = [4,9,3], target = 10
+输出：3
+解释：当选择 value 为 3 时，数组会变成 [3, 3, 3]，和为 9 ，这是最接近 target 的方案。
+```
+
+C++版本
+
+```c++
+// 方法一：枚举 + 二分查找
+class Solution {
+public:
+    int findBestValue(vector<int>& arr, int target) {
+        sort(arr.begin(), arr.end());
+        int n = arr.size();
+        vector<int> prefix(n + 1);
+        for (int i = 1; i <= n; ++i) {
+            prefix[i] = prefix[i - 1] + arr[i - 1];
+        }
+
+        int r = *max_element(arr.begin(), arr.end());
+        int ans = 0, diff = target;
+        for (int i = 1; i <= r; ++i) {
+            auto iter = lower_bound(arr.begin(), arr.end(), i);
+            int cur = prefix[iter - arr.begin()] + (arr.end() - iter) * i;
+            if (abs(cur - target) < diff) {
+                ans = i;
+                diff = abs(cur - target);
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：双重二分查找
+class Solution {
+public:
+    int check(const vector<int>& arr, int x) {
+        int ret = 0;
+        for (const int& num: arr) {
+            ret += (num >= x ? x : num);
+        }
+        return ret;
+    }
+
+    int findBestValue(vector<int>& arr, int target) {
+        sort(arr.begin(), arr.end());
+        int n = arr.size();
+        vector<int> prefix(n + 1);
+        for (int i = 1; i <= n; ++i) {
+            prefix[i] = prefix[i - 1] + arr[i - 1];
+        }
+
+        int l = 0, r = *max_element(arr.begin(), arr.end()), ans = -1;
+        while (l <= r) {
+            int mid = (l + r) / 2;
+            auto iter = lower_bound(arr.begin(), arr.end(), mid);
+            int cur = prefix[iter - arr.begin()] + (arr.end() - iter) * mid;
+            if (cur <= target) {
+                ans = mid;
+                l = mid + 1;
+            }
+            else {
+                r = mid - 1;
+            }
+        }
+        int choose_small = check(arr, ans);
+        int choose_big = check(arr, ans + 1);
+        return abs(choose_small - target) <= abs(choose_big - target) ? ans : ans + 1;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：枚举 + 二分查找
+class Solution {
+    public int findBestValue(int[] arr, int target) {
+        Arrays.sort(arr);
+        int n = arr.length;
+        int[] prefix = new int[n + 1];
+        for (int i = 1; i <= n; ++i) {
+            prefix[i] = prefix[i - 1] + arr[i - 1];
+        }
+        int r = arr[n - 1];
+        int ans = 0, diff = target;
+        for (int i = 1; i <= r; ++i) {
+            int index = Arrays.binarySearch(arr, i);
+            if (index < 0) {
+                index = -index - 1;
+            }
+            int cur = prefix[index] + (n - index) * i;
+            if (Math.abs(cur - target) < diff) {
+                ans = i;
+                diff = Math.abs(cur - target);
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：双重二分查找
+class Solution {
+    public int findBestValue(int[] arr, int target) {
+        Arrays.sort(arr);
+        int n = arr.length;
+        int[] prefix = new int[n + 1];
+        for (int i = 1; i <= n; ++i) {
+            prefix[i] = prefix[i - 1] + arr[i - 1];
+        }
+        int l = 0, r = arr[n - 1], ans = -1;
+        while (l <= r) {
+            int mid = (l + r) / 2;
+            int index = Arrays.binarySearch(arr, mid);
+            if (index < 0) {
+                index = -index - 1;
+            }
+            int cur = prefix[index] + (n - index) * mid;
+            if (cur <= target) {
+                ans = mid;
+                l = mid + 1;
+            }
+            else {
+                r = mid - 1;
+            }
+        }
+        int chooseSmall = check(arr, ans);
+        int chooseBig = check(arr, ans + 1);
+        return Math.abs(chooseSmall - target) <= Math.abs(chooseBig - target) ? ans : ans + 1;
+    }
+
+    public int check(int[] arr, int x) {
+        int ret = 0;
+        for (int num : arr) {
+            ret += Math.min(num, x);
+        }
+        return ret;
+    }
+}
+```
 
 
 
+### [400. 第 N 位数字](https://leetcode.cn/problems/nth-digit/)
 
+中等
 
+给你一个整数 `n` ，请你在无限的整数序列 `[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, ...]` 中找出并返回第 `n` 位上的数字。
 
+**示例 1：**
 
+```
+输入：n = 11
+输出：0
+解释：第 11 位数字在序列 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, ... 里是 0 ，它是 10 的一部分。
+```
 
+C++版本
 
+```c++
+// 方法一：二分查找
+class Solution {
+public:
+    int findNthDigit(int n) {
+        int low = 1, high = 9;
+        while (low < high) {
+            int mid = (high - low) / 2 + low;
+            if (totalDigits(mid) < n) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+        int d = low;
+        int prevDigits = totalDigits(d - 1);
+        int index = n - prevDigits - 1;
+        int start = (int) pow(10, d - 1);
+        int num = start + index / d;
+        int digitIndex = index % d;
+        int digit = (num / (int) (pow(10, d - digitIndex - 1))) % 10;
+        return digit;
+    }
 
+    int totalDigits(int length) {
+        int digits = 0;
+        int curLength = 1, curCount = 9;
+        while (curLength <= length) {
+            digits += curLength * curCount;
+            curLength++;
+            curCount *= 10;
+        }
+        return digits;
+    }
+};
 
+// 方法二：直接计算
+class Solution {
+public:
+    int findNthDigit(int n) {
+        int d = 1, count = 9;
+        while (n > (long) d * count) {
+            n -= d * count;
+            d++;
+            count *= 10;
+        }
+        int index = n - 1;
+        int start = (int) pow(10, d - 1);
+        int num = start + index / d;
+        int digitIndex = index % d;
+        int digit = (num / (int) (pow(10, d - digitIndex - 1))) % 10;
+        return digit;
+    }
+};
+```
 
+Java版本
 
+```java
+// 方法一：二分查找
+class Solution {
+    public int findNthDigit(int n) {
+        int low = 1, high = 9;
+        while (low < high) {
+            int mid = (high - low) / 2 + low;
+            if (totalDigits(mid) < n) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+        int d = low;
+        int prevDigits = totalDigits(d - 1);
+        int index = n - prevDigits - 1;
+        int start = (int) Math.pow(10, d - 1);
+        int num = start + index / d;
+        int digitIndex = index % d;
+        int digit = (num / (int) (Math.pow(10, d - digitIndex - 1))) % 10;
+        return digit;
+    }
 
+    public int totalDigits(int length) {
+        int digits = 0;
+        int curLength = 1, curCount = 9;
+        while (curLength <= length) {
+            digits += curLength * curCount;
+            curLength++;
+            curCount *= 10;
+        }
+        return digits;
+    }
+}
 
-
+// 方法二：直接计算
+class Solution {
+    public int findNthDigit(int n) {
+        int d = 1, count = 9;
+        while (n > (long) d * count) {
+            n -= d * count;
+            d++;
+            count *= 10;
+        }
+        int index = n - 1;
+        int start = (int) Math.pow(10, d - 1);
+        int num = start + index / d;
+        int digitIndex = index % d;
+        int digit = (num / (int)(Math.pow(10, d - digitIndex - 1))) % 10;
+        return digit;
+    }
+}
+```
 
 
 
