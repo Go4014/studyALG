@@ -5302,15 +5302,275 @@ class Solution {
 
 
 
+### [287. 寻找重复数](https://leetcode.cn/problems/find-the-duplicate-number/)
+
+中等
+
+给定一个包含 `n + 1` 个整数的数组 `nums` ，其数字都在 `[1, n]` 范围内（包括 `1` 和 `n`），可知至少存在一个重复的整数。
+
+假设 `nums` 只有 **一个重复的整数** ，返回 **这个重复的数** 。
+
+你设计的解决方案必须 **不修改** 数组 `nums` 且只用常量级 `O(1)` 的额外空间。
+
+**示例 1：**
+
+```
+输入：nums = [1,3,4,2,2]
+输出：2
+```
+
+C++版本
+
+```c++
+// 方法一：二分查找
+class Solution {
+public:
+    int findDuplicate(vector<int>& nums) {
+        int n = nums.size();
+        int l = 1, r = n - 1, ans = -1;
+        while (l <= r) {
+            int mid = (l + r) >> 1;
+            int cnt = 0;
+            for (int i = 0; i < n; ++i) {
+                cnt += nums[i] <= mid;
+            }
+            if (cnt <= mid) {
+                l = mid + 1;
+            } else {
+                r = mid - 1;
+                ans = mid;
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：二进制
+class Solution {
+public:
+    int findDuplicate(vector<int>& nums) {
+        int n = nums.size(), ans = 0;
+        // 确定二进制下最高位是多少
+        int bit_max = 31;
+        while (!((n - 1) >> bit_max)) {
+            bit_max -= 1;
+        }
+        for (int bit = 0; bit <= bit_max; ++bit) {
+            int x = 0, y = 0;
+            for (int i = 0; i < n; ++i) {
+                if (nums[i] & (1 << bit)) {
+                    x += 1;
+                }
+                if (i >= 1 && (i & (1 << bit))) {
+                    y += 1;
+                }
+            }
+            if (x > y) {
+                ans |= 1 << bit;
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法三：快慢指针
+class Solution {
+public:
+    int findDuplicate(vector<int>& nums) {
+        int slow = 0, fast = 0;
+        do {
+            slow = nums[slow];
+            fast = nums[nums[fast]];
+        } while (slow != fast);
+        slow = 0;
+        while (slow != fast) {
+            slow = nums[slow];
+            fast = nums[fast];
+        }
+        return slow;
+    }
+};
+```
+
+Java版本
+
+```Java
+// 方法一：二分查找
+class Solution {
+    public int findDuplicate(int[] nums) {
+        int n = nums.length;
+        int l = 1, r = n - 1, ans = -1;
+        while (l <= r) {
+            int mid = (l + r) >> 1;
+            int cnt = 0;
+            for (int i = 0; i < n; ++i) {
+                if (nums[i] <= mid) {
+                    cnt++;
+                }
+            }
+            if (cnt <= mid) {
+                l = mid + 1;
+            } else {
+                r = mid - 1;
+                ans = mid;
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：二进制
+class Solution {
+    public int findDuplicate(int[] nums) {
+        int n = nums.length, ans = 0;
+        int bit_max = 31;
+        while (((n - 1) >> bit_max) == 0) {
+            bit_max -= 1;
+        }
+        for (int bit = 0; bit <= bit_max; ++bit) {
+            int x = 0, y = 0;
+            for (int i = 0; i < n; ++i) {
+                if ((nums[i] & (1 << bit)) != 0) {
+                    x += 1;
+                }
+                if (i >= 1 && ((i & (1 << bit)) != 0)) {
+                    y += 1;
+                }
+            }
+            if (x > y) {
+                ans |= 1 << bit;
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法三：快慢指针
+class Solution {
+    public int findDuplicate(int[] nums) {
+        int slow = 0, fast = 0;
+        do {
+            slow = nums[slow];
+            fast = nums[nums[fast]];
+        } while (slow != fast);
+        slow = 0;
+        while (slow != fast) {
+            slow = nums[slow];
+            fast = nums[fast];
+        }
+        return slow;
+    }
+}
+```
 
 
 
+### [50. Pow(x, n)](https://leetcode.cn/problems/powx-n/)
 
+中等
 
+实现 [pow(*x*, *n*)](https://www.cplusplus.com/reference/valarray/pow/) ，即计算 `x` 的整数 `n` 次幂函数（即，`xn` ）。
 
+**示例 1：**
 
+```
+输入：x = 2.00000, n = 10
+输出：1024.00000
+```
 
+C++版本
 
+```c++
+// 方法一：快速幂 + 递归
+class Solution {
+public:
+    double quickMul(double x, long long N) {
+        if (N == 0) {
+            return 1.0;
+        }
+        double y = quickMul(x, N / 2);
+        return N % 2 == 0 ? y * y : y * y * x;
+    }
+
+    double myPow(double x, int n) {
+        long long N = n;
+        return N >= 0 ? quickMul(x, N) : 1.0 / quickMul(x, -N);
+    }
+};
+
+// 方法二：快速幂 + 迭代
+class Solution {
+public:
+    double quickMul(double x, long long N) {
+        double ans = 1.0;
+        // 贡献的初始值为 x
+        double x_contribute = x;
+        // 在对 N 进行二进制拆分的同时计算答案
+        while (N > 0) {
+            if (N % 2 == 1) {
+                // 如果 N 二进制表示的最低位为 1，那么需要计入贡献
+                ans *= x_contribute;
+            }
+            // 将贡献不断地平方
+            x_contribute *= x_contribute;
+            // 舍弃 N 二进制表示的最低位，这样我们每次只要判断最低位即可
+            N /= 2;
+        }
+        return ans;
+    }
+
+    double myPow(double x, int n) {
+        long long N = n;
+        return N >= 0 ? quickMul(x, N) : 1.0 / quickMul(x, -N);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：快速幂 + 递归
+class Solution {
+    public double myPow(double x, int n) {
+        long N = n;
+        return N >= 0 ? quickMul(x, N) : 1.0 / quickMul(x, -N);
+    }
+
+    public double quickMul(double x, long N) {
+        if (N == 0) {
+            return 1.0;
+        }
+        double y = quickMul(x, N / 2);
+        return N % 2 == 0 ? y * y : y * y * x;
+    }
+}
+
+// 方法二：快速幂 + 迭代
+class Solution {
+    public double myPow(double x, int n) {
+        long N = n;
+        return N >= 0 ? quickMul(x, N) : 1.0 / quickMul(x, -N);
+    }
+
+    public double quickMul(double x, long N) {
+        double ans = 1.0;
+        // 贡献的初始值为 x
+        double x_contribute = x;
+        // 在对 N 进行二进制拆分的同时计算答案
+        while (N > 0) {
+            if (N % 2 == 1) {
+                // 如果 N 二进制表示的最低位为 1，那么需要计入贡献
+                ans *= x_contribute;
+            }
+            // 将贡献不断地平方
+            x_contribute *= x_contribute;
+            // 舍弃 N 二进制表示的最低位，这样我们每次只要判断最低位即可
+            N /= 2;
+        }
+        return ans;
+    }
+}
+```
 
 
 
