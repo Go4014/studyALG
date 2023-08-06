@@ -5923,19 +5923,243 @@ class Solution {
 
 
 
+### [875. 爱吃香蕉的珂珂](https://leetcode.cn/problems/koko-eating-bananas/)
+
+中等
+
+珂珂喜欢吃香蕉。这里有 `n` 堆香蕉，第 `i` 堆中有 `piles[i]` 根香蕉。警卫已经离开了，将在 `h` 小时后回来。
+
+珂珂可以决定她吃香蕉的速度 `k` （单位：根/小时）。每个小时，她将会选择一堆香蕉，从中吃掉 `k` 根。如果这堆香蕉少于 `k` 根，她将吃掉这堆的所有香蕉，然后这一小时内不会再吃更多的香蕉。 
+
+珂珂喜欢慢慢吃，但仍然想在警卫回来前吃掉所有的香蕉。
+
+返回她可以在 `h` 小时内吃掉所有香蕉的最小速度 `k`（`k` 为整数）。
+
+**示例 1：**
+
+```
+输入：piles = [3,6,7,11], h = 8
+输出：4
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int minEatingSpeed(vector<int>& piles, int h) {
+        int low = 1;
+        int high = 0;
+        for (int pile : piles) {
+            high = max(high, pile);
+        }
+        int k = high;
+        while (low < high) {
+            int speed = (high - low) / 2 + low;
+            long time = getTime(piles, speed);
+            if (time <= h) {
+                k = speed;
+                high = speed;
+            } else {
+                low = speed + 1;
+            }
+        }
+        return k;
+    }
+
+    long getTime(const vector<int>& piles, int speed) {
+        long time = 0;
+        for (int pile : piles) {
+            int curTime = (pile + speed - 1) / speed;
+            time += curTime;
+        }
+        return time;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int minEatingSpeed(int[] piles, int h) {
+        int low = 1;
+        int high = 0;
+        for (int pile : piles) {
+            high = Math.max(high, pile);
+        }
+        int k = high;
+        while (low < high) {
+            int speed = (high - low) / 2 + low;
+            long time = getTime(piles, speed);
+            if (time <= h) {
+                k = speed;
+                high = speed;
+            } else {
+                low = speed + 1;
+            }
+        }
+        return k;
+    }
+
+    public long getTime(int[] piles, int speed) {
+        long time = 0;
+        for (int pile : piles) {
+            int curTime = (pile + speed - 1) / speed;
+            time += curTime;
+        }
+        return time;
+    }
+}
+```
 
 
 
+### [410. 分割数组的最大值](https://leetcode.cn/problems/split-array-largest-sum/)
 
+困难
 
+给定一个非负整数数组 `nums` 和一个整数 `m` ，你需要将这个数组分成 `m` 个非空的连续子数组。
 
+设计一个算法使得这 `m` 个子数组各自和的最大值最小。
 
+**示例 1：**
 
+```
+输入：nums = [7,2,5,10,8], m = 2
+输出：18
+解释：
+一共有四种方法将 nums 分割为 2 个子数组。 
+其中最好的方式是将其分为 [7,2,5] 和 [10,8] 。
+因为此时这两个子数组各自的和的最大值为18，在所有情况中最小。
+```
 
+C++版本
 
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int splitArray(vector<int>& nums, int m) {
+        int n = nums.size();
+        vector<vector<long long>> f(n + 1, vector<long long>(m + 1, LLONG_MAX));
+        vector<long long> sub(n + 1, 0);
+        for (int i = 0; i < n; i++) {
+            sub[i + 1] = sub[i] + nums[i];
+        }
+        f[0][0] = 0;
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= min(i, m); j++) {
+                for (int k = 0; k < i; k++) {
+                    f[i][j] = min(f[i][j], max(f[k][j - 1], sub[i] - sub[k]));
+                }
+            }
+        }
+        return (int)f[n][m];
+    }
+};
 
+// 方法二：二分查找 + 贪心
+class Solution {
+public:
+    bool check(vector<int>& nums, int x, int m) {
+        long long sum = 0;
+        int cnt = 1;
+        for (int i = 0; i < nums.size(); i++) {
+            if (sum + nums[i] > x) {
+                cnt++;
+                sum = nums[i];
+            } else {
+                sum += nums[i];
+            }
+        }
+        return cnt <= m;
+    }
 
+    int splitArray(vector<int>& nums, int m) {
+        long long left = 0, right = 0;
+        for (int i = 0; i < nums.size(); i++) {
+            right += nums[i];
+            if (left < nums[i]) {
+                left = nums[i];
+            }
+        }
+        while (left < right) {
+            long long mid = (left + right) >> 1;
+            if (check(nums, mid, m)) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+};
+```
 
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int splitArray(int[] nums, int m) {
+        int n = nums.length;
+        int[][] f = new int[n + 1][m + 1];
+        for (int i = 0; i <= n; i++) {
+            Arrays.fill(f[i], Integer.MAX_VALUE);
+        }
+        int[] sub = new int[n + 1];
+        for (int i = 0; i < n; i++) {
+            sub[i + 1] = sub[i] + nums[i];
+        }
+        f[0][0] = 0;
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= Math.min(i, m); j++) {
+                for (int k = 0; k < i; k++) {
+                    f[i][j] = Math.min(f[i][j], Math.max(f[k][j - 1], sub[i] - sub[k]));
+                }
+            }
+        }
+        return f[n][m];
+    }
+}
+
+// 方法二：二分查找 + 贪心
+class Solution {
+    public int splitArray(int[] nums, int m) {
+        int left = 0, right = 0;
+        for (int i = 0; i < nums.length; i++) {
+            right += nums[i];
+            if (left < nums[i]) {
+                left = nums[i];
+            }
+        }
+        while (left < right) {
+            int mid = (right - left) / 2 + left;
+            if (check(nums, mid, m)) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+
+    public boolean check(int[] nums, int x, int m) {
+        int sum = 0;
+        int cnt = 1;
+        for (int i = 0; i < nums.length; i++) {
+            if (sum + nums[i] > x) {
+                cnt++;
+                sum = nums[i];
+            } else {
+                sum += nums[i];
+            }
+        }
+        return cnt <= m;
+    }
+}
+```
 
 
 
