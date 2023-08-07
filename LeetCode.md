@@ -6163,17 +6163,297 @@ class Solution {
 
 
 
+### [209. 长度最小的子数组](https://leetcode.cn/problems/minimum-size-subarray-sum/)
+
+中等
+
+给定一个含有 `n` 个正整数的数组和一个正整数 `target` **。**
+
+找出该数组中满足其和 `≥ target` 的长度最小的 **连续子数组** `[numsl, numsl+1, ..., numsr-1, numsr]` ，并返回其长度**。**如果不存在符合条件的子数组，返回 `0` 。
+
+**示例 1：**
+
+```
+输入：target = 7, nums = [2,3,1,2,4,3]
+输出：2
+解释：子数组 [4,3] 是该条件下的长度最小的子数组。
+```
+
+C++版本
+
+```c++
+// 暴力
+class Solution {
+public:
+    int minSubArrayLen(int s, vector<int>& nums) {
+        int n = nums.size();
+        if (n == 0) {
+            return 0;
+        }
+        int ans = INT_MAX;
+        for (int i = 0; i < n; i++) {
+            int sum = 0;
+            for (int j = i; j < n; j++) {
+                sum += nums[j];
+                if (sum >= s) {
+                    ans = min(ans, j - i + 1);
+                    break;
+                }
+            }
+        }
+        return ans == INT_MAX ? 0 : ans;
+    }
+};
+
+// 前缀和+二分查找
+class Solution {
+public:
+    int minSubArrayLen(int s, vector<int>& nums) {
+        int n = nums.size();
+        if (n == 0) {
+            return 0;
+        }
+        int ans = INT_MAX;
+        vector<int> sums(n + 1, 0); 
+        // 为了方便计算，令 size = n + 1 
+        // sums[0] = 0 意味着前 0 个元素的前缀和为 0
+        // sums[1] = A[0] 前 1 个元素的前缀和为 A[0]
+        // 以此类推
+        for (int i = 1; i <= n; i++) {
+            sums[i] = sums[i - 1] + nums[i - 1];
+        }
+        for (int i = 1; i <= n; i++) {
+            int target = s + sums[i - 1];
+            auto bound = lower_bound(sums.begin(), sums.end(), target);
+            if (bound != sums.end()) {
+                ans = min(ans, static_cast<int>((bound - sums.begin()) - (i - 1)));
+            }
+        }
+        return ans == INT_MAX ? 0 : ans;
+    }
+};
+
+// 滑动窗口
+class Solution {
+public:
+    int minSubArrayLen(int s, vector<int>& nums) {
+        int n = nums.size();
+        if (n == 0) {
+            return 0;
+        }
+        int ans = INT_MAX;
+        int start = 0, end = 0;
+        int sum = 0;
+        while (end < n) {
+            sum += nums[end];
+            while (sum >= s) {
+                ans = min(ans, end - start + 1);
+                sum -= nums[start];
+                start++;
+            }
+            end++;
+        }
+        return ans == INT_MAX ? 0 : ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 暴力
+class Solution {
+    public int minSubArrayLen(int s, int[] nums) {
+        int n = nums.length;
+        if (n == 0) {
+            return 0;
+        }
+        int ans = Integer.MAX_VALUE;
+        for (int i = 0; i < n; i++) {
+            int sum = 0;
+            for (int j = i; j < n; j++) {
+                sum += nums[j];
+                if (sum >= s) {
+                    ans = Math.min(ans, j - i + 1);
+                    break;
+                }
+            }
+        }
+        return ans == Integer.MAX_VALUE ? 0 : ans;
+    }
+}
+
+// 前缀和+二分查找
+class Solution {
+    public int minSubArrayLen(int s, int[] nums) {
+        int n = nums.length;
+        if (n == 0) {
+            return 0;
+        }
+        int ans = Integer.MAX_VALUE;
+        int[] sums = new int[n + 1]; 
+        // 为了方便计算，令 size = n + 1 
+        // sums[0] = 0 意味着前 0 个元素的前缀和为 0
+        // sums[1] = A[0] 前 1 个元素的前缀和为 A[0]
+        // 以此类推
+        for (int i = 1; i <= n; i++) {
+            sums[i] = sums[i - 1] + nums[i - 1];
+        }
+        for (int i = 1; i <= n; i++) {
+            int target = s + sums[i - 1];
+            int bound = Arrays.binarySearch(sums, target);
+            if (bound < 0) {
+                bound = -bound - 1;
+            }
+            if (bound <= n) {
+                ans = Math.min(ans, bound - (i - 1));
+            }
+        }
+        return ans == Integer.MAX_VALUE ? 0 : ans;
+    }
+}
+
+// 滑动窗口
+class Solution {
+    public int minSubArrayLen(int s, int[] nums) {
+        int n = nums.length;
+        if (n == 0) {
+            return 0;
+        }
+        int ans = Integer.MAX_VALUE;
+        int start = 0, end = 0;
+        int sum = 0;
+        while (end < n) {
+            sum += nums[end];
+            while (sum >= s) {
+                ans = Math.min(ans, end - start + 1);
+                sum -= nums[start];
+                start++;
+            }
+            end++;
+        }
+        return ans == Integer.MAX_VALUE ? 0 : ans;
+    }
+}
+```
 
 
 
+### [658. 找到 K 个最接近的元素](https://leetcode.cn/problems/find-k-closest-elements/)
 
+中等
 
+给定一个 **排序好** 的数组 `arr` ，两个整数 `k` 和 `x` ，从数组中找到最靠近 `x`（两数之差最小）的 `k` 个数。返回的结果必须要是按升序排好的。
 
+整数 `a` 比整数 `b` 更接近 `x` 需要满足：
 
+- `|a - x| < |b - x|` 或者
+- `|a - x| == |b - x|` 且 `a < b`
 
+**示例 1：**
 
+```
+输入：arr = [1,2,3,4,5], k = 4, x = 3
+输出：[1,2,3,4]
+```
 
+C++版本
 
+```c++
+// 排序
+class Solution {
+public:
+    vector<int> findClosestElements(vector<int>& arr, int k, int x) {
+        sort(arr.begin(), arr.end(), [x](int a, int b) -> bool {
+            return abs(a - x) < abs(b - x) || abs(a - x) == abs(b - x) && a < b;
+        });
+        sort(arr.begin(), arr.begin() + k);
+        return vector<int>(arr.begin(), arr.begin() + k);
+    }
+};
+
+// 二分查找 + 双指针
+class Solution {
+public:
+    vector<int> findClosestElements(vector<int>& arr, int k, int x) {
+        int right = lower_bound(arr.begin(), arr.end(), x) - arr.begin();
+        int left = right - 1;
+        while (k--) {
+            if (left < 0) {
+                right++;
+            } else if (right >= arr.size()) {
+                left--;
+            } else if (x - arr[left] <= arr[right] - x) {
+                left--;
+            } else {
+                right++;
+            }
+        }
+        return vector<int>(arr.begin() + left + 1, arr.begin() + right);
+    }
+};
+```
+
+Java版本
+
+```java
+// 二分查找 + 双指针
+class Solution {
+    public List<Integer> findClosestElements(int[] arr, int k, int x) {
+        List<Integer> list = new ArrayList<Integer>();
+        for (int num : arr) {
+            list.add(num);
+        }
+        Collections.sort(list, (a, b) -> {
+            if (Math.abs(a - x) != Math.abs(b - x)) {
+                return Math.abs(a - x) - Math.abs(b - x);
+            } else {
+                return a - b;
+            }
+        });
+        List<Integer> ans = list.subList(0, k);
+        Collections.sort(ans);
+        return ans;
+    }
+}
+
+// 二分查找 + 双指针
+class Solution {
+    public List<Integer> findClosestElements(int[] arr, int k, int x) {
+        int right = binarySearch(arr, x);
+        int left = right - 1;
+        while (k-- > 0) {
+            if (left < 0) {
+                right++;
+            } else if (right >= arr.length) {
+                left--;
+            } else if (x - arr[left] <= arr[right] - x) {
+                left--;
+            } else {
+                right++;
+            }
+        }
+        List<Integer> ans = new ArrayList<Integer>();
+        for (int i = left + 1; i < right; i++) {
+            ans.add(arr[i]);
+        }
+        return ans;
+    }
+
+    public int binarySearch(int[] arr, int x) {
+        int low = 0, high = arr.length - 1;
+        while (low < high) {
+            int mid = low + (high - low) / 2;
+            if (arr[mid] >= x) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return low;
+    }
+}
+```
 
 
 
