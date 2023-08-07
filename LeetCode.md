@@ -6457,33 +6457,614 @@ class Solution {
 
 
 
+### [349. 两个数组的交集](https://leetcode.cn/problems/intersection-of-two-arrays/)
+
+简单
+
+给定两个数组 `nums1` 和 `nums2` ，返回 *它们的交集* 。输出结果中的每个元素一定是 **唯一** 的。我们可以 **不考虑输出结果的顺序** 。
+
+**示例 1：**
+
+```
+输入：nums1 = [1,2,2,1], nums2 = [2,2]
+输出：[2]
+```
+
+**示例 2：**
+
+C++版本
+
+```c++
+// 两个集合
+class Solution {
+public:
+    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
+        unordered_set<int> set1, set2;
+        for (auto& num : nums1) {
+            set1.insert(num);
+        }
+        for (auto& num : nums2) {
+            set2.insert(num);
+        }
+        return getIntersection(set1, set2);
+    }
+
+    vector<int> getIntersection(unordered_set<int>& set1, unordered_set<int>& set2) {
+        if (set1.size() > set2.size()) {
+            return getIntersection(set2, set1);
+        }
+        vector<int> intersection;
+        for (auto& num : set1) {
+            if (set2.count(num)) {
+                intersection.push_back(num);
+            }
+        }
+        return intersection;
+    }
+};
+
+// 排序 + 双指针
+class Solution {
+public:
+    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
+        sort(nums1.begin(), nums1.end());
+        sort(nums2.begin(), nums2.end());
+        int length1 = nums1.size(), length2 = nums2.size();
+        int index1 = 0, index2 = 0;
+        vector<int> intersection;
+        while (index1 < length1 && index2 < length2) {
+            int num1 = nums1[index1], num2 = nums2[index2];
+            if (num1 == num2) {
+                // 保证加入元素的唯一性
+                if (!intersection.size() || num1 != intersection.back()) {
+                    intersection.push_back(num1);
+                }
+                index1++;
+                index2++;
+            } else if (num1 < num2) {
+                index1++;
+            } else {
+                index2++;
+            }
+        }
+        return intersection;
+    }
+};
+```
+
+Java版本
+
+```java
+// 两个集合
+class Solution {
+    public int[] intersection(int[] nums1, int[] nums2) {
+        Set<Integer> set1 = new HashSet<Integer>();
+        Set<Integer> set2 = new HashSet<Integer>();
+        for (int num : nums1) {
+            set1.add(num);
+        }
+        for (int num : nums2) {
+            set2.add(num);
+        }
+        return getIntersection(set1, set2);
+    }
+
+    public int[] getIntersection(Set<Integer> set1, Set<Integer> set2) {
+        if (set1.size() > set2.size()) {
+            return getIntersection(set2, set1);
+        }
+        Set<Integer> intersectionSet = new HashSet<Integer>();
+        for (int num : set1) {
+            if (set2.contains(num)) {
+                intersectionSet.add(num);
+            }
+        }
+        int[] intersection = new int[intersectionSet.size()];
+        int index = 0;
+        for (int num : intersectionSet) {
+            intersection[index++] = num;
+        }
+        return intersection;
+    }
+}
+
+// 排序 + 双指针
+class Solution {
+    public int[] intersection(int[] nums1, int[] nums2) {
+        Arrays.sort(nums1);
+        Arrays.sort(nums2);
+        int length1 = nums1.length, length2 = nums2.length;
+        int[] intersection = new int[length1 + length2];
+        int index = 0, index1 = 0, index2 = 0;
+        while (index1 < length1 && index2 < length2) {
+            int num1 = nums1[index1], num2 = nums2[index2];
+            if (num1 == num2) {
+                // 保证加入元素的唯一性
+                if (index == 0 || num1 != intersection[index - 1]) {
+                    intersection[index++] = num1;
+                }
+                index1++;
+                index2++;
+            } else if (num1 < num2) {
+                index1++;
+            } else {
+                index2++;
+            }
+        }
+        return Arrays.copyOfRange(intersection, 0, index);
+    }
+}
+```
 
 
 
+### [350. 两个数组的交集 II](https://leetcode.cn/problems/intersection-of-two-arrays-ii/)
+
+简单
+
+给你两个整数数组 `nums1` 和 `nums2` ，请你以数组形式返回两数组的交集。返回结果中每个元素出现的次数，应与元素在两个数组中都出现的次数一致（如果出现次数不一致，则考虑取较小值）。可以不考虑输出结果的顺序。
+
+**示例 1：**
+
+```
+输入：nums1 = [1,2,2,1], nums2 = [2,2]
+输出：[2,2]
+```
+
+C++版本
+
+```c++
+// 哈希表
+class Solution {
+public:
+    vector<int> intersect(vector<int>& nums1, vector<int>& nums2) {
+        if (nums1.size() > nums2.size()) {
+            return intersect(nums2, nums1);
+        }
+        unordered_map <int, int> m;
+        for (int num : nums1) {
+            ++m[num];
+        }
+        vector<int> intersection;
+        for (int num : nums2) {
+            if (m.count(num)) {
+                intersection.push_back(num);
+                --m[num];
+                if (m[num] == 0) {
+                    m.erase(num);
+                }
+            }
+        }
+        return intersection;
+    }
+};
+
+// 排序 + 双指针
+class Solution {
+public:
+    vector<int> intersect(vector<int>& nums1, vector<int>& nums2) {
+        sort(nums1.begin(), nums1.end());
+        sort(nums2.begin(), nums2.end());
+        int length1 = nums1.size(), length2 = nums2.size();
+        vector<int> intersection;
+        int index1 = 0, index2 = 0;
+        while (index1 < length1 && index2 < length2) {
+            if (nums1[index1] < nums2[index2]) {
+                index1++;
+            } else if (nums1[index1] > nums2[index2]) {
+                index2++;
+            } else {
+                intersection.push_back(nums1[index1]);
+                index1++;
+                index2++;
+            }
+        }
+        return intersection;
+    }
+};
+```
+
+Java版本
+
+```java
+// 哈希表
+class Solution {
+    public int[] intersect(int[] nums1, int[] nums2) {
+        if (nums1.length > nums2.length) {
+            return intersect(nums2, nums1);
+        }
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        for (int num : nums1) {
+            int count = map.getOrDefault(num, 0) + 1;
+            map.put(num, count);
+        }
+        int[] intersection = new int[nums1.length];
+        int index = 0;
+        for (int num : nums2) {
+            int count = map.getOrDefault(num, 0);
+            if (count > 0) {
+                intersection[index++] = num;
+                count--;
+                if (count > 0) {
+                    map.put(num, count);
+                } else {
+                    map.remove(num);
+                }
+            }
+        }
+        return Arrays.copyOfRange(intersection, 0, index);
+    }
+}
+
+// 排序 + 双指针
+class Solution {
+    public int[] intersect(int[] nums1, int[] nums2) {
+        Arrays.sort(nums1);
+        Arrays.sort(nums2);
+        int length1 = nums1.length, length2 = nums2.length;
+        int[] intersection = new int[Math.min(length1, length2)];
+        int index1 = 0, index2 = 0, index = 0;
+        while (index1 < length1 && index2 < length2) {
+            if (nums1[index1] < nums2[index2]) {
+                index1++;
+            } else if (nums1[index1] > nums2[index2]) {
+                index2++;
+            } else {
+                intersection[index] = nums1[index1];
+                index1++;
+                index2++;
+                index++;
+            }
+        }
+        return Arrays.copyOfRange(intersection, 0, index);
+    }
+}
+```
 
 
 
+### [719. 找出第 K 小的数对距离](https://leetcode.cn/problems/find-k-th-smallest-pair-distance/)
+
+困难
+
+数对 `(a,b)` 由整数 `a` 和 `b` 组成，其数对距离定义为 `a` 和 `b` 的绝对差值。
+
+给你一个整数数组 `nums` 和一个整数 `k` ，数对由 `nums[i]` 和 `nums[j]` 组成且满足 `0 <= i < j < nums.length` 。返回 **所有数对距离中** 第 `k` 小的数对距离。
+
+**示例 1：**
+
+```
+输入：nums = [1,3,1], k = 1
+输出：0
+解释：数对和对应的距离如下：
+(1,3) -> 2
+(1,1) -> 0
+(3,1) -> 2
+距离第 1 小的数对是 (1,1) ，距离为 0 。
+```
+
+C++版本
+
+```c++
+// 排序 + 二分查找
+class Solution {
+public:
+    int smallestDistancePair(vector<int>& nums, int k) {
+        sort(nums.begin(), nums.end());
+        int n = nums.size(), left = 0, right = nums.back() - nums.front();
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            int cnt = 0;
+            for (int j = 0; j < n; j++) {
+                int i = lower_bound(nums.begin(), nums.begin() + j, nums[j] - mid) - nums.begin();
+                cnt += j - i;
+            }
+            if (cnt >= k) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+};
+
+// 排序 + 二分查找 + 双指针
+class Solution {
+public:
+    int smallestDistancePair(vector<int>& nums, int k) {
+        sort(nums.begin(), nums.end());
+        int n = nums.size(), left = 0, right = nums.back() - nums.front();
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            int cnt = 0;
+            for (int i = 0, j = 0; j < n; j++) {
+                while (nums[j] - nums[i] > mid) {
+                    i++;
+                }
+                cnt += j - i;
+            }
+            if (cnt >= k) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+};
+```
+
+Java版本
+
+```java
+// 排序 + 二分查找
+class Solution {
+    public int smallestDistancePair(int[] nums, int k) {
+        Arrays.sort(nums);
+        int n = nums.length, left = 0, right = nums[n - 1] - nums[0];
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            int cnt = 0;
+            for (int j = 0; j < n; j++) {
+                int i = binarySearch(nums, j, nums[j] - mid);
+                cnt += j - i;
+            }
+            if (cnt >= k) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+
+    public int binarySearch(int[] nums, int end, int target) {
+        int left = 0, right = end;
+        while (left < right) {
+            int mid = (left + right) / 2;
+            if (nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        return left;
+    }
+}
+// 排序 + 二分查找 + 双指针
+class Solution {
+    public int smallestDistancePair(int[] nums, int k) {
+        Arrays.sort(nums);
+        int n = nums.length, left = 0, right = nums[n - 1] - nums[0];
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            int cnt = 0;
+            for (int i = 0, j = 0; j < n; j++) {
+                while (nums[j] - nums[i] > mid) {
+                    i++;
+                }
+                cnt += j - i;
+            }
+            if (cnt >= k) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+}
+```
 
 
 
+### [1011. 在 D 天内送达包裹的能力](https://leetcode.cn/problems/capacity-to-ship-packages-within-d-days/)
+
+中等
+
+传送带上的包裹必须在 `days` 天内从一个港口运送到另一个港口。
+
+传送带上的第 `i` 个包裹的重量为 `weights[i]`。每一天，我们都会按给出重量（`weights`）的顺序往传送带上装载包裹。我们装载的重量不会超过船的最大运载重量。
+
+返回能在 `days` 天内将传送带上的所有包裹送达的船的最低运载能力。
+
+**示例 1：**
+
+```
+输入：weights = [1,2,3,4,5,6,7,8,9,10], days = 5
+输出：15
+解释：
+船舶最低载重 15 就能够在 5 天内送达所有包裹，如下所示：
+第 1 天：1, 2, 3, 4, 5
+第 2 天：6, 7
+第 3 天：8
+第 4 天：9
+第 5 天：10
+
+请注意，货物必须按照给定的顺序装运，因此使用载重能力为 14 的船舶并将包装分成 (2, 3, 4, 5), (1, 6, 7), (8), (9), (10) 是不允许的。 
+```
+
+C++版本
+
+```c++
+// 二分查找转化为判定问题
+class Solution {
+public:
+    int shipWithinDays(vector<int>& weights, int days) {
+        // 确定二分查找左右边界
+        int left = *max_element(weights.begin(), weights.end()), right = accumulate(weights.begin(), weights.end(), 0);
+        while (left < right) {
+            int mid = (left + right) / 2;
+            // need 为需要运送的天数
+            // cur 为当前这一天已经运送的包裹重量之和
+            int need = 1, cur = 0;
+            for (int weight: weights) {
+                if (cur + weight > mid) {
+                    ++need;
+                    cur = 0;
+                }
+                cur += weight;
+            }
+            if (need <= days) {
+                right = mid;
+            }
+            else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+};
+```
+
+Java版本
+
+```java
+// 二分查找转化为判定问题
+class Solution {
+    public int shipWithinDays(int[] weights, int days) {
+        // 确定二分查找左右边界
+        int left = Arrays.stream(weights).max().getAsInt(), right = Arrays.stream(weights).sum();
+        while (left < right) {
+            int mid = (left + right) / 2;
+            // need 为需要运送的天数
+            // cur 为当前这一天已经运送的包裹重量之和
+            int need = 1, cur = 0;
+            for (int weight : weights) {
+                if (cur + weight > mid) {
+                    ++need;
+                    cur = 0;
+                }
+                cur += weight;
+            }
+            if (need <= days) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+}
+```
 
 
 
+### [1482. 制作 m 束花所需的最少天数](https://leetcode.cn/problems/minimum-number-of-days-to-make-m-bouquets/)
 
+中等
 
+给你一个整数数组 `bloomDay`，以及两个整数 `m` 和 `k` 。
 
+现需要制作 `m` 束花。制作花束时，需要使用花园中 **相邻的 `k` 朵花** 。
 
+花园中有 `n` 朵花，第 `i` 朵花会在 `bloomDay[i]` 时盛开，**恰好** 可以用于 **一束** 花中。
 
+请你返回从花园中摘 `m` 束花需要等待的最少的天数。如果不能摘到 `m` 束花则返回 **-1** 。
 
+**示例 1：**
 
+```
+输入：bloomDay = [1,10,3,10,2], m = 3, k = 1
+输出：3
+解释：让我们一起观察这三天的花开过程，x 表示花开，而 _ 表示花还未开。
+现在需要制作 3 束花，每束只需要 1 朵。
+1 天后：[x, _, _, _, _]   // 只能制作 1 束花
+2 天后：[x, _, _, _, x]   // 只能制作 2 束花
+3 天后：[x, _, x, _, x]   // 可以制作 3 束花，答案为 3
+```
 
+C++版本
 
+```c++
+class Solution {
+public:
+    int minDays(vector<int>& bloomDay, int m, int k) {
+        if (m > bloomDay.size() / k) {
+            return -1;
+        }
+        int low = INT_MAX, high = 0;
+        int length = bloomDay.size();
+        for (int i = 0; i < length; i++) {
+            low = min(low, bloomDay[i]);
+            high = max(high, bloomDay[i]);
+        }
+        while (low < high) {
+            int days = (high - low) / 2 + low;
+            if (canMake(bloomDay, days, m, k)) {
+                high = days;
+            } else {
+                low = days + 1;
+            }
+        }
+        return low;
+    }
 
+    bool canMake(vector<int>& bloomDay, int days, int m, int k) {
+        int bouquets = 0;
+        int flowers = 0;
+        int length = bloomDay.size();
+        for (int i = 0; i < length && bouquets < m; i++) {
+            if (bloomDay[i] <= days) {
+                flowers++;
+                if (flowers == k) {
+                    bouquets++;
+                    flowers = 0;
+                }
+            } else {
+                flowers = 0;
+            }
+        }
+        return bouquets >= m;
+    }
+};
+```
 
+Java版本
 
+```java
+class Solution {
+    public int minDays(int[] bloomDay, int m, int k) {
+        if (m > bloomDay.length / k) {
+            return -1;
+        }
+        int low = Integer.MAX_VALUE, high = 0;
+        int length = bloomDay.length;
+        for (int i = 0; i < length; i++) {
+            low = Math.min(low, bloomDay[i]);
+            high = Math.max(high, bloomDay[i]);
+        }
+        while (low < high) {
+            int days = (high - low) / 2 + low;
+            if (canMake(bloomDay, days, m, k)) {
+                high = days;
+            } else {
+                low = days + 1;
+            }
+        }
+        return low;
+    }
 
-
-
+    public boolean canMake(int[] bloomDay, int days, int m, int k) {
+        int bouquets = 0;
+        int flowers = 0;
+        int length = bloomDay.length;
+        for (int i = 0; i < length && bouquets < m; i++) {
+            if (bloomDay[i] <= days) {
+                flowers++;
+                if (flowers == k) {
+                    bouquets++;
+                    flowers = 0;
+                }
+            } else {
+                flowers = 0;
+            }
+        }
+        return bouquets >= m;
+    }
+}
+```
 
 
 
