@@ -6457,272 +6457,6 @@ class Solution {
 
 
 
-### [349. 两个数组的交集](https://leetcode.cn/problems/intersection-of-two-arrays/)
-
-简单
-
-给定两个数组 `nums1` 和 `nums2` ，返回 *它们的交集* 。输出结果中的每个元素一定是 **唯一** 的。我们可以 **不考虑输出结果的顺序** 。
-
-**示例 1：**
-
-```
-输入：nums1 = [1,2,2,1], nums2 = [2,2]
-输出：[2]
-```
-
-**示例 2：**
-
-C++版本
-
-```c++
-// 两个集合
-class Solution {
-public:
-    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
-        unordered_set<int> set1, set2;
-        for (auto& num : nums1) {
-            set1.insert(num);
-        }
-        for (auto& num : nums2) {
-            set2.insert(num);
-        }
-        return getIntersection(set1, set2);
-    }
-
-    vector<int> getIntersection(unordered_set<int>& set1, unordered_set<int>& set2) {
-        if (set1.size() > set2.size()) {
-            return getIntersection(set2, set1);
-        }
-        vector<int> intersection;
-        for (auto& num : set1) {
-            if (set2.count(num)) {
-                intersection.push_back(num);
-            }
-        }
-        return intersection;
-    }
-};
-
-// 排序 + 双指针
-class Solution {
-public:
-    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
-        sort(nums1.begin(), nums1.end());
-        sort(nums2.begin(), nums2.end());
-        int length1 = nums1.size(), length2 = nums2.size();
-        int index1 = 0, index2 = 0;
-        vector<int> intersection;
-        while (index1 < length1 && index2 < length2) {
-            int num1 = nums1[index1], num2 = nums2[index2];
-            if (num1 == num2) {
-                // 保证加入元素的唯一性
-                if (!intersection.size() || num1 != intersection.back()) {
-                    intersection.push_back(num1);
-                }
-                index1++;
-                index2++;
-            } else if (num1 < num2) {
-                index1++;
-            } else {
-                index2++;
-            }
-        }
-        return intersection;
-    }
-};
-```
-
-Java版本
-
-```java
-// 两个集合
-class Solution {
-    public int[] intersection(int[] nums1, int[] nums2) {
-        Set<Integer> set1 = new HashSet<Integer>();
-        Set<Integer> set2 = new HashSet<Integer>();
-        for (int num : nums1) {
-            set1.add(num);
-        }
-        for (int num : nums2) {
-            set2.add(num);
-        }
-        return getIntersection(set1, set2);
-    }
-
-    public int[] getIntersection(Set<Integer> set1, Set<Integer> set2) {
-        if (set1.size() > set2.size()) {
-            return getIntersection(set2, set1);
-        }
-        Set<Integer> intersectionSet = new HashSet<Integer>();
-        for (int num : set1) {
-            if (set2.contains(num)) {
-                intersectionSet.add(num);
-            }
-        }
-        int[] intersection = new int[intersectionSet.size()];
-        int index = 0;
-        for (int num : intersectionSet) {
-            intersection[index++] = num;
-        }
-        return intersection;
-    }
-}
-
-// 排序 + 双指针
-class Solution {
-    public int[] intersection(int[] nums1, int[] nums2) {
-        Arrays.sort(nums1);
-        Arrays.sort(nums2);
-        int length1 = nums1.length, length2 = nums2.length;
-        int[] intersection = new int[length1 + length2];
-        int index = 0, index1 = 0, index2 = 0;
-        while (index1 < length1 && index2 < length2) {
-            int num1 = nums1[index1], num2 = nums2[index2];
-            if (num1 == num2) {
-                // 保证加入元素的唯一性
-                if (index == 0 || num1 != intersection[index - 1]) {
-                    intersection[index++] = num1;
-                }
-                index1++;
-                index2++;
-            } else if (num1 < num2) {
-                index1++;
-            } else {
-                index2++;
-            }
-        }
-        return Arrays.copyOfRange(intersection, 0, index);
-    }
-}
-```
-
-
-
-### [350. 两个数组的交集 II](https://leetcode.cn/problems/intersection-of-two-arrays-ii/)
-
-简单
-
-给你两个整数数组 `nums1` 和 `nums2` ，请你以数组形式返回两数组的交集。返回结果中每个元素出现的次数，应与元素在两个数组中都出现的次数一致（如果出现次数不一致，则考虑取较小值）。可以不考虑输出结果的顺序。
-
-**示例 1：**
-
-```
-输入：nums1 = [1,2,2,1], nums2 = [2,2]
-输出：[2,2]
-```
-
-C++版本
-
-```c++
-// 哈希表
-class Solution {
-public:
-    vector<int> intersect(vector<int>& nums1, vector<int>& nums2) {
-        if (nums1.size() > nums2.size()) {
-            return intersect(nums2, nums1);
-        }
-        unordered_map <int, int> m;
-        for (int num : nums1) {
-            ++m[num];
-        }
-        vector<int> intersection;
-        for (int num : nums2) {
-            if (m.count(num)) {
-                intersection.push_back(num);
-                --m[num];
-                if (m[num] == 0) {
-                    m.erase(num);
-                }
-            }
-        }
-        return intersection;
-    }
-};
-
-// 排序 + 双指针
-class Solution {
-public:
-    vector<int> intersect(vector<int>& nums1, vector<int>& nums2) {
-        sort(nums1.begin(), nums1.end());
-        sort(nums2.begin(), nums2.end());
-        int length1 = nums1.size(), length2 = nums2.size();
-        vector<int> intersection;
-        int index1 = 0, index2 = 0;
-        while (index1 < length1 && index2 < length2) {
-            if (nums1[index1] < nums2[index2]) {
-                index1++;
-            } else if (nums1[index1] > nums2[index2]) {
-                index2++;
-            } else {
-                intersection.push_back(nums1[index1]);
-                index1++;
-                index2++;
-            }
-        }
-        return intersection;
-    }
-};
-```
-
-Java版本
-
-```java
-// 哈希表
-class Solution {
-    public int[] intersect(int[] nums1, int[] nums2) {
-        if (nums1.length > nums2.length) {
-            return intersect(nums2, nums1);
-        }
-        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-        for (int num : nums1) {
-            int count = map.getOrDefault(num, 0) + 1;
-            map.put(num, count);
-        }
-        int[] intersection = new int[nums1.length];
-        int index = 0;
-        for (int num : nums2) {
-            int count = map.getOrDefault(num, 0);
-            if (count > 0) {
-                intersection[index++] = num;
-                count--;
-                if (count > 0) {
-                    map.put(num, count);
-                } else {
-                    map.remove(num);
-                }
-            }
-        }
-        return Arrays.copyOfRange(intersection, 0, index);
-    }
-}
-
-// 排序 + 双指针
-class Solution {
-    public int[] intersect(int[] nums1, int[] nums2) {
-        Arrays.sort(nums1);
-        Arrays.sort(nums2);
-        int length1 = nums1.length, length2 = nums2.length;
-        int[] intersection = new int[Math.min(length1, length2)];
-        int index1 = 0, index2 = 0, index = 0;
-        while (index1 < length1 && index2 < length2) {
-            if (nums1[index1] < nums2[index2]) {
-                index1++;
-            } else if (nums1[index1] > nums2[index2]) {
-                index2++;
-            } else {
-                intersection[index] = nums1[index1];
-                index1++;
-                index2++;
-                index++;
-            }
-        }
-        return Arrays.copyOfRange(intersection, 0, index);
-    }
-}
-```
-
-
-
 ### [719. 找出第 K 小的数对距离](https://leetcode.cn/problems/find-k-th-smallest-pair-distance/)
 
 困难
@@ -7068,29 +6802,498 @@ class Solution {
 
 
 
+## 数组双指针
+
+> 1. 对撞指针适用范围
+>
+>    对撞指针一般用来解决有序数组或者字符串问题：
+>
+>    - 查找有序数组中满足某些约束条件的一组元素问题：比如二分查找、数字之和等问题。
+>    - 字符串反转问题：反转字符串、回文数、颠倒二进制等问题。
+>
+> 2. 快慢指针适用范围
+>
+>    - 快慢指针一般用于处理数组中的移动、删除元素问题，或者链表中的判断是否有环、长度问题
+>
+> 3. 分离双指针使用范围 
+>
+>    - 分离双指针一般用于处理有序数组合并，求交集、并集问题。
 
 
 
+### [125. 验证回文串](https://leetcode.cn/problems/valid-palindrome/)
+
+简单
+
+如果在将所有大写字符转换为小写字符、并移除所有非字母数字字符之后，短语正着读和反着读都一样。则可以认为该短语是一个 **回文串** 。
+
+字母和数字都属于字母数字字符。
+
+给你一个字符串 `s`，如果它是 **回文串** ，返回 `true` ；否则，返回 `false` 。
+
+**示例 1：**
+
+```
+输入: s = "A man, a plan, a canal: Panama"
+输出：true
+解释："amanaplanacanalpanama" 是回文串。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool isPalindrome(string s) {
+        int left = 0, right = s.size()-1;
+        while(left < right) {
+            if(!isalnum(s[left])) {
+                left++;
+                continue;
+            }
+            if(!isalnum(s[right])) {
+                right--;
+                continue;
+            }
+            if(tolower(s[left]) == tolower(s[right])) {
+                left++;
+                right--;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean isPalindrome(String s) {
+        int left = 0, right = s.length() - 1;
+        while(left < right) {
+            if(!Character.isLetterOrDigit(s.charAt(left))) {
+                left++;
+                continue;
+            }
+            if(!Character.isLetterOrDigit(s.charAt(right))) {
+                right--;
+                continue;
+            }
+            if(Character.toLowerCase(s.charAt(left)) == Character.toLowerCase(s.charAt(right))) {
+                left++;
+                right--;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
 
 
 
+### [11. 盛最多水的容器](https://leetcode.cn/problems/container-with-most-water/)
+
+中等
+
+给定一个长度为 `n` 的整数数组 `height` 。有 `n` 条垂线，第 `i` 条线的两个端点是 `(i, 0)` 和 `(i, height[i])` 。
+
+找出其中的两条线，使得它们与 `x` 轴共同构成的容器可以容纳最多的水。
+
+返回容器可以储存的最大水量。
+
+**说明：**你不能倾斜容器。
+
+**示例 1：**
+
+![img](https://aliyun-lc-upload.oss-cn-hangzhou.aliyuncs.com/aliyun-lc-upload/uploads/2018/07/25/question_11.jpg)
+
+```
+输入：[1,8,6,2,5,4,8,3,7]
+输出：49 
+解释：图中垂直线代表输入数组 [1,8,6,2,5,4,8,3,7]。在此情况下，容器能够容纳水（表示为蓝色部分）的最大值为 49。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int maxArea(vector<int>& height) {
+        int left = 0, right = height.size()-1;
+        int maxArea = 0;
+        while(left < right) {
+            maxArea = max(min(height[left], height[right]) * (right - left), maxArea);
+
+            if(height[left] > height[right]) {
+                right--;
+            } else {
+                left++;
+            }
+        }
+        return maxArea;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int maxArea(int[] height) {
+        int left = 0, right = height.length-1;
+        int maxArea = 0;
+        while(left < right) {
+            maxArea = Math.max(Math.min(height[left], height[right]) * (right - left), maxArea);
+
+            if(height[left] > height[right]) {
+                right--;
+            } else {
+                left++;
+            }
+        }
+        return maxArea;
+    }
+}
+```
 
 
 
+### [26. 删除有序数组中的重复项](https://leetcode.cn/problems/remove-duplicates-from-sorted-array/)
+
+简单
+
+给你一个 **升序排列** 的数组 `nums` ，请你**[ 原地](http://baike.baidu.com/item/原地算法)** 删除重复出现的元素，使每个元素 **只出现一次** ，返回删除后数组的新长度。元素的 **相对顺序** 应该保持 **一致** 。然后返回 `nums` 中唯一元素的个数。
+
+考虑 `nums` 的唯一元素的数量为 `k` ，你需要做以下事情确保你的题解可以被通过：
+
+- 更改数组 `nums` ，使 `nums` 的前 `k` 个元素包含唯一元素，并按照它们最初在 `nums` 中出现的顺序排列。`nums` 的其余元素与 `nums` 的大小不重要。
+- 返回 `k` 。
+
+**判题标准:**
+
+系统会用下面的代码来测试你的题解:
+
+```
+int[] nums = [...]; // 输入数组
+int[] expectedNums = [...]; // 长度正确的期望答案
+
+int k = removeDuplicates(nums); // 调用
+
+assert k == expectedNums.length;
+for (int i = 0; i < k; i++) {
+    assert nums[i] == expectedNums[i];
+}
+```
+
+如果所有断言都通过，那么您的题解将被 **通过**。
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+        int len = nums.size(), slow = 0, fast = 1;
+        while(fast < len) {
+            if(nums[fast] != nums[slow]) {
+                slow++;
+                nums[slow] = nums[fast];
+            }
+            fast++;
+        }
+        return slow+1;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int removeDuplicates(int[] nums) {
+        int len = nums.length, slow = 0, fast = 1;
+        while(fast < len) {
+            if(nums[fast] != nums[slow]) {
+                slow++;
+                nums[slow] = nums[fast];
+            }
+            fast++;
+        }
+        return slow+1;
+    }
+}
+```
 
 
 
+### [349. 两个数组的交集](https://leetcode.cn/problems/intersection-of-two-arrays/)
+
+简单
+
+给定两个数组 `nums1` 和 `nums2` ，返回 *它们的交集* 。输出结果中的每个元素一定是 **唯一** 的。我们可以 **不考虑输出结果的顺序** 。
+
+**示例 1：**
+
+```
+输入：nums1 = [1,2,2,1], nums2 = [2,2]
+输出：[2]
+```
+
+**示例 2：**
+
+C++版本
+
+```c++
+// 两个集合
+class Solution {
+public:
+    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
+        unordered_set<int> set1, set2;
+        for (auto& num : nums1) {
+            set1.insert(num);
+        }
+        for (auto& num : nums2) {
+            set2.insert(num);
+        }
+        return getIntersection(set1, set2);
+    }
+
+    vector<int> getIntersection(unordered_set<int>& set1, unordered_set<int>& set2) {
+        if (set1.size() > set2.size()) {
+            return getIntersection(set2, set1);
+        }
+        vector<int> intersection;
+        for (auto& num : set1) {
+            if (set2.count(num)) {
+                intersection.push_back(num);
+            }
+        }
+        return intersection;
+    }
+};
+
+// 排序 + 双指针
+class Solution {
+public:
+    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
+        sort(nums1.begin(), nums1.end());
+        sort(nums2.begin(), nums2.end());
+        int length1 = nums1.size(), length2 = nums2.size();
+        int index1 = 0, index2 = 0;
+        vector<int> intersection;
+        while (index1 < length1 && index2 < length2) {
+            int num1 = nums1[index1], num2 = nums2[index2];
+            if (num1 == num2) {
+                // 保证加入元素的唯一性
+                if (!intersection.size() || num1 != intersection.back()) {
+                    intersection.push_back(num1);
+                }
+                index1++;
+                index2++;
+            } else if (num1 < num2) {
+                index1++;
+            } else {
+                index2++;
+            }
+        }
+        return intersection;
+    }
+};
+```
+
+Java版本
+
+```java
+// 两个集合
+class Solution {
+    public int[] intersection(int[] nums1, int[] nums2) {
+        Set<Integer> set1 = new HashSet<Integer>();
+        Set<Integer> set2 = new HashSet<Integer>();
+        for (int num : nums1) {
+            set1.add(num);
+        }
+        for (int num : nums2) {
+            set2.add(num);
+        }
+        return getIntersection(set1, set2);
+    }
+
+    public int[] getIntersection(Set<Integer> set1, Set<Integer> set2) {
+        if (set1.size() > set2.size()) {
+            return getIntersection(set2, set1);
+        }
+        Set<Integer> intersectionSet = new HashSet<Integer>();
+        for (int num : set1) {
+            if (set2.contains(num)) {
+                intersectionSet.add(num);
+            }
+        }
+        int[] intersection = new int[intersectionSet.size()];
+        int index = 0;
+        for (int num : intersectionSet) {
+            intersection[index++] = num;
+        }
+        return intersection;
+    }
+}
+
+// 排序 + 双指针
+class Solution {
+    public int[] intersection(int[] nums1, int[] nums2) {
+        Arrays.sort(nums1);
+        Arrays.sort(nums2);
+        int length1 = nums1.length, length2 = nums2.length;
+        int[] intersection = new int[length1 + length2];
+        int index = 0, index1 = 0, index2 = 0;
+        while (index1 < length1 && index2 < length2) {
+            int num1 = nums1[index1], num2 = nums2[index2];
+            if (num1 == num2) {
+                // 保证加入元素的唯一性
+                if (index == 0 || num1 != intersection[index - 1]) {
+                    intersection[index++] = num1;
+                }
+                index1++;
+                index2++;
+            } else if (num1 < num2) {
+                index1++;
+            } else {
+                index2++;
+            }
+        }
+        return Arrays.copyOfRange(intersection, 0, index);
+    }
+}
+```
 
 
 
+### [350. 两个数组的交集 II](https://leetcode.cn/problems/intersection-of-two-arrays-ii/)
 
+简单
 
+给你两个整数数组 `nums1` 和 `nums2` ，请你以数组形式返回两数组的交集。返回结果中每个元素出现的次数，应与元素在两个数组中都出现的次数一致（如果出现次数不一致，则考虑取较小值）。可以不考虑输出结果的顺序。
 
+**示例 1：**
 
+```
+输入：nums1 = [1,2,2,1], nums2 = [2,2]
+输出：[2,2]
+```
 
+C++版本
 
+```c++
+// 哈希表
+class Solution {
+public:
+    vector<int> intersect(vector<int>& nums1, vector<int>& nums2) {
+        if (nums1.size() > nums2.size()) {
+            return intersect(nums2, nums1);
+        }
+        unordered_map <int, int> m;
+        for (int num : nums1) {
+            ++m[num];
+        }
+        vector<int> intersection;
+        for (int num : nums2) {
+            if (m.count(num)) {
+                intersection.push_back(num);
+                --m[num];
+                if (m[num] == 0) {
+                    m.erase(num);
+                }
+            }
+        }
+        return intersection;
+    }
+};
 
+// 排序 + 双指针
+class Solution {
+public:
+    vector<int> intersect(vector<int>& nums1, vector<int>& nums2) {
+        sort(nums1.begin(), nums1.end());
+        sort(nums2.begin(), nums2.end());
+        int length1 = nums1.size(), length2 = nums2.size();
+        vector<int> intersection;
+        int index1 = 0, index2 = 0;
+        while (index1 < length1 && index2 < length2) {
+            if (nums1[index1] < nums2[index2]) {
+                index1++;
+            } else if (nums1[index1] > nums2[index2]) {
+                index2++;
+            } else {
+                intersection.push_back(nums1[index1]);
+                index1++;
+                index2++;
+            }
+        }
+        return intersection;
+    }
+};
+```
 
+Java版本
+
+```java
+// 哈希表
+class Solution {
+    public int[] intersect(int[] nums1, int[] nums2) {
+        if (nums1.length > nums2.length) {
+            return intersect(nums2, nums1);
+        }
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        for (int num : nums1) {
+            int count = map.getOrDefault(num, 0) + 1;
+            map.put(num, count);
+        }
+        int[] intersection = new int[nums1.length];
+        int index = 0;
+        for (int num : nums2) {
+            int count = map.getOrDefault(num, 0);
+            if (count > 0) {
+                intersection[index++] = num;
+                count--;
+                if (count > 0) {
+                    map.put(num, count);
+                } else {
+                    map.remove(num);
+                }
+            }
+        }
+        return Arrays.copyOfRange(intersection, 0, index);
+    }
+}
+
+// 排序 + 双指针
+class Solution {
+    public int[] intersect(int[] nums1, int[] nums2) {
+        Arrays.sort(nums1);
+        Arrays.sort(nums2);
+        int length1 = nums1.length, length2 = nums2.length;
+        int[] intersection = new int[Math.min(length1, length2)];
+        int index1 = 0, index2 = 0, index = 0;
+        while (index1 < length1 && index2 < length2) {
+            if (nums1[index1] < nums2[index2]) {
+                index1++;
+            } else if (nums1[index1] > nums2[index2]) {
+                index2++;
+            } else {
+                intersection[index] = nums1[index1];
+                index1++;
+                index2++;
+                index++;
+            }
+        }
+        return Arrays.copyOfRange(intersection, 0, index);
+    }
+}
+```
 
 
 
