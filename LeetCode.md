@@ -7453,17 +7453,204 @@ class Solution {
 
 
 
+### [345. 反转字符串中的元音字母](https://leetcode.cn/problems/reverse-vowels-of-a-string/)
+
+简单
+
+给你一个字符串 `s` ，仅反转字符串中的所有元音字母，并返回结果字符串。
+
+元音字母包括 `'a'`、`'e'`、`'i'`、`'o'`、`'u'`，且可能以大小写两种形式出现不止一次。
+
+**示例 1：**
+
+```
+输入：s = "hello"
+输出："holle"
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    string reverseVowels(string s) {
+        auto isVowel = [vowels = "aeiouAEIOU"s](char ch) {
+            return vowels.find(ch) != string::npos;
+        };
+
+        int left = 0, right = s.size() - 1;
+        while(left < right) {
+            while(left < right && !isVowel(s[left])) {
+                left++;
+            }
+            while(left < right && !isVowel(s[right])) {
+                right--;
+            }
+            if(left > right) {
+                break;
+            }
+            swap(s[left], s[right]);
+            left++;
+            right--;
+        }
+        return s;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public String reverseVowels(String s) {
+        int n = s.length();
+        char[] arr = s.toCharArray();
+        int i = 0, j = n - 1;
+        while (i < j) {
+            while (i < n && !isVowel(arr[i])) {
+                ++i;
+            }
+            while (j > 0 && !isVowel(arr[j])) {
+                --j;
+            }
+            if (i < j) {
+                swap(arr, i, j);
+                ++i;
+                --j;
+            }
+        }
+        return new String(arr);
+    }
+
+    public boolean isVowel(char ch) {
+        return "aeiouAEIOU".indexOf(ch) >= 0;
+    }
+
+    public void swap(char[] arr, int i, int j) {
+        char temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+    }
+}
+```
 
 
 
+### [611. 有效三角形的个数](https://leetcode.cn/problems/valid-triangle-number/)
 
+中等
 
+给定一个包含非负整数的数组 `nums` ，返回其中可以组成三角形三条边的三元组个数。
 
+**示例 1:**
 
+```
+输入: nums = [2,2,3,4]
+输出: 3
+解释:有效的组合是: 
+2,3,4 (使用第一个 2)
+2,3,4 (使用第二个 2)
+2,2,3
+```
 
+C++版本
 
+```c++
+// 排序 + 二分查找
+class Solution {
+public:
+    int triangleNumber(vector<int>& nums) {
+        int n = nums.size();
+        sort(nums.begin(), nums.end());
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j) {
+                int left = j + 1, right = n - 1, k = j;
+                while (left <= right) {
+                    int mid = (left + right) / 2;
+                    if (nums[mid] < nums[i] + nums[j]) {
+                        k = mid;
+                        left = mid + 1;
+                    }
+                    else {
+                        right = mid - 1;
+                    }
+                }
+                ans += k - j;
+            }
+        }
+        return ans;
+    }
+};
 
+// 排序 + 双指针
+class Solution {
+public:
+    int triangleNumber(vector<int>& nums) {
+        int n = nums.size();
+        sort(nums.begin(), nums.end());
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            int k = i;
+            for (int j = i + 1; j < n; ++j) {
+                while (k + 1 < n && nums[k + 1] < nums[i] + nums[j]) {
+                    ++k;
+                }
+                ans += max(k - j, 0);
+            }
+        }
+        return ans;
+    }
+};
+```
 
+Java版本
+
+```java
+// 排序 + 二分查找
+class Solution {
+    public int triangleNumber(int[] nums) {
+        int n = nums.length;
+        Arrays.sort(nums);
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j) {
+                int left = j + 1, right = n - 1, k = j;
+                while (left <= right) {
+                    int mid = (left + right) / 2;
+                    if (nums[mid] < nums[i] + nums[j]) {
+                        k = mid;
+                        left = mid + 1;
+                    } else {
+                        right = mid - 1;
+                    }
+                }
+                ans += k - j;
+            }
+        }
+        return ans;
+    }
+}
+
+// 排序 + 双指针
+class Solution {
+    public int triangleNumber(int[] nums) {
+        int n = nums.length;
+        Arrays.sort(nums);
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            int k = i;
+            for (int j = i + 1; j < n; ++j) {
+                while (k + 1 < n && nums[k + 1] < nums[i] + nums[j]) {
+                    ++k;
+                }
+                ans += Math.max(k - j, 0);
+            }
+        }
+        return ans;
+    }
+}
+```
 
 
 
