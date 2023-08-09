@@ -7297,11 +7297,159 @@ class Solution {
 
 
 
+### [167. 两数之和 II - 输入有序数组](https://leetcode.cn/problems/two-sum-ii-input-array-is-sorted/)
+
+中等
+
+给你一个下标从 **1** 开始的整数数组 `numbers` ，该数组已按 **非递减顺序排列** ，请你从数组中找出满足相加之和等于目标数 `target` 的两个数。如果设这两个数分别是 `numbers[index1]` 和 `numbers[index2]` ，则 `1 <= index1 < index2 <= numbers.length` 。
+
+以长度为 2 的整数数组 `[index1, index2]` 的形式返回这两个整数的下标 `index1` 和 `index2`。
+
+你可以假设每个输入 **只对应唯一的答案** ，而且你 **不可以** 重复使用相同的元素。
+
+你所设计的解决方案必须只使用常量级的额外空间。
+
+**示例 1：**
+
+```
+输入：numbers = [2,7,11,15], target = 9
+输出：[1,2]
+解释：2 与 7 之和等于目标数 9 。因此 index1 = 1, index2 = 2 。返回 [1, 2] 。
+```
+
+C++版本
+
+```c++
+// 二分查找
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& numbers, int target) {
+        int len  = numbers.size();
+        for(int i = 0; i < len; i++) {
+            int left = i+1, right = len-1, res = i;
+            while(left <= right) {
+                int mid = left + (right - left) / 2;
+                if(target - numbers[i] <= numbers[mid]) {
+                    res = mid;
+                    right = mid - 1;
+                } else {
+                    left = mid + 1;
+                }
+            }
+            if(numbers[res] == target - numbers[i]) {
+                return vector<int>{i+1, res+1};
+            }
+        }
+        return vector<int>{-1, -1};
+    }
+};
+
+// 双指针
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& numbers, int target) {
+        int len  = numbers.size();
+        int left = 0, right = len-1;
+        while(left < right) {
+            if(numbers[left] + numbers[right] == target) {
+                return vector<int>{left+1, right+1};
+            } else if(numbers[left] + numbers[right] < target) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+        return vector<int>{-1, -1};
+    }
+};
+```
+
+Java版本
+
+```java
+// 二分查找
+class Solution {
+    public int[] twoSum(int[] numbers, int target) {
+        for (int i = 0; i < numbers.length; ++i) {
+            int low = i + 1, high = numbers.length - 1;
+            while (low <= high) {
+                int mid = (high - low) / 2 + low;
+                if (numbers[mid] == target - numbers[i]) {
+                    return new int[]{i + 1, mid + 1};
+                } else if (numbers[mid] > target - numbers[i]) {
+                    high = mid - 1;
+                } else {
+                    low = mid + 1;
+                }
+            }
+        }
+        return new int[]{-1, -1};
+    }
+}
+
+// 双指针
+class Solution {
+    public int[] twoSum(int[] numbers, int target) {
+        int low = 0, high = numbers.length - 1;
+        while (low < high) {
+            int sum = numbers[low] + numbers[high];
+            if (sum == target) {
+                return new int[]{low + 1, high + 1};
+            } else if (sum < target) {
+                ++low;
+            } else {
+                --high;
+            }
+        }
+        return new int[]{-1, -1};
+    }
+}
+```
 
 
 
+### [344. 反转字符串](https://leetcode.cn/problems/reverse-string/)
 
+简单
 
+编写一个函数，其作用是将输入的字符串反转过来。输入字符串以字符数组 `s` 的形式给出。
+
+不要给另外的数组分配额外的空间，你必须**[原地](https://baike.baidu.com/item/原地算法)修改输入数组**、使用 O(1) 的额外空间解决这一问题。
+
+**示例 1：**
+
+```
+输入：s = ["h","e","l","l","o"]
+输出：["o","l","l","e","h"]
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    void reverseString(vector<char>& s) {
+        for (int left = 0, right = s.size() - 1; left < right; ++left, --right) {
+            swap(s[left], s[right]);
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public void reverseString(char[] s) {
+        int n = s.length;
+        for (int left = 0, right = n - 1; left < right; ++left, --right) {
+            char tmp = s[left];
+            s[left] = s[right];
+            s[right] = tmp;
+        }
+    }
+}
+```
 
 
 
