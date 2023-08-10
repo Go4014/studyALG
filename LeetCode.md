@@ -7654,19 +7654,202 @@ class Solution {
 
 
 
+### [15. 三数之和](https://leetcode.cn/problems/3sum/)
+
+中等
+
+给你一个整数数组 `nums` ，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k` ，同时还满足 `nums[i] + nums[j] + nums[k] == 0` 。请
+
+你返回所有和为 `0` 且不重复的三元组。
+
+**注意：**答案中不可以包含重复的三元组。
+
+**示例 1：**
+
+```
+输入：nums = [-1,0,1,2,-1,-4]
+输出：[[-1,-1,2],[-1,0,1]]
+解释：
+nums[0] + nums[1] + nums[2] = (-1) + 0 + 1 = 0 。
+nums[1] + nums[2] + nums[4] = 0 + 1 + (-1) = 0 。
+nums[0] + nums[3] + nums[4] = (-1) + 2 + (-1) = 0 。
+不同的三元组是 [-1,0,1] 和 [-1,-1,2] 。
+注意，输出的顺序和三元组的顺序并不重要。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> threeSum(vector<int>& nums) {
+        int n = nums.size();
+        sort(nums.begin(), nums.end());
+        vector<vector<int>> ans;
+        // 枚举 a
+        for (int first = 0; first < n; ++first) {
+            // 需要和上一次枚举的数不相同
+            if (first > 0 && nums[first] == nums[first - 1]) {
+                continue;
+            }
+            // c 对应的指针初始指向数组的最右端
+            int third = n - 1;
+            int target = -nums[first];
+            // 枚举 b
+            for (int second = first + 1; second < n; ++second) {
+                // 需要和上一次枚举的数不相同
+                if (second > first + 1 && nums[second] == nums[second - 1]) {
+                    continue;
+                }
+                // 需要保证 b 的指针在 c 的指针的左侧
+                while (second < third && nums[second] + nums[third] > target) {
+                    --third;
+                }
+                // 如果指针重合，随着 b 后续的增加
+                // 就不会有满足 a+b+c=0 并且 b<c 的 c 了，可以退出循环
+                if (second == third) {
+                    break;
+                }
+                if (nums[second] + nums[third] == target) {
+                    ans.push_back({nums[first], nums[second], nums[third]});
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java 版本
+
+```java
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        List<List<Integer>> ans = new ArrayList<>();
+        int length = nums.length;
+        if(length < 3) {
+            return ans;
+        }
+        Arrays.sort(nums);
+        for(int i = 0; i < length; i++) {
+            // 排除重复三元组
+            if(i > 0 && nums[i] == nums[i-1]) {
+                continue;
+            }
+            int k = length - 1;
+            for(int j = i + 1; j < length; j++) {
+                // 排除重复三元组
+                if(j > i + 1 && nums[j] == nums[j - 1]) {
+                    continue;
+                }
+                while(j < k && nums[i] + nums[j] + nums[k] == 0) {
+                    k--;
+                }
+                if(j == k) {
+                    break;
+                }
+                if(nums[i] + nums[j] + nums[k] == 0) {
+                    List<Integer> list = new ArrayList<>();
+                    list.add(nums[i]);
+                    list.add(nums[j]);
+                    list.add(nums[k]);
+                    ans.add(list);
+                }
+            }
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [16. 最接近的三数之和](https://leetcode.cn/problems/3sum-closest/)
 
+中等
 
+给你一个长度为 `n` 的整数数组 `nums` 和 一个目标值 `target`。请你从 `nums` 中选出三个整数，使它们的和与 `target` 最接近。
 
+返回这三个数的和。
 
+假定每组输入只存在恰好一个解。
 
+**示例 1：**
 
+```
+输入：nums = [-1,2,1,-4], target = 1
+输出：2
+解释：与 target 最接近的和是 2 (-1 + 2 + 1 = 2) 。
+```
 
+C++版本
 
+```c++
+class Solution {
+public:
+    int threeSumClosest(vector<int>& nums, int target) {
+        int len = nums.size();
+        sort(nums.begin(), nums.end());
+        int ans = nums[0] + nums[1] + nums[2];
+        for(int i= 0; i < len; i++) {
+            if(i > 0 && nums[i] == nums[i-1]) {
+                continue;
+            }
+            int left = i+1, right = len-1;
+            while(left < right) {
+                int sum = nums[i] + nums[left] + nums[right];
+                if(sum == target) {
+                    return target;
+                } else {
+                    if(abs(sum-target) < abs(ans-target)) {
+                        ans = sum;
+                    }
+                    if(sum < target) {
+                        left++;
+                    } else {
+                        right--;
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
 
+Java版本
 
+```java
+class Solution {
+    public int threeSumClosest(int[] nums, int target) {
+        int length = nums.length;
+        Arrays.sort(nums);
+        int ans = nums[0] + nums[1] + nums[2];
+        for(int i = 0; i < length; i++) {
+            if(i > 0 && nums[i] == nums[i-1]) {
+                continue;
+            }
+            int j = i+1, k = length-1;
+            while(j < k) {
+                int sum = nums[i] + nums[j] + nums[k];
+                if(sum == target) {
+                    return target;
+                } else {
+                    if(Math.abs(sum-target) < Math.abs(ans-target)) {
+                        ans = sum;
+                    }
+                    if(sum > target) {
+                        k--;
+                    } else {
+                        j++;
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+}
+```
 
 
 
