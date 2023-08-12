@@ -8073,15 +8073,261 @@ class Solution {
 
 
 
+### [75. 颜色分类](https://leetcode.cn/problems/sort-colors/)
+
+中等
+
+给定一个包含红色、白色和蓝色、共 `n` 个元素的数组 `nums` ，**[原地](https://baike.baidu.com/item/原地算法)**对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。
+
+我们使用整数 `0`、 `1` 和 `2` 分别表示红色、白色和蓝色
+
+必须在不使用库内置的 sort 函数的情况下解决这个问题。
+
+**示例 1：**
+
+```
+输入：nums = [2,0,2,1,1,0]
+输出：[0,0,1,1,2,2]
+```
+
+C++版本
+
+```c++
+// 方法一：单指针
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        int n = nums.size();
+        int ptr = 0;
+        for (int i = 0; i < n; ++i) {
+            if (nums[i] == 0) {
+                swap(nums[i], nums[ptr]);
+                ++ptr;
+            }
+        }
+        for (int i = ptr; i < n; ++i) {
+            if (nums[i] == 1) {
+                swap(nums[i], nums[ptr]);
+                ++ptr;
+            }
+        }
+    }
+};
+
+// 方法二：双指针
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        int n = nums.size();
+        int p0 = 0, p2 = n - 1;
+        for (int i = 0; i <= p2; ++i) {
+            while (i <= p2 && nums[i] == 2) {
+                swap(nums[i], nums[p2]);
+                --p2;
+            }
+            if (nums[i] == 0) {
+                swap(nums[i], nums[p0]);
+                ++p0;
+            }
+        }
+    }
+};
+```
+
+Java版本
+
+```Java
+// 方法一：单指针
+class Solution {
+    public void sortColors(int[] nums) {
+        int n = nums.length;
+        int ptr = 0;
+        for (int i = 0; i < n; ++i) {
+            if (nums[i] == 0) {
+                int temp = nums[i];
+                nums[i] = nums[ptr];
+                nums[ptr] = temp;
+                ++ptr;
+            }
+        }
+        for (int i = ptr; i < n; ++i) {
+            if (nums[i] == 1) {
+                int temp = nums[i];
+                nums[i] = nums[ptr];
+                nums[ptr] = temp;
+                ++ptr;
+            }
+        }
+    }
+}
+
+// 方法二：双指针
+class Solution {
+    public void sortColors(int[] nums) {
+        int n = nums.length;
+        int p0 = 0, p1 = 0;
+        for (int i = 0; i < n; ++i) {
+            if (nums[i] == 1) {
+                int temp = nums[i];
+                nums[i] = nums[p1];
+                nums[p1] = temp;
+                ++p1;
+            } else if (nums[i] == 0) {
+                int temp = nums[i];
+                nums[i] = nums[p0];
+                nums[p0] = temp;
+                if (p0 < p1) {
+                    temp = nums[i];
+                    nums[i] = nums[p1];
+                    nums[p1] = temp;
+                }
+                ++p0;
+                ++p1;
+            }
+        }
+    }
+}
+```
 
 
 
+### [977. 有序数组的平方](https://leetcode.cn/problems/squares-of-a-sorted-array/)
 
+简单
 
+给你一个按 **非递减顺序** 排序的整数数组 `nums`，返回 **每个数字的平方** 组成的新数组，要求也按 **非递减顺序** 排序。
 
+**示例 1：**
 
+```
+输入：nums = [-4,-1,0,3,10]
+输出：[0,1,9,16,100]
+解释：平方后，数组变为 [16,1,0,9,100]
+排序后，数组变为 [0,1,9,16,100]
+```
 
+C++版本
 
+```c++
+// 方法二：双指针
+class Solution {
+public:
+    vector<int> sortedSquares(vector<int>& nums) {
+        int n = nums.size();
+        int negative = -1;
+        for (int i = 0; i < n; ++i) {
+            if (nums[i] < 0) {
+                negative = i;
+            } else {
+                break;
+            }
+        }
+
+        vector<int> ans;
+        int i = negative, j = negative + 1;
+        while (i >= 0 || j < n) {
+            if (i < 0) {
+                ans.push_back(nums[j] * nums[j]);
+                ++j;
+            }
+            else if (j == n) {
+                ans.push_back(nums[i] * nums[i]);
+                --i;
+            }
+            else if (nums[i] * nums[i] < nums[j] * nums[j]) {
+                ans.push_back(nums[i] * nums[i]);
+                --i;
+            }
+            else {
+                ans.push_back(nums[j] * nums[j]);
+                ++j;
+            }
+        }
+
+        return ans;
+    }
+};
+
+// 方法二：双指针
+class Solution {
+public:
+    vector<int> sortedSquares(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> ans(n);
+        for (int i = 0, j = n - 1, pos = n - 1; i <= j;) {
+            if (nums[i] * nums[i] > nums[j] * nums[j]) {
+                ans[pos] = nums[i] * nums[i];
+                ++i;
+            }
+            else {
+                ans[pos] = nums[j] * nums[j];
+                --j;
+            }
+            --pos;
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：双指针
+class Solution {
+    public int[] sortedSquares(int[] nums) {
+        int n = nums.length;
+        int negative = -1;
+        for (int i = 0; i < n; ++i) {
+            if (nums[i] < 0) {
+                negative = i;
+            } else {
+                break;
+            }
+        }
+
+        int[] ans = new int[n];
+        int index = 0, i = negative, j = negative + 1;
+        while (i >= 0 || j < n) {
+            if (i < 0) {
+                ans[index] = nums[j] * nums[j];
+                ++j;
+            } else if (j == n) {
+                ans[index] = nums[i] * nums[i];
+                --i;
+            } else if (nums[i] * nums[i] < nums[j] * nums[j]) {
+                ans[index] = nums[i] * nums[i];
+                --i;
+            } else {
+                ans[index] = nums[j] * nums[j];
+                ++j;
+            }
+            ++index;
+        }
+
+        return ans;
+    }
+}
+
+// 方法二：双指针
+class Solution {
+    public int[] sortedSquares(int[] nums) {
+        int n = nums.length;
+        int[] ans = new int[n];
+        for (int i = 0, j = n - 1, pos = n - 1; i <= j;) {
+            if (nums[i] * nums[i] > nums[j] * nums[j]) {
+                ans[pos] = nums[i] * nums[i];
+                ++i;
+            } else {
+                ans[pos] = nums[j] * nums[j];
+                --j;
+            }
+            --pos;
+        }
+        return ans;
+    }
+}
+```
 
 
 
