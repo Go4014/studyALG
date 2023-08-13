@@ -8331,25 +8331,329 @@ class Solution {
 
 
 
+### [881. 救生艇](https://leetcode.cn/problems/boats-to-save-people/)
+
+中等
+
+给定数组 `people` 。`people[i]`表示第 `i` 个人的体重 ，**船的数量不限**，每艘船可以承载的最大重量为 `limit`。
+
+每艘船最多可同时载两人，但条件是这些人的重量之和最多为 `limit`。
+
+返回 *承载所有人所需的最小船数* 。
+
+**示例 1：**
+
+```
+输入：people = [1,2], limit = 3
+输出：1
+解释：1 艘船载 (1, 2)
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int numRescueBoats(vector<int>& people, int limit) {
+        sort(people.begin(), people.end());
+        int count = 0;
+        int left = 0, right = people.size() - 1; 
+        while(left <= right) {
+            if(people[left] + people[right] <= limit) {
+                left++;
+            }
+            count++;
+            right--;
+        }
+        return count;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int numRescueBoats(int[] people, int limit) {
+        Arrays.sort(people);
+        int count = 0;
+        int left = 0, right = people.length - 1; 
+        while(left <= right) {
+            if(people[left] + people[right] <= limit) {
+                left++;
+            }
+            count++;
+            right--;
+        }
+        return count;
+    }
+}
+```
 
 
 
+### [42. 接雨水](https://leetcode.cn/problems/trapping-rain-water/)
+
+困难
+
+给定 `n` 个非负整数表示每个宽度为 `1` 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/10/22/rainwatertrap.png)
+
+```
+输入：height = [0,1,0,2,1,0,1,3,2,1,2,1]
+输出：6
+解释：上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，可以接 6 个单位的雨水（蓝色部分表示雨水）。 
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int trap(vector<int>& height) {
+        int n = height.size();
+        if (n == 0) {
+            return 0;
+        }
+        vector<int> leftMax(n);
+        leftMax[0] = height[0];
+        for (int i = 1; i < n; ++i) {
+            leftMax[i] = max(leftMax[i - 1], height[i]);
+        }
+
+        vector<int> rightMax(n);
+        rightMax[n - 1] = height[n - 1];
+        for (int i = n - 2; i >= 0; --i) {
+            rightMax[i] = max(rightMax[i + 1], height[i]);
+        }
+
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            ans += min(leftMax[i], rightMax[i]) - height[i];
+        }
+        return ans;
+    }
+};
+
+// 方法二：单调栈
+class Solution {
+public:
+    int trap(vector<int>& height) {
+        int ans = 0;
+        stack<int> stk;
+        int n = height.size();
+        for (int i = 0; i < n; ++i) {
+            while (!stk.empty() && height[i] > height[stk.top()]) {
+                int top = stk.top();
+                stk.pop();
+                if (stk.empty()) {
+                    break;
+                }
+                int left = stk.top();
+                int currWidth = i - left - 1;
+                int currHeight = min(height[left], height[i]) - height[top];
+                ans += currWidth * currHeight;
+            }
+            stk.push(i);
+        }
+        return ans;
+    }
+};
+
+// 方法三：双指针
+class Solution {
+public:
+    int trap(vector<int>& height) {
+        int ans = 0;
+        int left = 0, right = height.size() - 1;
+        int leftMax = 0, rightMax = 0;
+        while (left < right) {
+            leftMax = max(leftMax, height[left]);
+            rightMax = max(rightMax, height[right]);
+            if (height[left] < height[right]) {
+                ans += leftMax - height[left];
+                ++left;
+            } else {
+                ans += rightMax - height[right];
+                --right;
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int trap(int[] height) {
+        int n = height.length;
+        if (n == 0) {
+            return 0;
+        }
+
+        int[] leftMax = new int[n];
+        leftMax[0] = height[0];
+        for (int i = 1; i < n; ++i) {
+            leftMax[i] = Math.max(leftMax[i - 1], height[i]);
+        }
+
+        int[] rightMax = new int[n];
+        rightMax[n - 1] = height[n - 1];
+        for (int i = n - 2; i >= 0; --i) {
+            rightMax[i] = Math.max(rightMax[i + 1], height[i]);
+        }
+
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            ans += Math.min(leftMax[i], rightMax[i]) - height[i];
+        }
+        return ans;
+    }
+}
+
+// 方法二：单调栈
+class Solution {
+    public int trap(int[] height) {
+        int ans = 0;
+        Deque<Integer> stack = new LinkedList<Integer>();
+        int n = height.length;
+        for (int i = 0; i < n; ++i) {
+            while (!stack.isEmpty() && height[i] > height[stack.peek()]) {
+                int top = stack.pop();
+                if (stack.isEmpty()) {
+                    break;
+                }
+                int left = stack.peek();
+                int currWidth = i - left - 1;
+                int currHeight = Math.min(height[left], height[i]) - height[top];
+                ans += currWidth * currHeight;
+            }
+            stack.push(i);
+        }
+        return ans;
+    }
+}
+
+// 方法三：双指针
+class Solution {
+    public int trap(int[] height) {
+        int ans = 0;
+        int left = 0, right = height.length - 1;
+        int leftMax = 0, rightMax = 0;
+        while (left < right) {
+            leftMax = Math.max(leftMax, height[left]);
+            rightMax = Math.max(rightMax, height[right]);
+            if (height[left] < height[right]) {
+                ans += leftMax - height[left];
+                ++left;
+            } else {
+                ans += rightMax - height[right];
+                --right;
+            }
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [443. 压缩字符串](https://leetcode.cn/problems/string-compression/)
 
+中等
 
+给你一个字符数组 `chars` ，请使用下述算法压缩：
 
+从一个空字符串 `s` 开始。对于 `chars` 中的每组 **连续重复字符** ：
 
+- 如果这一组长度为 `1` ，则将字符追加到 `s` 中。
+- 否则，需要向 `s` 追加字符，后跟这一组的长度。
 
+压缩后得到的字符串 `s` **不应该直接返回** ，需要转储到字符数组 `chars` 中。需要注意的是，如果组长度为 `10` 或 `10` 以上，则在 `chars` 数组中会被拆分为多个字符。
 
+请在 **修改完输入数组后** ，返回该数组的新长度。
 
+你必须设计并实现一个只使用常量额外空间的算法来解决此问题。
 
+**示例 1：**
 
+```
+输入：chars = ["a","a","b","b","c","c","c"]
+输出：返回 6 ，输入数组的前 6 个字符应该是：["a","2","b","2","c","3"]
+解释："aa" 被 "a2" 替代。"bb" 被 "b2" 替代。"ccc" 被 "c3" 替代。
+```
 
+C++版本
 
+```c++
+class Solution {
+public:
+    int compress(vector<char>& chars) {
+        int n = chars.size();
+        int write = 0, left = 0;
+        for (int read = 0; read < n; read++) {
+            if (read == n - 1 || chars[read] != chars[read + 1]) {
+                chars[write++] = chars[read];
+                int num = read - left + 1;
+                if (num > 1) {
+                    int anchor = write;
+                    while (num > 0) {
+                        chars[write++] = num % 10 + '0';
+                        num /= 10;
+                    }
+                    reverse(&chars[anchor], &chars[write]);
+                }
+                left = read + 1;
+            }
+        }
+        return write;
+    }
+};
+```
 
+Java版本
 
+```java
+class Solution {
+    public int compress(char[] chars) {
+        int n = chars.length;
+        int write = 0, left = 0;
+        for (int read = 0; read < n; read++) {
+            if (read == n - 1 || chars[read] != chars[read + 1]) {
+                chars[write++] = chars[read];
+                int num = read - left + 1;
+                if (num > 1) {
+                    int anchor = write;
+                    while (num > 0) {
+                        chars[write++] = (char) (num % 10 + '0');
+                        num /= 10;
+                    }
+                    reverse(chars, anchor, write - 1);
+                }
+                left = read + 1;
+            }
+        }
+        return write;
+    }
+
+    public void reverse(char[] chars, int left, int right) {
+        while (left < right) {
+            char temp = chars[left];
+            chars[left] = chars[right];
+            chars[right] = temp;
+            left++;
+            right--;
+        }
+    }
+}
+```
 
 
 
