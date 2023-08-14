@@ -8657,33 +8657,413 @@ class Solution {
 
 
 
+### [26. 删除有序数组中的重复项](https://leetcode.cn/problems/remove-duplicates-from-sorted-array/)
+
+简单
+
+给你一个 **升序排列** 的数组 `nums` ，请你**[ 原地](http://baike.baidu.com/item/原地算法)** 删除重复出现的元素，使每个元素 **只出现一次** ，返回删除后数组的新长度。元素的 **相对顺序** 应该保持 **一致** 。然后返回 `nums` 中唯一元素的个数。
+
+考虑 `nums` 的唯一元素的数量为 `k` ，你需要做以下事情确保你的题解可以被通过：
+
+- 更改数组 `nums` ，使 `nums` 的前 `k` 个元素包含唯一元素，并按照它们最初在 `nums` 中出现的顺序排列。`nums` 的其余元素与 `nums` 的大小不重要。
+- 返回 `k` 。
+
+**判题标准:**
+
+系统会用下面的代码来测试你的题解:
+
+```
+int[] nums = [...]; // 输入数组
+int[] expectedNums = [...]; // 长度正确的期望答案
+
+int k = removeDuplicates(nums); // 调用
+
+assert k == expectedNums.length;
+for (int i = 0; i < k; i++) {
+    assert nums[i] == expectedNums[i];
+}
+```
+
+如果所有断言都通过，那么您的题解将被 **通过**。
+
+**示例 1：**
+
+```
+输入：nums = [1,1,2]
+输出：2, nums = [1,2,_]
+解释：函数应该返回新的长度 2 ，并且原数组 nums 的前两个元素被修改为 1, 2 。不需要考虑数组中超出新长度后面的元素。
+```
+
+C++版本
+
+```c++
+// 快慢指针
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+        int len = nums.size(), slow = 0, fast = 1;
+        while(fast < len) {
+            if(nums[fast] != nums[slow]) {
+                slow++;
+                nums[slow] = nums[fast];
+            }
+            fast++;
+        }
+        return slow+1;
+    }
+};
+```
+
+Java版本
+
+```java
+// 快慢指针
+class Solution {
+    public int removeDuplicates(int[] nums) {
+        int len = nums.length, slow = 0, fast = 1;
+        while(fast < len) {
+            if(nums[fast] != nums[slow]) {
+                slow++;
+                nums[slow] = nums[fast];
+            }
+            fast++;
+        }
+        return slow+1;
+    }
+}
+```
 
 
 
+### [80. 删除有序数组中的重复项 II](https://leetcode.cn/problems/remove-duplicates-from-sorted-array-ii/)
+
+中等
+
+给你一个有序数组 `nums` ，请你**[ 原地](http://baike.baidu.com/item/原地算法)** 删除重复出现的元素，使得出现次数超过两次的元素**只出现两次** ，返回删除后数组的新长度。
+
+不要使用额外的数组空间，你必须在 **[原地 ](https://baike.baidu.com/item/原地算法)修改输入数组** 并在使用 O(1) 额外空间的条件下完成。
+
+**说明：**
+
+为什么返回数值是整数，但输出的答案是数组呢？
+
+请注意，输入数组是以**「引用」**方式传递的，这意味着在函数里修改输入数组对于调用者是可见的。
+
+你可以想象内部操作如下:
+
+```
+// nums 是以“引用”方式传递的。也就是说，不对实参做任何拷贝
+int len = removeDuplicates(nums);
+
+// 在函数里修改输入数组对于调用者是可见的。
+// 根据你的函数返回的长度, 它会打印出数组中 该长度范围内 的所有元素。
+for (int i = 0; i < len; i++) {
+    print(nums[i]);
+}
+```
+
+**示例 1：**
+
+```
+输入：nums = [1,1,1,2,2,3]
+输出：5, nums = [1,1,2,2,3]
+解释：函数应返回新长度 length = 5, 并且原数组的前五个元素被修改为 1, 1, 2, 2, 3 。 不需要考虑数组中超出新长度后面的元素。
+```
+
+C++版本
+
+```c++
+// 方法一
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+        int len = nums.size(), slow = 2, fast = 2;
+        if(len < 2) {
+            return len;
+        }
+        while(fast < len) {
+            if (nums[slow - 2] != nums[fast]) {
+                nums[slow] = nums[fast];
+                ++slow;
+            }
+            ++fast;
+        }
+        return slow;
+    }
+};
+
+// 方法二
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+        int len = nums.size(), slow = 0, fast = 1;
+        bool flag = true;
+        while(fast < len) {
+            if(nums[fast] == nums[slow]) {
+                if(flag) {
+                    flag = false;
+                    slow++;
+                    nums[slow] = nums[fast];
+                }
+            } else {
+                flag = true;
+                slow++;
+                nums[slow] = nums[fast];
+            }
+            fast++;
+        }
+        return slow+1;
+    }
+};
+
+// 方法三
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+        if(nums.size() < 2) {
+            return nums.size();
+        }
+        int fast = 2;
+        for(int slow = 2; slow < nums.size(); slow++) {
+            if(nums[slow] != nums[fast-2]) {
+                nums[fast] = nums[slow];
+                fast++;
+            }
+        }
+        return fast;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一
+class Solution {
+    public int removeDuplicates(int[] nums) {
+        int len = nums.length, slow = 2, fast = 2;
+        if(len < 2) {
+            return len;
+        }
+        while(fast < len) {
+            if (nums[slow - 2] != nums[fast]) {
+                nums[slow] = nums[fast];
+                ++slow;
+            }
+            ++fast;
+        }
+        return slow;
+    }
+}
+
+// 方法二
+class Solution {
+    public int removeDuplicates(int[] nums) {
+        int len = nums.length, slow = 0, fast = 1;
+        boolean flag = true;
+        while(fast < len) {
+            if(nums[fast] == nums[slow]) {
+                if(flag) {
+                    flag = false;
+                    slow++;
+                    nums[slow] = nums[fast];
+                }
+            } else {
+                flag = true;
+                slow++;
+                nums[slow] = nums[fast];
+            }
+            fast++;
+        }
+        return slow+1;
+    }
+}
+
+// 方法三
+class Solution {
+    public int removeDuplicates(int[] nums) {
+        if(nums.length < 2) {
+            return nums.length;
+        }
+        int fast = 2;
+        for(int slow = 2; slow < nums.length; slow++) {
+            if(nums[slow] != nums[fast-2]) {
+                nums[fast] = nums[slow];
+                fast++;
+            }
+        }
+        return fast;
+    }
+}
+```
 
 
 
+### [27. 移除元素](https://leetcode.cn/problems/remove-element/)
+
+简单
+
+给你一个数组 `nums` 和一个值 `val`，你需要 **[原地](https://baike.baidu.com/item/原地算法)** 移除所有数值等于 `val` 的元素，并返回移除后数组的新长度。
+
+不要使用额外的数组空间，你必须仅使用 `O(1)` 额外空间并 **[原地 ](https://baike.baidu.com/item/原地算法)修改输入数组**。
+
+元素的顺序可以改变。你不需要考虑数组中超出新长度后面的元素。
+
+**说明:**
+
+为什么返回数值是整数，但输出的答案是数组呢?
+
+请注意，输入数组是以**「引用」**方式传递的，这意味着在函数里修改输入数组对于调用者是可见的。
+
+你可以想象内部操作如下:
+
+```
+// nums 是以“引用”方式传递的。也就是说，不对实参作任何拷贝
+int len = removeElement(nums, val);
+
+// 在函数里修改输入数组对于调用者是可见的。
+// 根据你的函数返回的长度, 它会打印出数组中 该长度范围内 的所有元素。
+for (int i = 0; i < len; i++) {
+    print(nums[i]);
+}
+```
+
+**示例 1：**
+
+```
+输入：nums = [3,2,2,3], val = 3
+输出：2, nums = [2,2]
+解释：函数应该返回新的长度 2, 并且 nums 中的前两个元素均为 2。你不需要考虑数组中超出新长度后面的元素。例如，函数返回的新长度为 2 ，而 nums = [2,2,3,3] 或 nums = [2,2,0,0]，也会被视作正确答案。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int removeElement(vector<int>& nums, int val) {
+        int len = nums.size(), slow = 0, fast = 0;
+        while(fast < len) {
+            if(nums[fast] != val) {
+                nums[slow] = nums[fast];
+                slow++;
+            }
+            fast++;
+        }
+        return slow;
+    }
+};
+
+// 优化
+class Solution {
+public:
+    int removeElement(vector<int>& nums, int val) {
+        int left = 0, right = nums.size();
+        while (left < right) {
+            if (nums[left] == val) {
+                nums[left] = nums[right - 1];
+                right--;
+            } else {
+                left++;
+            }
+        }
+        return left;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int removeElement(int[] nums, int val) {
+        int len = nums.length, slow = 0, fast = 0;
+        while(fast < len) {
+            if(nums[fast] != val) {
+                nums[slow] = nums[fast];
+                slow++;
+            }
+            fast++;
+        }
+        return slow;
+    }
+}
+
+// 优化
+class Solution {
+    public int removeElement(int[] nums, int val) {
+        int left = 0;
+        int right = nums.length;
+        while (left < right) {
+            if (nums[left] == val) {
+                nums[left] = nums[right - 1];
+                right--;
+            } else {
+                left++;
+            }
+        }
+        return left;
+    }
+}
+```
 
 
 
+### [283. 移动零](https://leetcode.cn/problems/move-zeroes/)
 
+简单
 
+给定一个数组 `nums`，编写一个函数将所有 `0` 移动到数组的末尾，同时保持非零元素的相对顺序。
 
+**请注意** ，必须在不复制数组的情况下原地对数组进行操作。
 
+**示例 1:**
 
+```
+输入: nums = [0,1,0,3,12]
+输出: [1,3,12,0,0]
+```
 
+C++版本
 
+```c++
+class Solution {
+public:
+    void moveZeroes(vector<int>& nums) {
+        int n = nums.size(), left = 0, right = 0;
+        while (right < n) {
+            if (nums[right]) {
+                swap(nums[left], nums[right]);
+                left++;
+            }
+            right++;
+        }
+    }
+};
+```
 
+Java版本
 
+```java
+class Solution {
+    public void moveZeroes(int[] nums) {
+        int n = nums.length, left = 0, right = 0;
+        while (right < n) {
+            if (nums[right] != 0) {
+                swap(nums, left, right);
+                left++;
+            }
+            right++;
+        }
+    }
 
-
-
-
-
-
-
-
-
+    public void swap(int[] nums, int left, int right) {
+        int temp = nums[left];
+        nums[left] = nums[right];
+        nums[right] = temp;
+    }
+}
+```
 
 
 
