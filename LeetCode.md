@@ -9067,17 +9067,288 @@ class Solution {
 
 
 
+### [88. 合并两个有序数组](https://leetcode.cn/problems/merge-sorted-array/)
+
+简单
+
+给你两个按 **非递减顺序** 排列的整数数组 `nums1` 和 `nums2`，另有两个整数 `m` 和 `n` ，分别表示 `nums1` 和 `nums2` 中的元素数目。
+
+请你 **合并** `nums2` 到 `nums1` 中，使合并后的数组同样按 **非递减顺序** 排列。
+
+**注意：**最终，合并后数组不应由函数返回，而是存储在数组 `nums1` 中。为了应对这种情况，`nums1` 的初始长度为 `m + n`，其中前 `m` 个元素表示应合并的元素，后 `n` 个元素为 `0` ，应忽略。`nums2` 的长度为 `n` 。
+
+**示例 1：**
+
+```
+输入：nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3
+输出：[1,2,2,3,5,6]
+解释：需要合并 [1,2,3] 和 [2,5,6] 。
+合并结果是 [1,2,2,3,5,6] ，其中斜体加粗标注的为 nums1 中的元素。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+        int index = (m--) + (n--) - 1;
+        while(m >= 0 && n >= 0) {
+            if(nums1[m] >= nums2[n]) {
+                nums1[index--] = nums1[m--];
+            } else {
+                nums1[index--] = nums2[n--];
+            }
+        }
+        while(m >= 0) {
+            nums1[index--] = nums1[m--];
+        }
+        while(n >= 0) {
+            nums1[index--] = nums2[n--];
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public void merge(int[] nums1, int m, int[] nums2, int n) {
+        int index = (m--) + (n--) - 1;
+        while(m >= 0 && n >= 0) {
+            if(nums1[m] >= nums2[n]) {
+                nums1[index--] = nums1[m--];
+            } else {
+                nums1[index--] = nums2[n--];
+            }
+        }
+        while(m >= 0) {
+            nums1[index--] = nums1[m--];
+        }
+        while(n >= 0) {
+            nums1[index--] = nums2[n--];
+        }
+    }
+}
+```
 
 
 
+### [845. 数组中的最长山脉](https://leetcode.cn/problems/longest-mountain-in-array/)
+
+中等
+
+把符合下列属性的数组 `arr` 称为 **山脉数组** ：
+
+- `arr.length >= 3`
+- 存在下标 `i`（`0 < i < arr.length - 1`），满足
+  - `arr[0] < arr[1] < ... < arr[i - 1] < arr[i]`
+  - `arr[i] > arr[i + 1] > ... > arr[arr.length - 1]`
+
+给出一个整数数组 `arr`，返回最长山脉子数组的长度。如果不存在山脉子数组，返回 `0` 。
+
+**示例 1：**
+
+```
+输入：arr = [2,1,4,7,3,2,5]
+输出：5
+解释：最长的山脉子数组是 [1,4,7,3,2]，长度为 5。
+```
+
+C++版本
+
+```c++
+// 枚举山顶
+class Solution {
+public:
+    int longestMountain(vector<int>& arr) {
+        int n = arr.size();
+        if (!n) {
+            return 0;
+        }
+        vector<int> left(n);
+        for (int i = 1; i < n; ++i) {
+            left[i] = (arr[i - 1] < arr[i] ? left[i - 1] + 1 : 0);
+        }
+        vector<int> right(n);
+        for (int i = n - 2; i >= 0; --i) {
+            right[i] = (arr[i + 1] < arr[i] ? right[i + 1] + 1 : 0);
+        }
+
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            if (left[i] > 0 && right[i] > 0) {
+                ans = max(ans, left[i] + right[i] + 1);
+            }
+        }
+        return ans;
+    }
+};
+
+// 枚举山脚
+class Solution {
+public:
+    int longestMountain(vector<int>& arr) {
+        int n = arr.size();
+        int ans = 0;
+        int left = 0;
+        while (left + 2 < n) {
+            int right = left + 1;
+            if (arr[left] < arr[left + 1]) {
+                while (right + 1 < n && arr[right] < arr[right + 1]) {
+                    ++right;
+                }
+                if (right < n - 1 && arr[right] > arr[right + 1]) {
+                    while (right + 1 < n && arr[right] > arr[right + 1]) {
+                        ++right;
+                    }
+                    ans = max(ans, right - left + 1);
+                }
+                else {
+                    ++right;
+                }
+            }
+            left = right;
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 枚举山顶
+class Solution {
+    public int longestMountain(int[] arr) {
+        int n = arr.length;
+        if (n == 0) {
+            return 0;
+        }
+        int[] left = new int[n];
+        for (int i = 1; i < n; ++i) {
+            left[i] = arr[i - 1] < arr[i] ? left[i - 1] + 1 : 0;
+        }
+        int[] right = new int[n];
+        for (int i = n - 2; i >= 0; --i) {
+            right[i] = arr[i + 1] < arr[i] ? right[i + 1] + 1 : 0;
+        }
+
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            if (left[i] > 0 && right[i] > 0) {
+                ans = Math.max(ans, left[i] + right[i] + 1);
+            }
+        }
+        return ans;
+    }
+}
+
+// 枚举山脚
+class Solution {
+    public int longestMountain(int[] arr) {
+        int n = arr.length;
+        int ans = 0;
+        int left = 0;
+        while (left + 2 < n) {
+            int right = left + 1;
+            if (arr[left] < arr[left + 1]) {
+                while (right + 1 < n && arr[right] < arr[right + 1]) {
+                    ++right;
+                }
+                if (right < n - 1 && arr[right] > arr[right + 1]) {
+                    while (right + 1 < n && arr[right] > arr[right + 1]) {
+                        ++right;
+                    }
+                    ans = Math.max(ans, right - left + 1);
+                } else {
+                    ++right;
+                }
+            }
+            left = right;
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [719. 找出第 K 小的数对距离](https://leetcode.cn/problems/find-k-th-smallest-pair-distance/)
 
+困难
 
+数对 `(a,b)` 由整数 `a` 和 `b` 组成，其数对距离定义为 `a` 和 `b` 的绝对差值。
 
+给你一个整数数组 `nums` 和一个整数 `k` ，数对由 `nums[i]` 和 `nums[j]` 组成且满足 `0 <= i < j < nums.length` 。返回 **所有数对距离中** 第 `k` 小的数对距离。
 
+**示例 1：**
 
+```
+输入：nums = [1,3,1], k = 1
+输出：0
+解释：数对和对应的距离如下：
+(1,3) -> 2
+(1,1) -> 0
+(3,1) -> 2
+距离第 1 小的数对是 (1,1) ，距离为 0 。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int smallestDistancePair(vector<int>& nums, int k) {
+        sort(nums.begin(), nums.end());
+        int n = nums.size(), left = 0, right = nums.back() - nums.front();
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            int cnt = 0;
+            for (int i = 0, j = 0; j < n; j++) {
+                while (nums[j] - nums[i] > mid) {
+                    i++;
+                }
+                cnt += j - i;
+            }
+            if (cnt >= k) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int smallestDistancePair(int[] nums, int k) {
+        Arrays.sort(nums);
+        int n = nums.length, left = 0, right = nums[n - 1] - nums[0];
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            int cnt = 0;
+            for (int i = 0, j = 0; j < n; j++) {
+                while (nums[j] - nums[i] > mid) {
+                    i++;
+                }
+                cnt += j - i;
+            }
+            if (cnt >= k) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+}
+```
 
 
 
