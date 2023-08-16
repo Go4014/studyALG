@@ -9352,27 +9352,380 @@ class Solution {
 
 
 
+### [334. 递增的三元子序列](https://leetcode.cn/problems/increasing-triplet-subsequence/)
+
+中等
+
+给你一个整数数组 `nums` ，判断这个数组中是否存在长度为 `3` 的递增子序列。
+
+如果存在这样的三元组下标 `(i, j, k)` 且满足 `i < j < k` ，使得 `nums[i] < nums[j] < nums[k]` ，返回 `true` ；否则，返回 `false` 。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,4,5]
+输出：true
+解释：任何 i < j < k 的三元组都满足题意
+```
+
+C++版本
+
+```c++
+// 双向遍历
+class Solution {
+public:
+    bool increasingTriplet(vector<int>& nums) {
+        int n = nums.size();
+        if (n < 3) {
+            return false;
+        }
+        vector<int> leftMin(n);
+        leftMin[0] = nums[0];
+        for (int i = 1; i < n; i++) {
+            leftMin[i] = min(leftMin[i - 1], nums[i]);
+        }
+        vector<int> rightMax(n);
+        rightMax[n - 1] = nums[n - 1];
+        for (int i = n - 2; i >= 0; i--) {
+            rightMax[i] = max(rightMax[i + 1], nums[i]);
+        }
+        for (int i = 1; i < n - 1; i++) {
+            if (nums[i] > leftMin[i - 1] && nums[i] < rightMax[i + 1]) {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+// 贪心
+class Solution {
+public:
+    bool increasingTriplet(vector<int>& nums) {
+        int n = nums.size();
+        if (n < 3) {
+            return false;
+        }
+        int first = nums[0], second = INT_MAX;
+        for (int i = 1; i < n; i++) {
+            int num = nums[i];
+            if (num > second) {
+                return true;
+            } else if (num > first) {
+                second = num;
+            } else {
+                first = num;
+            }
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+// 双向遍历
+class Solution {
+    public boolean increasingTriplet(int[] nums) {
+        int n = nums.length;
+        if (n < 3) {
+            return false;
+        }
+        int[] leftMin = new int[n];
+        leftMin[0] = nums[0];
+        for (int i = 1; i < n; i++) {
+            leftMin[i] = Math.min(leftMin[i - 1], nums[i]);
+        }
+        int[] rightMax = new int[n];
+        rightMax[n - 1] = nums[n - 1];
+        for (int i = n - 2; i >= 0; i--) {
+            rightMax[i] = Math.max(rightMax[i + 1], nums[i]);
+        }
+        for (int i = 1; i < n - 1; i++) {
+            if (nums[i] > leftMin[i - 1] && nums[i] < rightMax[i + 1]) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+// 贪心
+class Solution {
+    public boolean increasingTriplet(int[] nums) {
+        int n = nums.length;
+        if (n < 3) {
+            return false;
+        }
+        int first = nums[0], second = Integer.MAX_VALUE;
+        for (int i = 1; i < n; i++) {
+            int num = nums[i];
+            if (num > second) {
+                return true;
+            } else if (num > first) {
+                second = num;
+            } else {
+                first = num;
+            }
+        }
+        return false;
+    }
+}
+```
 
 
 
+### [剑指 Offer 21. 调整数组顺序使奇数位于偶数前面](https://leetcode.cn/problems/diao-zheng-shu-zu-shun-xu-shi-qi-shu-wei-yu-ou-shu-qian-mian-lcof/)
+
+简单
+
+输入一个整数数组，实现一个函数来调整该数组中数字的顺序，使得所有奇数在数组的前半部分，所有偶数在数组的后半部分。
+
+**示例：**
+
+```
+输入：nums = [1,2,3,4]
+输出：[1,3,2,4] 
+注：[3,1,2,4] 也是正确的答案之一。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    vector<int> exchange(vector<int>& nums) {
+        for(int slow = 0, fast = 0; fast < nums.size(); fast++) {
+            if(nums[fast] % 2 == 1) {
+                int temp = nums[fast];
+                nums[fast] = nums[slow];
+                nums[slow] = temp;
+                slow++;
+            }
+        }
+        return nums;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int[] exchange(int[] nums) {
+        for(int slow = 0, fast = 0; fast < nums.length; fast++) {
+            if(nums[fast] % 2 == 1) {
+                int temp = nums[fast];
+                nums[fast] = nums[slow];
+                nums[slow] = temp;
+                slow++;
+            }
+        }
+        return nums;
+    }
+}
+```
 
 
 
+### [978. 最长湍流子数组](https://leetcode.cn/problems/longest-turbulent-subarray/)
 
+中等
 
+给定一个整数数组 `arr` ，返回 `arr` 的 *最大湍流子数组的**长度*** 。
 
+如果比较符号在子数组中的每个相邻元素对之间翻转，则该子数组是 **湍流子数组** 。
 
+更正式地来说，当 `arr` 的子数组 `A[i], A[i+1], ..., A[j]` 满足仅满足下列条件时，我们称其为*湍流子数组*：
 
+- 若 `i <= k < j` ：
+  - 当 `k` 为奇数时， `A[k] > A[k+1]`，且
+  - 当 `k` 为偶数时，`A[k] < A[k+1]`；
+- **或** 若 `i <= k < j` 
+  - 当 `k` 为偶数时，`A[k] > A[k+1]` ，且
+  - 当 `k` 为奇数时， `A[k] < A[k+1]`。
 
+**示例 1：**
 
+```
+输入：arr = [9,4,2,10,7,8,8,1,9]
+输出：5
+解释：arr[1] > arr[2] < arr[3] > arr[4] < arr[5]
+```
 
+C++版本
 
+```c++
+// 方法一：滑动窗口
+class Solution {
+public:
+    int maxTurbulenceSize(vector<int>& arr) {
+        int n = arr.size();
+        int ret = 1;
+        int left = 0, right = 0;
 
+        while (right < n - 1) {
+            if (left == right) {
+                if (arr[left] == arr[left + 1]) {
+                    left++;
+                }
+                right++;
+            } else {
+                if (arr[right - 1] < arr[right] && arr[right] > arr[right + 1]) {
+                    right++;
+                } else if (arr[right - 1] > arr[right] && arr[right] < arr[right + 1]) {
+                    right++;
+                } else {
+                    left = right;
+                }
+            }
+            ret = max(ret, right - left + 1);
+        }
+        return ret;
+    }
+};
 
+// 方法二：动态规划
+class Solution {
+public:
+    int maxTurbulenceSize(vector<int>& arr) {
+        int n = arr.size();
+        vector<vector<int>> dp(n, vector<int>(2, 1));
+        dp[0][0] = dp[0][1] = 1;
+        for (int i = 1; i < n; i++) {
+            if (arr[i - 1] > arr[i]) {
+                dp[i][0] = dp[i - 1][1] + 1;
+            } else if (arr[i - 1] < arr[i]) {
+                dp[i][1] = dp[i - 1][0] + 1;
+            }
+        }
 
+        int ret = 1;
+        for (int i = 0; i < n; i++) {
+            ret = max(ret, dp[i][0]);
+            ret = max(ret, dp[i][1]);
+        }
+        return ret;
+    }
+};
 
+// 方法三：双指针
+class Solution {
+public:
+    int maxTurbulenceSize(vector<int>& arr) {
+        int len = arr.size();
+        if (len < 2) {
+            return len;
+        }
 
+        int left = 0;
+        int right = 1;
+		// 为 true 表示 arr[i - 1] < arr[i]
+        bool pre = false;
+        int res = 1;
+        while (right < len) {
+            bool current = arr[right - 1] < arr[right];
+            if (current == pre) {
+                left = right - 1;
+            }
+            if (arr[right - 1] == arr[right]) {
+                left = right;
+            }
+            right++;
+            res = max(res, right - left);
+            pre = current;
+        }
+        return res;
+    }
+};
+```
 
+Java版本
+
+```java
+// 方法一：滑动窗口
+class Solution {
+    public int maxTurbulenceSize(int[] arr) {
+        int n = arr.length;
+        int ret = 1;
+        int left = 0, right = 0;
+
+        while (right < n - 1) {
+            if (left == right) {
+                if (arr[left] == arr[left + 1]) {
+                    left++;
+                }
+                right++;
+            } else {
+                if (arr[right - 1] < arr[right] && arr[right] > arr[right + 1]) {
+                    right++;
+                } else if (arr[right - 1] > arr[right] && arr[right] < arr[right + 1]) {
+                    right++;
+                } else {
+                    left = right;
+                }
+            }
+            ret = Math.max(ret, right - left + 1);
+        }
+        return ret;
+    }
+}
+
+// 方法二：动态规划
+class Solution {
+    public int maxTurbulenceSize(int[] arr) {
+        int n = arr.length;
+        int[][] dp = new int[n][2];
+        dp[0][0] = dp[0][1] = 1;
+        for (int i = 1; i < n; i++) {
+            dp[i][0] = dp[i][1] = 1;
+            if (arr[i - 1] > arr[i]) {
+                dp[i][0] = dp[i - 1][1] + 1;
+            } else if (arr[i - 1] < arr[i]) {
+                dp[i][1] = dp[i - 1][0] + 1;
+            }
+        }
+
+        int ret = 1;
+        for (int i = 0; i < n; i++) {
+            ret = Math.max(ret, dp[i][0]);
+            ret = Math.max(ret, dp[i][1]);
+        }
+        return ret;
+    }
+}
+
+// 方法三：双指针
+public class Solution {
+
+    public int maxTurbulenceSize(int[] arr) {
+        int len = arr.length;
+        if (len < 2) {
+            return len;
+        }
+
+        int left = 0;
+        int right = 1;
+		// 为 true 表示 arr[i - 1] < arr[i]
+        boolean pre = false;
+        int res = 1;
+        while (right < len) {
+            boolean current = arr[right - 1] < arr[right];
+            if (current == pre) {
+                left = right - 1;
+            }
+            if (arr[right - 1] == arr[right]) {
+                left = right;
+            }
+            right++;
+            res = Math.max(res, right - left);
+            pre = current;
+        }
+        return res;
+    }
+}
+```
 
 
 
