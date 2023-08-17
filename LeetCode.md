@@ -9729,23 +9729,283 @@ public class Solution {
 
 
 
+### [925. 长按键入](https://leetcode.cn/problems/long-pressed-name/)
+
+简单
+
+你的朋友正在使用键盘输入他的名字 `name`。偶尔，在键入字符 `c` 时，按键可能会被*长按*，而字符可能被输入 1 次或多次。
+
+你将会检查键盘输入的字符 `typed`。如果它对应的可能是你的朋友的名字（其中一些字符可能被长按），那么就返回 `True`。
+
+**示例 1：**
+
+```
+输入：name = "alex", typed = "aaleex"
+输出：true
+解释：'alex' 中的 'a' 和 'e' 被长按。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool isLongPressedName(string name, string typed) {
+        int index1 = 0, index2 = 0;
+        while(index2 < typed.size()) {
+            if(index1 < name.size() && name[index1] == typed[index2]) {
+                index1++;
+                index2++;
+            } else if(index2 > 0 && typed[index2-1] == typed[index2]) {
+                index2++;
+            } else {
+                return false;
+            }
+        }
+        return index1 == name.size();
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean isLongPressedName(String name, String typed) {
+        int index1 = 0, index2 = 0;
+        while(index2 < typed.length()) {
+            if(index1 < name.length() && name.charAt(index1) == typed.charAt(index2)) {
+                index1++;
+                index2++;
+            } else if(index2 > 0 && typed.charAt(index2-1) == typed.charAt(index2)) {
+                index2++;
+            } else {
+                return false;
+            }
+        }
+        return index1 == name.length();
+    }
+}
+```
 
 
 
+### [844. 比较含退格的字符串](https://leetcode.cn/problems/backspace-string-compare/)
+
+简单
+
+给定 `s` 和 `t` 两个字符串，当它们分别被输入到空白的文本编辑器后，如果两者相等，返回 `true` 。`#` 代表退格字符。
+
+**注意：**如果对空文本输入退格字符，文本继续为空。
+
+**示例 1：**
+
+```
+输入：s = "ab#c", t = "ad#c"
+输出：true
+解释：s 和 t 都会变成 "ac"。
+```
+
+C++版本
+
+```c++
+// 方法一：重构字符串
+class Solution {
+public:
+    bool backspaceCompare(string S, string T) {
+        return build(S) == build(T);
+    }
+
+    string build(string str) {
+        string ret;
+        for (char ch : str) {
+            if (ch != '#') {
+                ret.push_back(ch);
+            } else if (!ret.empty()) {
+                ret.pop_back();
+            }
+        }
+        return ret;
+    }
+};
+
+// 方法二：双指针
+class Solution {
+public:
+    bool backspaceCompare(string S, string T) {
+        int i = S.length() - 1, j = T.length() - 1;
+        int skipS = 0, skipT = 0;
+
+        while (i >= 0 || j >= 0) {
+            while (i >= 0) {
+                if (S[i] == '#') {
+                    skipS++, i--;
+                } else if (skipS > 0) {
+                    skipS--, i--;
+                } else {
+                    break;
+                }
+            }
+            while (j >= 0) {
+                if (T[j] == '#') {
+                    skipT++, j--;
+                } else if (skipT > 0) {
+                    skipT--, j--;
+                } else {
+                    break;
+                }
+            }
+            if (i >= 0 && j >= 0) {
+                if (S[i] != T[j]) {
+                    return false;
+                }
+            } else {
+                if (i >= 0 || j >= 0) {
+                    return false;
+                }
+            }
+            i--, j--;
+        }
+        return true;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：重构字符串 
+class Solution {
+    public boolean backspaceCompare(String S, String T) {
+        return build(S).equals(build(T));
+    }
+
+    public String build(String str) {
+        StringBuffer ret = new StringBuffer();
+        int length = str.length();
+        for (int i = 0; i < length; ++i) {
+            char ch = str.charAt(i);
+            if (ch != '#') {
+                ret.append(ch);
+            } else {
+                if (ret.length() > 0) {
+                    ret.deleteCharAt(ret.length() - 1);
+                }
+            }
+        }
+        return ret.toString();
+    }
+}
+
+// 方法二：双指针
+class Solution {
+    public boolean backspaceCompare(String S, String T) {
+        int i = S.length() - 1, j = T.length() - 1;
+        int skipS = 0, skipT = 0;
+
+        while (i >= 0 || j >= 0) {
+            while (i >= 0) {
+                if (S.charAt(i) == '#') {
+                    skipS++;
+                    i--;
+                } else if (skipS > 0) {
+                    skipS--;
+                    i--;
+                } else {
+                    break;
+                }
+            }
+            while (j >= 0) {
+                if (T.charAt(j) == '#') {
+                    skipT++;
+                    j--;
+                } else if (skipT > 0) {
+                    skipT--;
+                    j--;
+                } else {
+                    break;
+                }
+            }
+            if (i >= 0 && j >= 0) {
+                if (S.charAt(i) != T.charAt(j)) {
+                    return false;
+                }
+            } else {
+                if (i >= 0 || j >= 0) {
+                    return false;
+                }
+            }
+            i--;
+            j--;
+        }
+        return true;
+    }
+}
+```
 
 
 
+### [415. 字符串相加](https://leetcode.cn/problems/add-strings/)
 
+简单
 
+给定两个字符串形式的非负整数 `num1` 和`num2` ，计算它们的和并同样以字符串形式返回。
 
+你不能使用任何內建的用于处理大整数的库（比如 `BigInteger`）， 也不能直接将输入的字符串转换为整数形式。
 
+**示例 1：**
 
+```
+输入：num1 = "11", num2 = "123"
+输出："134"
+```
 
+C++版本
 
+```c++
+class Solution {
+public:
+    string addStrings(string num1, string num2) {
+        int i = num1.length() - 1, j = num2.length() - 1, add = 0;
+        string ans = "";
+        while (i >= 0 || j >= 0 || add != 0) {
+            int x = i >= 0 ? num1[i] - '0' : 0;
+            int y = j >= 0 ? num2[j] - '0' : 0;
+            int result = x + y + add;
+            ans.push_back('0' + result % 10);
+            add = result / 10;
+            i -= 1;
+            j -= 1;
+        }
+        // 计算完以后的答案需要翻转过来
+        reverse(ans.begin(), ans.end());
+        return ans;
+    }
+};
+```
 
+Java版本
 
-
-
+```java
+class Solution {
+    public String addStrings(String num1, String num2) {
+        int i = num1.length() - 1, j = num2.length() - 1, add = 0;
+        StringBuffer ans = new StringBuffer();
+        while (i >= 0 || j >= 0 || add != 0) {
+            int x = i >= 0 ? num1.charAt(i) - '0' : 0;
+            int y = j >= 0 ? num2.charAt(j) - '0' : 0;
+            int result = x + y + add;
+            ans.append(result % 10);
+            add = result / 10;
+            i--;
+            j--;
+        }
+        // 计算完以后的答案需要翻转过来
+        ans.reverse();
+        return ans.toString();
+    }
+}
+```
 
 
 
