@@ -1,6 +1,6 @@
 # 数组
 
-## 数组操作题目
+## 数组操作
 
 ### [189. 轮转数组](https://leetcode.cn/problems/rotate-array/)
 
@@ -312,7 +312,7 @@ class Solution {
 
 
 
-## 二维数组题目
+## 二维数组
 
 ### [498. 对角线遍历](https://leetcode.cn/problems/diagonal-traverse/)
 
@@ -961,7 +961,7 @@ class Solution {
 
 
 
-## 数组排序题目
+## 数组排序
 
 ### [剑指 Offer 45. 把数组排成最小的数](https://leetcode.cn/problems/ba-shu-zu-pai-cheng-zui-xiao-de-shu-lcof/)
 
@@ -3490,7 +3490,7 @@ class Solution {
 
 
 
-## 二分查找题目
+## 二分查找
 
 ### [704. 二分查找](https://leetcode.cn/problems/binary-search/)
 
@@ -10009,17 +10009,133 @@ class Solution {
 
 
 
+## 数组滑动窗口
+
+### [1343. 大小为 K 且平均值大于等于阈值的子数组数目](https://leetcode.cn/problems/number-of-sub-arrays-of-size-k-and-average-greater-than-or-equal-to-threshold/)
+
+中等
+
+给你一个整数数组 `arr` 和两个整数 `k` 和 `threshold` 。
+
+请你返回长度为 `k` 且平均值大于等于 `threshold` 的子数组数目。
+
+**示例 1：**
+
+```
+输入：arr = [2,2,2,2,5,5,5,8], k = 3, threshold = 4
+输出：3
+解释：子数组 [2,5,5],[5,5,5] 和 [5,5,8] 的平均值分别为 4，5 和 6 。其他长度为 3 的子数组的平均值都小于 4 （threshold 的值)。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int numOfSubarrays(vector<int>& arr, int k, int threshold) {
+        int left = 0, right = 0, window_sum = 0, res = 0;
+        int len = arr.size();
+        while(right < len) {
+            window_sum += arr[right];
+            if(right - left + 1 >= k) {
+               if(window_sum/k >= threshold){
+                   res++;
+               }
+               window_sum -= arr[left];
+               left++;
+            }
+            right++;
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int numOfSubarrays(int[] arr, int k, int threshold) {
+        int left = 0, right = 0, window_sum = 0, res = 0;
+        int len = arr.length;
+        while(right < len) {
+            window_sum += arr[right];
+            if(right - left + 1 >= k) {
+               if(window_sum/k >= threshold){
+                   res++;
+               }
+               window_sum -= arr[left];
+               left++;
+            }
+            right++;
+        }
+        return res;
+    }
+}
+```
 
 
 
+### [643. 子数组最大平均数 I](https://leetcode.cn/problems/maximum-average-subarray-i/)
 
+简单
 
+给你一个由 `n` 个元素组成的整数数组 `nums` 和一个整数 `k` 。
 
+请你找出平均数最大且 **长度为 `k`** 的连续子数组，并输出该最大平均数。
 
+任何误差小于 `10-5` 的答案都将被视为正确答案。
 
+**示例 1：**
 
+```
+输入：nums = [1,12,-5,-6,50,3], k = 4
+输出：12.75
+解释：最大平均数 (12-5-6+50)/4 = 51/4 = 12.75
+```
 
+C++版本
 
+```c++
+class Solution {
+public:
+    double findMaxAverage(vector<int>& nums, int k) {
+        int left = 0, right = 0, len = nums.size();
+        double res = -10000, window_sum = 0;
+        while(right < len) {
+            window_sum += nums[right];
+            if(right - left + 1 >= k) {
+                res = max(window_sum/k, res);
+                window_sum -= nums[left];
+                left++;
+            }
+            right++;
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public double findMaxAverage(int[] nums, int k) {
+        int left = 0, right = 0, len = nums.length;
+        double res = -10000, window_sum = 0;
+        while(right < len) {
+            window_sum += nums[right];
+            if(right - left + 1 >= k) {
+                res = Math.max(window_sum/k, res);
+                window_sum -= nums[left];
+                left++;
+            }
+            right++;
+        }
+        return res;
+    }
+}
+```
 
 
 
