@@ -10139,15 +10139,144 @@ class Solution {
 
 
 
+### [1052. 爱生气的书店老板](https://leetcode.cn/problems/grumpy-bookstore-owner/)
+
+中等
+
+有一个书店老板，他的书店开了 `n` 分钟。每分钟都有一些顾客进入这家商店。给定一个长度为 `n` 的整数数组 `customers` ，其中 `customers[i]` 是在第 `i` 分钟开始时进入商店的顾客数量，所有这些顾客在第 `i` 分钟结束后离开。
+
+在某些时候，书店老板会生气。 如果书店老板在第 `i` 分钟生气，那么 `grumpy[i] = 1`，否则 `grumpy[i] = 0`。
+
+当书店老板生气时，那一分钟的顾客就会不满意，若老板不生气则顾客是满意的。
+
+书店老板知道一个秘密技巧，能抑制自己的情绪，可以让自己连续 `minutes` 分钟不生气，但却只能使用一次。
+
+请你返回 *这一天营业下来，最多有多少客户能够感到满意* 。
+
+**示例 1：**
+
+```
+输入：customers = [1,0,1,2,1,1,7,5], grumpy = [0,1,0,1,0,1,0,1], minutes = 3
+输出：16
+解释：书店老板在最后 3 分钟保持冷静。
+感到满意的最大客户数量 = 1 + 1 + 1 + 1 + 7 + 5 = 16.
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int maxSatisfied(vector<int>& customers, vector<int>& grumpy, int minutes) {
+        int right = 0, window_sum = 0, sum = 0;
+        while(right < customers.size()) {
+            window_sum += customers[right] * grumpy[right];
+            if(right + 1 >= minutes) {
+                if(window_sum > sum) {
+                    sum  = window_sum;
+                }
+                window_sum -= customers[right - minutes + 1] * grumpy[right - minutes + 1];
+            }
+            right++;
+        }
+        for(int i = 0; i < customers.size(); i++) {
+            if(grumpy[i] == 0) {
+                sum += customers[i];
+            }
+        }
+        return sum;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int maxSatisfied(int[] customers, int[] grumpy, int minutes) {
+        int right = 0, window_sum = 0, sum = 0;
+        while(right < customers.length) {
+            window_sum += customers[right] * grumpy[right];
+            if(right + 1 >= minutes) {
+                if(window_sum > sum) {
+                    sum  = window_sum;
+                }
+                window_sum -= customers[right - minutes + 1] * grumpy[right - minutes + 1];
+            }
+            right++;
+        }
+        for(int i = 0; i < customers.length; i++) {
+            if(grumpy[i] == 0) {
+                sum += customers[i];
+            }
+        }
+        return sum;
+    }
+}
+```
 
 
 
+### [1423. 可获得的最大点数](https://leetcode.cn/problems/maximum-points-you-can-obtain-from-cards/)
 
+中等
 
+几张卡牌 **排成一行**，每张卡牌都有一个对应的点数。点数由整数数组 `cardPoints` 给出。
 
+每次行动，你可以从行的开头或者末尾拿一张卡牌，最终你必须正好拿 `k` 张卡牌。
 
+你的点数就是你拿到手中的所有卡牌的点数之和。
 
+给你一个整数数组 `cardPoints` 和整数 `k`，请你返回可以获得的最大点数。
 
+**示例 1：**
+
+```
+输入：cardPoints = [1,2,3,4,5,6,1], k = 3
+输出：12
+解释：第一次行动，不管拿哪张牌，你的点数总是 1 。但是，先拿最右边的卡牌将会最大化你的可获得点数。最优策略是拿右边的三张牌，最终点数为 1 + 6 + 5 = 12 。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int maxScore(vector<int>& cardPoints, int k) {
+        int left = 0, sum = 0;
+        while(left < k) {
+            sum += cardPoints[left++];
+        }
+        int maxSum = sum;
+        while(left > 0) {
+            left--;
+            sum += cardPoints[cardPoints.size() - (k - left)] - cardPoints[left];
+            maxSum = max(sum, maxSum);
+        }
+        return maxSum;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int maxScore(int[] cardPoints, int k) {
+        int left = 0, sum = 0;
+        while(left < k) {
+            sum += cardPoints[left++];
+        }
+        int maxSum = sum;
+        while(left > 0) {
+            left--;
+            sum += cardPoints[cardPoints.length - (k - left)] - cardPoints[left];
+            maxSum = Math.max(sum, maxSum);
+        }
+        return maxSum;
+    }
+}
+```
 
 
 
