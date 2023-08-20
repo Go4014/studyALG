@@ -10280,17 +10280,110 @@ class Solution {
 
 
 
+### [1456. 定长子串中元音的最大数目](https://leetcode.cn/problems/maximum-number-of-vowels-in-a-substring-of-given-length/)
+
+中等
+
+给你字符串 `s` 和整数 `k` 。
+
+请返回字符串 `s` 中长度为 `k` 的单个子字符串中可能包含的最大元音字母数。
+
+英文中的 **元音字母** 为（`a`, `e`, `i`, `o`, `u`）。
+
+**示例 1：**
+
+```
+输入：s = "abciiidef", k = 3
+输出：3
+解释：子字符串 "iii" 包含 3 个元音字母。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int maxVowels(string s, int k) {
+        int right = 0, len = s.size();
+        int maxVowel = 0, window_sum = 0;
+        while(right < len) {
+            if(isVowel(s[right])) {
+                window_sum++;
+            }
+            if(right + 1 >= k) {
+                maxVowel = max(maxVowel, window_sum);
+                if(isVowel(s[right - k + 1])) {
+                    window_sum--;
+                }
+            }
+            right++;
+        }
+        return maxVowel;
+    }
+
+    bool isVowel(char vowel) {
+        return vowel == 'a' || vowel == 'e' || vowel == 'i' || vowel == 'o' || vowel == 'u';
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int maxVowels(String s, int k) {
+        int right = 0, len = s.length();
+        int maxVowel = 0, window_sum = 0;
+        while(right < len) {
+            if(isVowel(s.charAt(right))) {
+                window_sum++;
+            }
+            if(right + 1 >= k) {
+                maxVowel = Math.max(maxVowel, window_sum);
+                if(isVowel(s.charAt(right - k + 1))) {
+                    window_sum--;
+                }
+            }
+            right++;
+        }
+        return maxVowel;
+    }
+
+    public boolean isVowel(char vowel) {
+        return vowel == 'a' || vowel == 'e' || vowel == 'i' || vowel == 'o' || vowel == 'u';
+    }
+}
+```
 
 
 
+### [567. 字符串的排列](https://leetcode.cn/problems/permutation-in-string/)
 
+中等
 
+给你两个字符串 `s1` 和 `s2` ，写一个函数来判断 `s2` 是否包含 `s1` 的排列。如果是，返回 `true` ；否则，返回 `false` 。
 
+换句话说，`s1` 的排列之一是 `s2` 的 **子串** 。
 
+**示例 1：**
 
+```
+输入：s1 = "ab" s2 = "eidbaooo"
+输出：true
+解释：s2 包含 s1 的排列之一 ("ba").
+```
 
+C++版本
 
+```c++
 
+```
+
+Java版本
+
+```java
+
+```
 
 
 
