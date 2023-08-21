@@ -11046,13 +11046,469 @@ class Solution {
 
 
 
+### [239. 滑动窗口最大值](https://leetcode.cn/problems/sliding-window-maximum/)
+
+困难
+
+给你一个整数数组 `nums`，有一个大小为 `k` 的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口内的 `k` 个数字。滑动窗口每次只向右移动一位。
+
+返回 *滑动窗口中的最大值* 。
+
+**示例 1：**
+
+```
+输入：nums = [1,3,-1,-3,5,3,6,7], k = 3
+输出：[3,3,5,5,6,7]
+解释：
+滑动窗口的位置                最大值
+---------------               -----
+[1  3  -1] -3  5  3  6  7       3
+ 1 [3  -1  -3] 5  3  6  7       3
+ 1  3 [-1  -3  5] 3  6  7       5
+ 1  3  -1 [-3  5  3] 6  7       5
+ 1  3  -1  -3 [5  3  6] 7       6
+ 1  3  -1  -3  5 [3  6  7]      7
+```
+
+C++版本
+
+```c++
+// 方法一：优先队列
+class Solution {
+public:
+    vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+        int n = nums.size();
+        priority_queue<pair<int, int>> q;
+        for (int i = 0; i < k; ++i) {
+            q.emplace(nums[i], i);
+        }
+        vector<int> ans = {q.top().first};
+        for (int i = k; i < n; ++i) {
+            q.emplace(nums[i], i);
+            while (q.top().second <= i - k) {
+                q.pop();
+            }
+            ans.push_back(q.top().first);
+        }
+        return ans;
+    }
+};
+
+// 方法二：单调队列
+class Solution {
+public:
+    vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+        int n = nums.size();
+        deque<int> q;
+        for (int i = 0; i < k; ++i) {
+            while (!q.empty() && nums[i] >= nums[q.back()]) {
+                q.pop_back();
+            }
+            q.push_back(i);
+        }
+
+        vector<int> ans = {nums[q.front()]};
+        for (int i = k; i < n; ++i) {
+            while (!q.empty() && nums[i] >= nums[q.back()]) {
+                q.pop_back();
+            }
+            q.push_back(i);
+            while (q.front() <= i - k) {
+                q.pop_front();
+            }
+            ans.push_back(nums[q.front()]);
+        }
+        return ans;
+    }
+};
+
+// 方法三：分块 + 预处理
+class Solution {
+public:
+    vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> prefixMax(n), suffixMax(n);
+        for (int i = 0; i < n; ++i) {
+            if (i % k == 0) {
+                prefixMax[i] = nums[i];
+            }
+            else {
+                prefixMax[i] = max(prefixMax[i - 1], nums[i]);
+            }
+        }
+        for (int i = n - 1; i >= 0; --i) {
+            if (i == n - 1 || (i + 1) % k == 0) {
+                suffixMax[i] = nums[i];
+            }
+            else {
+                suffixMax[i] = max(suffixMax[i + 1], nums[i]);
+            }
+        }
+
+        vector<int> ans;
+        for (int i = 0; i <= n - k; ++i) {
+            ans.push_back(max(suffixMax[i], prefixMax[i + k - 1]));
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：优先队列
+class Solution {
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        int n = nums.length;
+        PriorityQueue<int[]> pq = new PriorityQueue<int[]>(new Comparator<int[]>() {
+            public int compare(int[] pair1, int[] pair2) {
+                return pair1[0] != pair2[0] ? pair2[0] - pair1[0] : pair2[1] - pair1[1];
+            }
+        });
+        for (int i = 0; i < k; ++i) {
+            pq.offer(new int[]{nums[i], i});
+        }
+        int[] ans = new int[n - k + 1];
+        ans[0] = pq.peek()[0];
+        for (int i = k; i < n; ++i) {
+            pq.offer(new int[]{nums[i], i});
+            while (pq.peek()[1] <= i - k) {
+                pq.poll();
+            }
+            ans[i - k + 1] = pq.peek()[0];
+        }
+        return ans;
+    }
+}
+
+// 方法二：单调队列
+class Solution {
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        int n = nums.length;
+        Deque<Integer> deque = new LinkedList<Integer>();
+        for (int i = 0; i < k; ++i) {
+            while (!deque.isEmpty() && nums[i] >= nums[deque.peekLast()]) {
+                deque.pollLast();
+            }
+            deque.offerLast(i);
+        }
+
+        int[] ans = new int[n - k + 1];
+        ans[0] = nums[deque.peekFirst()];
+        for (int i = k; i < n; ++i) {
+            while (!deque.isEmpty() && nums[i] >= nums[deque.peekLast()]) {
+                deque.pollLast();
+            }
+            deque.offerLast(i);
+            while (deque.peekFirst() <= i - k) {
+                deque.pollFirst();
+            }
+            ans[i - k + 1] = nums[deque.peekFirst()];
+        }
+        return ans;
+    }
+}
+
+// 方法三：分块 + 预处理
+class Solution {
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        int n = nums.length;
+        int[] prefixMax = new int[n];
+        int[] suffixMax = new int[n];
+        for (int i = 0; i < n; ++i) {
+            if (i % k == 0) {
+                prefixMax[i] = nums[i];
+            }
+            else {
+                prefixMax[i] = Math.max(prefixMax[i - 1], nums[i]);
+            }
+        }
+        for (int i = n - 1; i >= 0; --i) {
+            if (i == n - 1 || (i + 1) % k == 0) {
+                suffixMax[i] = nums[i];
+            } else {
+                suffixMax[i] = Math.max(suffixMax[i + 1], nums[i]);
+            }
+        }
+
+        int[] ans = new int[n - k + 1];
+        for (int i = 0; i <= n - k; ++i) {
+            ans[i] = Math.max(suffixMax[i], prefixMax[i + k - 1]);
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [480. 滑动窗口中位数](https://leetcode.cn/problems/sliding-window-median/)
+
+困难
+
+中位数是有序序列最中间的那个数。如果序列的长度是偶数，则没有最中间的数；此时中位数是最中间的两个数的平均数。
+
+例如：
+
+- `[2,3,4]`，中位数是 `3`
+- `[2,3]`，中位数是 `(2 + 3) / 2 = 2.5`
+
+给你一个数组 *nums*，有一个长度为 *k* 的窗口从最左端滑动到最右端。窗口中有 *k* 个数，每次窗口向右移动 *1* 位。你的任务是找出每次窗口移动后得到的新窗口中元素的中位数，并输出由它们组成的数组。
+
+**示例：**
+
+给出 *nums* = `[1,3,-1,-3,5,3,6,7]`，以及 *k* = 3。
+
+```
+窗口位置                      中位数
+---------------               -----
+[1  3  -1] -3  5  3  6  7       1
+ 1 [3  -1  -3] 5  3  6  7      -1
+ 1  3 [-1  -3  5] 3  6  7      -1
+ 1  3  -1 [-3  5  3] 6  7       3
+ 1  3  -1  -3 [5  3  6] 7       5
+ 1  3  -1  -3  5 [3  6  7]      6
+```
+
+ 因此，返回该滑动窗口的中位数数组 `[1,-1,-1,3,5,6]`。
+
+**提示：**
+
+- 你可以假设 `k` 始终有效，即：`k` 始终小于等于输入的非空数组的元素个数。
+- 与真实值误差在 `10 ^ -5` 以内的答案将被视作正确答案。
 
 
 
+C++版本
 
+```c++
+// 方法一：双优先队列 + 延迟删除
+class DualHeap {
+private:
+    // 大根堆，维护较小的一半元素
+    priority_queue<int> small;
+    // 小根堆，维护较大的一半元素
+    priority_queue<int, vector<int>, greater<int>> large;
+    // 哈希表，记录「延迟删除」的元素，key 为元素，value 为需要删除的次数
+    unordered_map<int, int> delayed;
 
+    int k;
+    // small 和 large 当前包含的元素个数，需要扣除被「延迟删除」的元素
+    int smallSize, largeSize;
 
+public:
+    DualHeap(int _k): k(_k), smallSize(0), largeSize(0) {}
+
+private:
+    // 不断地弹出 heap 的堆顶元素，并且更新哈希表
+    template<typename T>
+    void prune(T& heap) {
+        while (!heap.empty()) {
+            int num = heap.top();
+            if (delayed.count(num)) {
+                --delayed[num];
+                if (!delayed[num]) {
+                    delayed.erase(num);
+                }
+                heap.pop();
+            }
+            else {
+                break;
+            }
+        }
+    }
+
+    // 调整 small 和 large 中的元素个数，使得二者的元素个数满足要求
+    void makeBalance() {
+        if (smallSize > largeSize + 1) {
+            // small 比 large 元素多 2 个
+            large.push(small.top());
+            small.pop();
+            --smallSize;
+            ++largeSize;
+            // small 堆顶元素被移除，需要进行 prune
+            prune(small);
+        }
+        else if (smallSize < largeSize) {
+            // large 比 small 元素多 1 个
+            small.push(large.top());
+            large.pop();
+            ++smallSize;
+            --largeSize;
+            // large 堆顶元素被移除，需要进行 prune
+            prune(large);
+        }
+    }
+
+public:
+    void insert(int num) {
+        if (small.empty() || num <= small.top()) {
+            small.push(num);
+            ++smallSize;
+        }
+        else {
+            large.push(num);
+            ++largeSize;
+        }
+        makeBalance();
+    }
+
+    void erase(int num) {
+        ++delayed[num];
+        if (num <= small.top()) {
+            --smallSize;
+            if (num == small.top()) {
+                prune(small);
+            }
+        }
+        else {
+            --largeSize;
+            if (num == large.top()) {
+                prune(large);
+            }
+        }
+        makeBalance();
+    }
+
+    double getMedian() {
+        return k & 1 ? small.top() : ((double)small.top() + large.top()) / 2;
+    }
+};
+
+class Solution {
+public:
+    vector<double> medianSlidingWindow(vector<int>& nums, int k) {
+        DualHeap dh(k);
+        for (int i = 0; i < k; ++i) {
+            dh.insert(nums[i]);
+        }
+        vector<double> ans = {dh.getMedian()};
+        for (int i = k; i < nums.size(); ++i) {
+            dh.insert(nums[i]);
+            dh.erase(nums[i - k]);
+            ans.push_back(dh.getMedian());
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：双优先队列 + 延迟删除
+class Solution {
+    public double[] medianSlidingWindow(int[] nums, int k) {
+        DualHeap dh = new DualHeap(k);
+        for (int i = 0; i < k; ++i) {
+            dh.insert(nums[i]);
+        }
+        double[] ans = new double[nums.length - k + 1];
+        ans[0] = dh.getMedian();
+        for (int i = k; i < nums.length; ++i) {
+            dh.insert(nums[i]);
+            dh.erase(nums[i - k]);
+            ans[i - k + 1] = dh.getMedian();
+        }
+        return ans;
+    }
+}
+
+class DualHeap {
+    // 大根堆，维护较小的一半元素
+    private PriorityQueue<Integer> small;
+    // 小根堆，维护较大的一半元素
+    private PriorityQueue<Integer> large;
+    // 哈希表，记录「延迟删除」的元素，key 为元素，value 为需要删除的次数
+    private Map<Integer, Integer> delayed;
+
+    private int k;
+    // small 和 large 当前包含的元素个数，需要扣除被「延迟删除」的元素
+    private int smallSize, largeSize;
+
+    public DualHeap(int k) {
+        this.small = new PriorityQueue<Integer>(new Comparator<Integer>() {
+            public int compare(Integer num1, Integer num2) {
+                return num2.compareTo(num1);
+            }
+        });
+        this.large = new PriorityQueue<Integer>(new Comparator<Integer>() {
+            public int compare(Integer num1, Integer num2) {
+                return num1.compareTo(num2);
+            }
+        });
+        this.delayed = new HashMap<Integer, Integer>();
+        this.k = k;
+        this.smallSize = 0;
+        this.largeSize = 0;
+    }
+
+    public double getMedian() {
+        return (k & 1) == 1 ? small.peek() : ((double) small.peek() + large.peek()) / 2;
+    }
+
+    public void insert(int num) {
+        if (small.isEmpty() || num <= small.peek()) {
+            small.offer(num);
+            ++smallSize;
+        } else {
+            large.offer(num);
+            ++largeSize;
+        }
+        makeBalance();
+    }
+
+    public void erase(int num) {
+        delayed.put(num, delayed.getOrDefault(num, 0) + 1);
+        if (num <= small.peek()) {
+            --smallSize;
+            if (num == small.peek()) {
+                prune(small);
+            }
+        } else {
+            --largeSize;
+            if (num == large.peek()) {
+                prune(large);
+            }
+        }
+        makeBalance();
+    }
+
+    // 不断地弹出 heap 的堆顶元素，并且更新哈希表
+    private void prune(PriorityQueue<Integer> heap) {
+        while (!heap.isEmpty()) {
+            int num = heap.peek();
+            if (delayed.containsKey(num)) {
+                delayed.put(num, delayed.get(num) - 1);
+                if (delayed.get(num) == 0) {
+                    delayed.remove(num);
+                }
+                heap.poll();
+            } else {
+                break;
+            }
+        }
+    }
+
+    // 调整 small 和 large 中的元素个数，使得二者的元素个数满足要求
+    private void makeBalance() {
+        if (smallSize > largeSize + 1) {
+            // small 比 large 元素多 2 个
+            large.offer(small.poll());
+            --smallSize;
+            ++largeSize;
+            // small 堆顶元素被移除，需要进行 prune
+            prune(small);
+        } else if (smallSize < largeSize) {
+            // large 比 small 元素多 1 个
+            small.offer(large.poll());
+            ++smallSize;
+            --largeSize;
+            // large 堆顶元素被移除，需要进行 prune
+            prune(large);
+        }
+    }
+}
+```
 
