@@ -10587,27 +10587,462 @@ class Solution {
 
 
 
+### [438. 找到字符串中所有字母异位词](https://leetcode.cn/problems/find-all-anagrams-in-a-string/)
+
+中等
+
+给定两个字符串 `s` 和 `p`，找到 `s` 中所有 `p` 的 **异位词** 的子串，返回这些子串的起始索引。不考虑答案输出的顺序。
+
+**异位词** 指由相同字母重排列形成的字符串（包括相同的字符串）。
+
+**示例 1:**
+
+```
+输入: s = "cbaebabacd", p = "abc"
+输出: [0,6]
+解释:
+起始索引等于 0 的子串是 "cba", 它是 "abc" 的异位词。
+起始索引等于 6 的子串是 "bac", 它是 "abc" 的异位词。
+```
+
+C++版本
+
+```c++
+// 方法一：滑动窗口
+class Solution {
+public:
+    vector<int> findAnagrams(string s, string p) {
+        int sLen = s.size(), pLen = p.size();
+
+        if (sLen < pLen) {
+            return vector<int>();
+        }
+
+        vector<int> ans;
+        vector<int> sCount(26);
+        vector<int> pCount(26);
+        for (int i = 0; i < pLen; ++i) {
+            ++sCount[s[i] - 'a'];
+            ++pCount[p[i] - 'a'];
+        }
+
+        if (sCount == pCount) {
+            ans.emplace_back(0);
+        }
+
+        for (int i = 0; i < sLen - pLen; ++i) {
+            --sCount[s[i] - 'a'];
+            ++sCount[s[i + pLen] - 'a'];
+
+            if (sCount == pCount) {
+                ans.emplace_back(i + 1);
+            }
+        }
+
+        return ans;
+    }
+};
+
+// 方法二：优化的滑动窗口
+class Solution {
+public:
+    vector<int> findAnagrams(string s, string p) {
+        int sLen = s.size(), pLen = p.size();
+
+        if (sLen < pLen) {
+            return vector<int>();
+        }
+
+        vector<int> ans;
+        vector<int> count(26);
+        for (int i = 0; i < pLen; ++i) {
+            ++count[s[i] - 'a'];
+            --count[p[i] - 'a'];
+        }
+
+        int differ = 0;
+        for (int j = 0; j < 26; ++j) {
+            if (count[j] != 0) {
+                ++differ;
+            }
+        }
+
+        if (differ == 0) {
+            ans.emplace_back(0);
+        }
+
+        for (int i = 0; i < sLen - pLen; ++i) {
+            if (count[s[i] - 'a'] == 1) {  // 窗口中字母 s[i] 的数量与字符串 p 中的数量从不同变得相同
+                --differ;
+            } else if (count[s[i] - 'a'] == 0) {  // 窗口中字母 s[i] 的数量与字符串 p 中的数量从相同变得不同
+                ++differ;
+            }
+            --count[s[i] - 'a'];
+
+            if (count[s[i + pLen] - 'a'] == -1) {  // 窗口中字母 s[i+pLen] 的数量与字符串 p 中的数量从不同变得相同
+                --differ;
+            } else if (count[s[i + pLen] - 'a'] == 0) {  // 窗口中字母 s[i+pLen] 的数量与字符串 p 中的数量从相同变得不同
+                ++differ;
+            }
+            ++count[s[i + pLen] - 'a'];
+            
+            if (differ == 0) {
+                ans.emplace_back(i + 1);
+            }
+        }
+
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：滑动窗口
+class Solution {
+    public List<Integer> findAnagrams(String s, String p) {
+        int sLen = s.length(), pLen = p.length();
+
+        if (sLen < pLen) {
+            return new ArrayList<Integer>();
+        }
+
+        List<Integer> ans = new ArrayList<Integer>();
+        int[] sCount = new int[26];
+        int[] pCount = new int[26];
+        for (int i = 0; i < pLen; ++i) {
+            ++sCount[s.charAt(i) - 'a'];
+            ++pCount[p.charAt(i) - 'a'];
+        }
+
+        if (Arrays.equals(sCount, pCount)) {
+            ans.add(0);
+        }
+
+        for (int i = 0; i < sLen - pLen; ++i) {
+            --sCount[s.charAt(i) - 'a'];
+            ++sCount[s.charAt(i + pLen) - 'a'];
+
+            if (Arrays.equals(sCount, pCount)) {
+                ans.add(i + 1);
+            }
+        }
+
+        return ans;
+    }
+}
+
+// 方法二：优化的滑动窗口
+class Solution {
+    public List<Integer> findAnagrams(String s, String p) {
+        int sLen = s.length(), pLen = p.length();
+
+        if (sLen < pLen) {
+            return new ArrayList<Integer>();
+        }
+
+        List<Integer> ans = new ArrayList<Integer>();
+        int[] count = new int[26];
+        for (int i = 0; i < pLen; ++i) {
+            ++count[s.charAt(i) - 'a'];
+            --count[p.charAt(i) - 'a'];
+        }
+
+        int differ = 0;
+        for (int j = 0; j < 26; ++j) {
+            if (count[j] != 0) {
+                ++differ;
+            }
+        }
+
+        if (differ == 0) {
+            ans.add(0);
+        }
+
+        for (int i = 0; i < sLen - pLen; ++i) {
+            if (count[s.charAt(i) - 'a'] == 1) {  // 窗口中字母 s[i] 的数量与字符串 p 中的数量从不同变得相同
+                --differ;
+            } else if (count[s.charAt(i) - 'a'] == 0) {  // 窗口中字母 s[i] 的数量与字符串 p 中的数量从相同变得不同
+                ++differ;
+            }
+            --count[s.charAt(i) - 'a'];
+
+            if (count[s.charAt(i + pLen) - 'a'] == -1) {  // 窗口中字母 s[i+pLen] 的数量与字符串 p 中的数量从不同变得相同
+                --differ;
+            } else if (count[s.charAt(i + pLen) - 'a'] == 0) {  // 窗口中字母 s[i+pLen] 的数量与字符串 p 中的数量从相同变得不同
+                ++differ;
+            }
+            ++count[s.charAt(i + pLen) - 'a'];
+            
+            if (differ == 0) {
+                ans.add(i + 1);
+            }
+        }
+
+        return ans;
+    }
+}
+```
 
 
 
+### [995. K 连续位的最小翻转次数](https://leetcode.cn/problems/minimum-number-of-k-consecutive-bit-flips/)
+
+困难
+
+给定一个二进制数组 `nums` 和一个整数 `k` 。
+
+**k位翻转** 就是从 `nums` 中选择一个长度为 `k` 的 **子数组** ，同时把子数组中的每一个 `0` 都改成 `1` ，把子数组中的每一个 `1` 都改成 `0` 。
+
+返回数组中不存在 `0` 所需的最小 **k位翻转** 次数。如果不可能，则返回 `-1` 。
+
+**子数组** 是数组的 **连续** 部分。
+
+**示例 1：**
+
+```
+输入：nums = [0,1,0], K = 1
+输出：2
+解释：先翻转 A[0]，然后翻转 A[2]。
+```
+
+C++版本
+
+```c++
+// 方法一：差分数组
+class Solution {
+public:
+    int minKBitFlips(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> diff(n + 1);
+        int ans = 0, revCnt = 0;
+        for (int i = 0; i < n; ++i) {
+            revCnt += diff[i];
+            if ((nums[i] + revCnt) % 2 == 0) {
+                if (i + k > n) {
+                    return -1;
+                }
+                ++ans;
+                ++revCnt;
+                --diff[i + k];
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：滑动窗口
+class Solution {
+public:
+    int minKBitFlips(vector<int>& nums, int k) {
+        int n = nums.size();
+        int ans = 0, revCnt = 0;
+        for (int i = 0; i < n; ++i) {
+            if (i >= k && nums[i - k] > 1) {
+                revCnt ^= 1;
+                nums[i - k] -= 2; // 复原数组元素，若允许修改数组 nums，则可以省略
+            }
+            if (nums[i] == revCnt) {
+                if (i + k > n) {
+                    return -1;
+                }
+                ++ans;
+                revCnt ^= 1;
+                nums[i] += 2;
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：差分数组
+class Solution {
+    public int minKBitFlips(int[] nums, int k) {
+        int n = nums.length;
+        int[] diff = new int[n + 1];
+        int ans = 0, revCnt = 0;
+        for (int i = 0; i < n; ++i) {
+            revCnt += diff[i];
+            if ((nums[i] + revCnt) % 2 == 0) {
+                if (i + k > n) {
+                    return -1;
+                }
+                ++ans;
+                ++revCnt;
+                --diff[i + k];
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：滑动窗口
+class Solution {
+    public int minKBitFlips(int[] nums, int k) {
+        int n = nums.length;
+        int ans = 0, revCnt = 0;
+        for (int i = 0; i < n; ++i) {
+            if (i >= k && nums[i - k] > 1) {
+                revCnt ^= 1;
+                nums[i - k] -= 2; // 复原数组元素，若允许修改数组 nums，则可以省略
+            }
+            if (nums[i] == revCnt) {
+                if (i + k > n) {
+                    return -1;
+                }
+                ++ans;
+                revCnt ^= 1;
+                nums[i] += 2;
+            }
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [220. 存在重复元素 III](https://leetcode.cn/problems/contains-duplicate-iii/)
 
+困难
 
+给你一个整数数组 `nums` 和两个整数 `indexDiff` 和 `valueDiff` 。
 
+找出满足下述条件的下标对 `(i, j)`：
 
+- `i != j`,
+- `abs(i - j) <= indexDiff`
+- `abs(nums[i] - nums[j]) <= valueDiff`
 
+如果存在，返回 `true` *；*否则，返回 `false` 。
 
+**示例 1：**
 
+```
+输入：nums = [1,2,3,1], indexDiff = 3, valueDiff = 0
+输出：true
+解释：可以找出 (i, j) = (0, 3) 。
+满足下述 3 个条件：
+i != j --> 0 != 3
+abs(i - j) <= indexDiff --> abs(0 - 3) <= 3
+abs(nums[i] - nums[j]) <= valueDiff --> abs(1 - 1) <= 0
+```
 
+C++版本
 
+```c++
+// 方法一：滑动窗口 + 有序集合
+class Solution {
+public:
+    bool containsNearbyAlmostDuplicate(vector<int>& nums, int k, int t) {
+        int n = nums.size();
+        set<int> rec;
+        for (int i = 0; i < n; i++) {
+            auto iter = rec.lower_bound(max(nums[i], INT_MIN + t) - t);
+            if (iter != rec.end() && *iter <= min(nums[i], INT_MAX - t) + t) {
+                return true;
+            }
+            rec.insert(nums[i]);
+            if (i >= k) {
+                rec.erase(nums[i - k]);
+            }
+        }
+        return false;
+    }
+};
 
+// 方法二：桶
+class Solution {
+public:
+    int getID(int x, long w) {
+        return x < 0 ? (x + 1ll) / w - 1 : x / w;
+    }
 
+    bool containsNearbyAlmostDuplicate(vector<int>& nums, int k, int t) {
+        unordered_map<int, int> mp;
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            long x = nums[i];
+            int id = getID(x, t + 1ll);
+            if (mp.count(id)) {
+                return true;
+            }
+            if (mp.count(id - 1) && abs(x - mp[id - 1]) <= t) {
+                return true;
+            }
+            if (mp.count(id + 1) && abs(x - mp[id + 1]) <= t) {
+                return true;
+            }
+            mp[id] = x;
+            if (i >= k) {
+                mp.erase(getID(nums[i - k], t + 1ll));
+            }
+        }
+        return false;
+    }
+};
+```
 
+Java版本
 
+```java
+// 方法一：滑动窗口 + 有序集合
+class Solution {
+    public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
+        int n = nums.length;
+        TreeSet<Long> set = new TreeSet<Long>();
+        for (int i = 0; i < n; i++) {
+            Long ceiling = set.ceiling((long) nums[i] - (long) t);
+            if (ceiling != null && ceiling <= (long) nums[i] + (long) t) {
+                return true;
+            }
+            set.add((long) nums[i]);
+            if (i >= k) {
+                set.remove((long) nums[i - k]);
+            }
+        }
+        return false;
+    }
+}
 
+// 方法二：桶
+class Solution {
+    public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
+        int n = nums.length;
+        Map<Long, Long> map = new HashMap<Long, Long>();
+        long w = (long) t + 1;
+        for (int i = 0; i < n; i++) {
+            long id = getID(nums[i], w);
+            if (map.containsKey(id)) {
+                return true;
+            }
+            if (map.containsKey(id - 1) && Math.abs(nums[i] - map.get(id - 1)) < w) {
+                return true;
+            }
+            if (map.containsKey(id + 1) && Math.abs(nums[i] - map.get(id + 1)) < w) {
+                return true;
+            }
+            map.put(id, (long) nums[i]);
+            if (i >= k) {
+                map.remove(getID(nums[i - k], w));
+            }
+        }
+        return false;
+    }
 
+    public long getID(long x, long w) {
+        if (x >= 0) {
+            return x / w;
+        }
+        return (x + 1) / w - 1;
+    }
+}
+```
 
 
 
