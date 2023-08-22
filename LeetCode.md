@@ -11740,19 +11740,243 @@ class Solution {
 
 
 
+### [209. 长度最小的子数组](https://leetcode.cn/problems/minimum-size-subarray-sum/)
+
+中等
+
+给定一个含有 `n` 个正整数的数组和一个正整数 `target` **。**
+
+找出该数组中满足其和 `≥ target` 的长度最小的 **连续子数组** `[numsl, numsl+1, ..., numsr-1, numsr]` ，并返回其长度**。**如果不存在符合条件的子数组，返回 `0` 。
+
+**示例 1：**
+
+```
+输入：target = 7, nums = [2,3,1,2,4,3]
+输出：2
+解释：子数组 [4,3] 是该条件下的长度最小的子数组。
+```
+
+C++版本
+
+```c++
+// 方法一：滑动窗口
+class Solution {
+public:
+    int minSubArrayLen(int target, vector<int>& nums) {
+        int left = 0, right = 0, len = nums.size(), sum = 0, res = INT_MAX;
+        while(right < len) {
+            sum += nums[right];
+            while(sum >= target) {
+                res = min(res, right - left + 1);
+                sum -= nums[left];
+                left++;
+            }
+            right++;
+        }
+        return res == INT_MAX ? 0 : res;
+    }
+};
+
+// 方法二：前缀和 + 二分查找
+class Solution {
+public:
+    int minSubArrayLen(int s, vector<int>& nums) {
+        int n = nums.size();
+        if (n == 0) {
+            return 0;
+        }
+        int ans = INT_MAX;
+        vector<int> sums(n + 1, 0); 
+        // 为了方便计算，令 size = n + 1 
+        // sums[0] = 0 意味着前 0 个元素的前缀和为 0
+        // sums[1] = A[0] 前 1 个元素的前缀和为 A[0]
+        // 以此类推
+        for (int i = 1; i <= n; i++) {
+            sums[i] = sums[i - 1] + nums[i - 1];
+        }
+        for (int i = 1; i <= n; i++) {
+            int target = s + sums[i - 1];
+            auto bound = lower_bound(sums.begin(), sums.end(), target);
+            if (bound != sums.end()) {
+                ans = min(ans, static_cast<int>((bound - sums.begin()) - (i - 1)));
+            }
+        }
+        return ans == INT_MAX ? 0 : ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：滑动窗口
+class Solution {
+    public int minSubArrayLen(int target, int[] nums) {
+        int left = 0, right = 0, len = nums.length, sum = 0, res = Integer.MAX_VALUE;
+        while(right < len) {
+            sum += nums[right];
+            while(sum >= target) {
+                res = Math.min(res, right - left + 1);
+                sum -= nums[left];
+                left++;
+            }
+            right++;
+        }
+        return res == Integer.MAX_VALUE ? 0 : res;
+    }
+}
+
+// 方法二：前缀和 + 二分查找
+class Solution {
+    public int minSubArrayLen(int s, int[] nums) {
+        int n = nums.length;
+        if (n == 0) {
+            return 0;
+        }
+        int ans = Integer.MAX_VALUE;
+        int[] sums = new int[n + 1]; 
+        // 为了方便计算，令 size = n + 1 
+        // sums[0] = 0 意味着前 0 个元素的前缀和为 0
+        // sums[1] = A[0] 前 1 个元素的前缀和为 A[0]
+        // 以此类推
+        for (int i = 1; i <= n; i++) {
+            sums[i] = sums[i - 1] + nums[i - 1];
+        }
+        for (int i = 1; i <= n; i++) {
+            int target = s + sums[i - 1];
+            int bound = Arrays.binarySearch(sums, target);
+            if (bound < 0) {
+                bound = -bound - 1;
+            }
+            if (bound <= n) {
+                ans = Math.min(ans, bound - (i - 1));
+            }
+        }
+        return ans == Integer.MAX_VALUE ? 0 : ans;
+    }
+}
+```
 
 
 
+### [718. 最长重复子数组](https://leetcode.cn/problems/maximum-length-of-repeated-subarray/)
 
+中等
 
+给两个整数数组 `nums1` 和 `nums2` ，返回 *两个数组中 **公共的** 、长度最长的子数组的长度* 。
 
+**示例 1：**
 
+```
+输入：nums1 = [1,2,3,2,1], nums2 = [3,2,1,4,7]
+输出：3
+解释：长度最长的公共子数组是 [3,2,1] 。
+```
 
+C++版本
 
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int findLength(vector<int>& A, vector<int>& B) {
+        int n = A.size(), m = B.size();
+        vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));
+        int ans = 0;
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = m - 1; j >= 0; j--) {
+                dp[i][j] = A[i] == B[j] ? dp[i + 1][j + 1] + 1 : 0;
+                ans = max(ans, dp[i][j]);
+            }
+        }
+        return ans;
+    }
+};
 
+// 方法二：滑动窗口
+class Solution {
+public:
+    int maxLength(vector<int>& A, vector<int>& B, int addA, int addB, int len) {
+        int ret = 0, k = 0;
+        for (int i = 0; i < len; i++) {
+            if (A[addA + i] == B[addB + i]) {
+                k++;
+            } else {
+                k = 0;
+            }
+            ret = max(ret, k);
+        }
+        return ret;
+    }
+    int findLength(vector<int>& A, vector<int>& B) {
+        int n = A.size(), m = B.size();
+        int ret = 0;
+        for (int i = 0; i < n; i++) {
+            int len = min(m, n - i);
+            int maxlen = maxLength(A, B, i, 0, len);
+            ret = max(ret, maxlen);
+        }
+        for (int i = 0; i < m; i++) {
+            int len = min(n, m - i);
+            int maxlen = maxLength(A, B, 0, i, len);
+            ret = max(ret, maxlen);
+        }
+        return ret;
+    }
+};
+```
 
+Java版本
 
+```java
+// 方法一：动态规划
+class Solution {
+    public int findLength(int[] A, int[] B) {
+        int n = A.length, m = B.length;
+        int[][] dp = new int[n + 1][m + 1];
+        int ans = 0;
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = m - 1; j >= 0; j--) {
+                dp[i][j] = A[i] == B[j] ? dp[i + 1][j + 1] + 1 : 0;
+                ans = Math.max(ans, dp[i][j]);
+            }
+        }
+        return ans;
+    }
+}
 
+// 方法二：滑动窗口
+class Solution {
+    public int findLength(int[] A, int[] B) {
+        int n = A.length, m = B.length;
+        int ret = 0;
+        for (int i = 0; i < n; i++) {
+            int len = Math.min(m, n - i);
+            int maxlen = maxLength(A, B, i, 0, len);
+            ret = Math.max(ret, maxlen);
+        }
+        for (int i = 0; i < m; i++) {
+            int len = Math.min(n, m - i);
+            int maxlen = maxLength(A, B, 0, i, len);
+            ret = Math.max(ret, maxlen);
+        }
+        return ret;
+    }
+
+    public int maxLength(int[] A, int[] B, int addA, int addB, int len) {
+        int ret = 0, k = 0;
+        for (int i = 0; i < len; i++) {
+            if (A[addA + i] == B[addB + i]) {
+                k++;
+            } else {
+                k = 0;
+            }
+            ret = Math.max(ret, k);
+        }
+        return ret;
+    }
+}
+```
 
 
 
