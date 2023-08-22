@@ -11512,3 +11512,289 @@ class DualHeap {
 }
 ```
 
+
+
+### [674. 最长连续递增序列](https://leetcode.cn/problems/longest-continuous-increasing-subsequence/)
+
+简单
+
+给定一个未经排序的整数数组，找到最长且 **连续递增的子序列**，并返回该序列的长度。
+
+**连续递增的子序列** 可以由两个下标 `l` 和 `r`（`l < r`）确定，如果对于每个 `l <= i < r`，都有 `nums[i] < nums[i + 1]` ，那么子序列 `[nums[l], nums[l + 1], ..., nums[r - 1], nums[r]]` 就是连续递增子序列。
+
+**示例 1：**
+
+```
+输入：nums = [1,3,5,4,7]
+输出：3
+解释：最长连续递增序列是 [1,3,5], 长度为3。
+尽管 [1,3,5,7] 也是升序的子序列, 但它不是连续的，因为 5 和 7 在原数组里被 4 隔开。 
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int findLengthOfLCIS(vector<int>& nums) {
+        int left = 0, right = 0, len = nums.size(), res = 0;
+        while(right + 1 < len) {
+            if(nums[right] >= nums[right+1]) {
+                res = max(res, right - left + 1);
+                left = right + 1;
+            }
+            right++;
+        }
+        return max(res, right - left + 1);
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int findLengthOfLCIS(int[] nums) {
+        int left = 0, right = 0, len = nums.length, res = 0;
+        while(right + 1 < len) {
+            if(nums[right] >= nums[right+1]) {
+                res = Math.max(res, right - left + 1);
+                left = right + 1;
+            }
+            right++;
+        }
+        return Math.max(res, right - left + 1);
+    }
+}
+```
+
+
+
+### [485. 最大连续 1 的个数](https://leetcode.cn/problems/max-consecutive-ones/)
+
+简单
+
+给定一个二进制数组 `nums` ， 计算其中最大连续 `1` 的个数。
+
+**示例 1：**
+
+```
+输入：nums = [1,1,0,1,1,1]
+输出：3
+解释：开头的两位和最后的三位都是连续 1 ，所以最大连续 1 的个数是 3.
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int findMaxConsecutiveOnes(vector<int>& nums) {
+        int left = -1, right = 0, len = nums.size(), res = 0;
+        while(right < len) {
+            if(nums[right] != 1) {
+                res = max(res, right - left - 1);
+                left = right;
+            }
+            right++;
+        }
+        return max(res, right - left - 1);
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int findMaxConsecutiveOnes(int[] nums) {
+        int left = -1, right = 0, len = nums.length, res = 0;
+        while(right < len) {
+            if(nums[right] != 1) {
+                res = Math.max(res, right - left - 1);
+                left = right;
+            }
+            right++;
+        }
+        return Math.max(res, right - left - 1);
+    }
+}
+```
+
+
+
+### [76. 最小覆盖子串](https://leetcode.cn/problems/minimum-window-substring/)
+
+困难
+
+给你一个字符串 `s` 、一个字符串 `t` 。返回 `s` 中涵盖 `t` 所有字符的最小子串。如果 `s` 中不存在涵盖 `t` 所有字符的子串，则返回空字符串 `""` 。
+
+**注意：**
+
+- 对于 `t` 中重复字符，我们寻找的子字符串中该字符数量必须不少于 `t` 中该字符数量。
+- 如果 `s` 中存在这样的子串，我们保证它是唯一的答案。
+
+**示例 1：**
+
+```
+输入：s = "ADOBECODEBANC", t = "ABC"
+输出："BANC"
+解释：最小覆盖子串 "BANC" 包含来自字符串 t 的 'A'、'B' 和 'C'。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    unordered_map <char, int> ori, cnt;
+
+    bool check() {
+        for (const auto &p: ori) {
+            if (cnt[p.first] < p.second) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    string minWindow(string s, string t) {
+        for (const auto &c: t) {
+            ++ori[c];
+        }
+
+        int l = 0, r = -1;
+        int len = INT_MAX, ansL = -1, ansR = -1;
+
+        while (r < int(s.size())) {
+            if (ori.find(s[++r]) != ori.end()) {
+                ++cnt[s[r]];
+            }
+            while (check() && l <= r) {
+                if (r - l + 1 < len) {
+                    len = r - l + 1;
+                    ansL = l;
+                }
+                if (ori.find(s[l]) != ori.end()) {
+                    --cnt[s[l]];
+                }
+                ++l;
+            }
+        }
+
+        return ansL == -1 ? string() : s.substr(ansL, len);
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    Map<Character, Integer> ori = new HashMap<Character, Integer>();
+    Map<Character, Integer> cnt = new HashMap<Character, Integer>();
+
+    public String minWindow(String s, String t) {
+        int tLen = t.length();
+        for (int i = 0; i < tLen; i++) {
+            char c = t.charAt(i);
+            ori.put(c, ori.getOrDefault(c, 0) + 1);
+        }
+        int l = 0, r = -1;
+        int len = Integer.MAX_VALUE, ansL = -1, ansR = -1;
+        int sLen = s.length();
+        while (r < sLen) {
+            ++r;
+            if (r < sLen && ori.containsKey(s.charAt(r))) {
+                cnt.put(s.charAt(r), cnt.getOrDefault(s.charAt(r), 0) + 1);
+            }
+            while (check() && l <= r) {
+                if (r - l + 1 < len) {
+                    len = r - l + 1;
+                    ansL = l;
+                    ansR = l + len;
+                }
+                if (ori.containsKey(s.charAt(l))) {
+                    cnt.put(s.charAt(l), cnt.getOrDefault(s.charAt(l), 0) - 1);
+                }
+                ++l;
+            }
+        }
+        return ansL == -1 ? "" : s.substring(ansL, ansR);
+    }
+
+    public boolean check() {
+        Iterator iter = ori.entrySet().iterator(); 
+        while (iter.hasNext()) { 
+            Map.Entry entry = (Map.Entry) iter.next(); 
+            Character key = (Character) entry.getKey(); 
+            Integer val = (Integer) entry.getValue(); 
+            if (cnt.getOrDefault(key, 0) < val) {
+                return false;
+            }
+        } 
+        return true;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
