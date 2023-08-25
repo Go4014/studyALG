@@ -11980,13 +11980,181 @@ class Solution {
 
 
 
+### [862. 和至少为 K 的最短子数组](https://leetcode.cn/problems/shortest-subarray-with-sum-at-least-k/)
+
+困难
+
+给你一个整数数组 `nums` 和一个整数 `k` ，找出 `nums` 中和至少为 `k` 的 **最短非空子数组** ，并返回该子数组的长度。如果不存在这样的 **子数组** ，返回 `-1` 。
+
+**子数组** 是数组中 **连续** 的一部分。
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int shortestSubarray(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<long> preSumArr(n + 1);
+        for (int i = 0; i < n; i++) {
+            preSumArr[i + 1] = preSumArr[i] + nums[i];
+        }
+        int res = n + 1;
+        deque<int> qu;
+        for (int i = 0; i <= n; i++) {
+            long curSum = preSumArr[i];
+            while (!qu.empty() && curSum - preSumArr[qu.front()] >= k) {
+                res = min(res, i - qu.front());
+                qu.pop_front();
+            }
+            while (!qu.empty() && preSumArr[qu.back()] >= curSum) {
+                qu.pop_back();
+            }
+            qu.push_back(i);
+        }
+        return res < n + 1 ? res : -1;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int shortestSubarray(int[] nums, int k) {
+        int n = nums.length;
+        long[] preSumArr = new long[n + 1];
+        for (int i = 0; i < n; i++) {
+            preSumArr[i + 1] = preSumArr[i] + nums[i];
+        }
+        int res = n + 1;
+        Deque<Integer> queue = new ArrayDeque<Integer>();
+        for (int i = 0; i <= n; i++) {
+            long curSum = preSumArr[i];
+            while (!queue.isEmpty() && curSum - preSumArr[queue.peekFirst()] >= k) {
+                res = Math.min(res, i - queue.pollFirst());
+            }
+            while (!queue.isEmpty() && preSumArr[queue.peekLast()] >= curSum) {
+                queue.pollLast();
+            }
+            queue.offerLast(i);
+        }
+        return res < n + 1 ? res : -1;
+    }
+}
+```
 
 
 
+### [1004. 最大连续1的个数 III](https://leetcode.cn/problems/max-consecutive-ones-iii/)
 
+中等
 
+给定一个二进制数组 `nums` 和一个整数 `k`，如果可以翻转最多 `k` 个 `0` ，则返回 *数组中连续 `1` 的最大个数* 。
 
+**示例 1：**
 
+```
+输入：nums = [1,1,1,0,0,0,1,1,1,1,0], K = 2
+输出：6
+解释：[1,1,1,0,0,1,1,1,1,1,1]
+粗体数字从 0 翻转到 1，最长的子数组长度为 6。
+```
+
+C++版本
+
+```c++
+// 方法一：二分查找
+class Solution {
+public:
+    int longestOnes(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> P(n + 1);
+        for (int i = 1; i <= n; ++i) {
+            P[i] = P[i - 1] + (1 - nums[i - 1]);
+        }
+
+        int ans = 0;
+        for (int right = 0; right < n; ++right) {
+            int left = lower_bound(P.begin(), P.end(), P[right + 1] - k) - P.begin();
+            ans = max(ans, right - left + 1);
+        }
+        return ans;
+    }
+};
+
+// 方法二：滑动窗口
+class Solution {
+public:
+    int longestOnes(vector<int>& nums, int k) {
+        int n = nums.size();
+        int left = 0, lsum = 0, rsum = 0;
+        int ans = 0;
+        for (int right = 0; right < n; ++right) {
+            rsum += 1 - nums[right];
+            while (lsum < rsum - k) {
+                lsum += 1 - nums[left];
+                ++left;
+            }
+            ans = max(ans, right - left + 1);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：二分查找
+class Solution {
+    public int longestOnes(int[] nums, int k) {
+        int n = nums.length;
+        int[] P = new int[n + 1];
+        for (int i = 1; i <= n; ++i) {
+            P[i] = P[i - 1] + (1 - nums[i - 1]);
+        }
+
+        int ans = 0;
+        for (int right = 0; right < n; ++right) {
+            int left = binarySearch(P, P[right + 1] - k);
+            ans = Math.max(ans, right - left + 1);
+        }
+        return ans;
+    }
+
+    public int binarySearch(int[] P, int target) {
+        int low = 0, high = P.length - 1;
+        while (low < high) {
+            int mid = (high - low) / 2 + low;
+            if (P[mid] < target) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+        return low;
+    }
+}
+
+// 方法二：滑动窗口
+class Solution {
+    public int longestOnes(int[] nums, int k) {
+        int n = nums.length;
+        int left = 0, lsum = 0, rsum = 0;
+        int ans = 0;
+        for (int right = 0; right < n; ++right) {
+            rsum += 1 - nums[right];
+            while (lsum < rsum - k) {
+                lsum += 1 - nums[left];
+                ++left;
+            }
+            ans = Math.max(ans, right - left + 1);
+        }
+        return ans;
+    }
+}
+```
 
 
 
