@@ -12177,6 +12177,7 @@ class Solution {
 C++版本
 
 ```c++
+// 方法一
 class Solution {
 public:
     int minOperations(vector<int>& nums, int x) {
@@ -12205,6 +12206,34 @@ public:
         }
 
         return ans > n ? -1 : ans;
+    }
+};
+
+// 方法二
+class Solution {
+public:
+    int minOperations(vector<int>& nums, int x) {
+        int target = accumulate(nums.begin(), nums.end(), 0) - x;
+        int len = nums.size();
+        if(target < 0) {
+            return -1;
+        }
+        if(target == 0) {
+            return len;
+        }
+        int left = 0, right = 0, sum = 0, maxLen = INT_MIN;
+        while(right < len) {
+            sum += nums[right];
+            while(sum > target) {
+                sum -= nums[left];
+                left++;
+            }
+            if(sum == target) {
+                maxLen = max(maxLen, right - left + 1);
+            }
+            right++;
+        }
+        return maxLen == INT_MIN ? -1 : len - maxLen;
     }
 };
 ```
@@ -12239,6 +12268,33 @@ class Solution {
         }
 
         return ans > n ? -1 : ans;
+    }
+}
+
+// 方法二
+class Solution {
+    public int minOperations(int[] nums, int x) {
+        int target = Arrays.stream(nums).sum() - x;
+        int len = nums.length;
+        if(target < 0) {
+            return -1;
+        }
+        if(target == 0) {
+            return len;
+        }
+        int left = 0, right = 0, sum = 0, maxLen = Integer.MIN_VALUE;
+        while(right < len) {
+            sum += nums[right];
+            while(sum > target) {
+                sum -= nums[left];
+                left++;
+            }
+            if(sum == target) {
+                maxLen = Math.max(maxLen, right - left + 1);
+            }
+            right++;
+        }
+        return maxLen == Integer.MIN_VALUE ? -1 : len - maxLen;
     }
 }
 ```
