@@ -12158,19 +12158,218 @@ class Solution {
 
 
 
+### [1658. 将 x 减到 0 的最小操作数](https://leetcode.cn/problems/minimum-operations-to-reduce-x-to-zero/)
+
+中等
+
+给你一个整数数组 `nums` 和一个整数 `x` 。每一次操作时，你应当移除数组 `nums` 最左边或最右边的元素，然后从 `x` 中减去该元素的值。请注意，需要 **修改** 数组以供接下来的操作使用。
+
+如果可以将 `x` **恰好** 减到 `0` ，返回 **最小操作数** ；否则，返回 `-1` 。
+
+**示例 1：**
+
+```
+输入：nums = [1,1,4,2,3], x = 5
+输出：2
+解释：最佳解决方案是移除后两个元素，将 x 减到 0 。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int minOperations(vector<int>& nums, int x) {
+        int n = nums.size();
+        int sum = accumulate(nums.begin(), nums.end(), 0);
+
+        if (sum < x) {
+            return -1;
+        }
+
+        int right = 0;
+        int lsum = 0, rsum = sum;
+        int ans = n + 1;
+
+        for (int left = -1; left < n; ++left) {
+            if (left != -1) {
+                lsum += nums[left];
+            }
+            while (right < n && lsum + rsum > x) {
+                rsum -= nums[right];
+                ++right;
+            }
+            if (lsum + rsum == x) {
+                ans = min(ans, (left + 1) + (n - right));
+            }
+        }
+
+        return ans > n ? -1 : ans;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int minOperations(int[] nums, int x) {
+        int n = nums.length;
+        int sum = Arrays.stream(nums).sum();
+
+        if (sum < x) {
+            return -1;
+        }
+
+        int right = 0;
+        int lsum = 0, rsum = sum;
+        int ans = n + 1;
+
+        for (int left = -1; left < n; ++left) {
+            if (left != -1) {
+                lsum += nums[left];
+            }
+            while (right < n && lsum + rsum > x) {
+                rsum -= nums[right];
+                ++right;
+            }
+            if (lsum + rsum == x) {
+                ans = Math.min(ans, (left + 1) + (n - right));
+            }
+        }
+
+        return ans > n ? -1 : ans;
+    }
+}
+```
 
 
 
+### [424. 替换后的最长重复字符](https://leetcode.cn/problems/longest-repeating-character-replacement/)
 
+中等
 
+给你一个字符串 `s` 和一个整数 `k` 。你可以选择字符串中的任一字符，并将其更改为任何其他大写英文字符。该操作最多可执行 `k` 次。
 
+在执行上述操作后，返回包含相同字母的最长子字符串的长度。
 
+**示例 1：**
 
+```
+输入：s = "ABAB", k = 2
+输出：4
+解释：用两个'A'替换为两个'B',反之亦然。
+```
 
+C++版本
 
+```c++
+// 方法一
+class Solution {
+public:
+    int characterReplacement(string s, int k) {
+        int n = s.size();       
+        int left = 0, right = 0;    // 滑动窗口左右边界
+        int len = 0;                // 窗口初始长度
+        vector<int> cnt(26, 0);     // 26个字母的出现次数
+        int max_cnt = 0;            // 最大出现次数
+        while (right < n) {
+            cnt[s[right] - 'A']++;  // 统计出现次数
+            max_cnt = max(max_cnt, cnt[s[right] - 'A']);
+            // 若当前窗口大小 减去 窗口中最多相同字符的个数 大于 k 时
+            // k不够用了，窗口左边界收缩
+            if (right - left + 1 - max_cnt > k) {
+               cnt[s[left] - 'A']--;
+               left++;
+            }
+            len = max(len, right - left + 1); // 更新最大窗口长度
+            right++;                               // 窗口扩充
+        }
+        return len;
+    }
+};
 
+// 方法二
+class Solution {
+public:
+    int characterReplacement(string s, int k) {
+        vector<int> num(26);
+        int n = s.length();
+        int maxn = 0;
+        int left = 0, right = 0;
+        while (right < n) {
+            num[s[right] - 'A']++;
+            maxn = max(maxn, num[s[right] - 'A']);
+            if (right - left + 1 - maxn > k) {
+                num[s[left] - 'A']--;
+                left++;
+            }
+            right++;
+        }
+        return right - left;
+    }
+};
+```
 
+Java版本
 
+```java
+// 方法一
+public class Solution {
+
+    public int characterReplacement(String s, int k) {
+        int len = s.length();
+        if (len < 2) {
+            return len;
+        }
+
+        char[] charArray = s.toCharArray();
+        int left = 0;
+        int right = 0;
+
+        int res = 0;
+        int maxCount = 0;
+        int[] freq = new int[26];
+        // [left, right) 内最多替换 k 个字符可以得到只有一种字符的子串
+        while (right < len){
+            freq[charArray[right] - 'A']++;
+            // 在这里维护 maxCount，因为每一次右边界读入一个字符，字符频数增加，才会使得 maxCount 增加
+            maxCount = Math.max(maxCount, freq[charArray[right] - 'A']);
+            right++;
+
+            if (right - left > maxCount + k){
+              	// 说明此时 k 不够用
+                // 把其它不是最多出现的字符替换以后，都不能填满这个滑动的窗口，这个时候须要考虑左边界向右移动
+                // 移出滑动窗口的时候，频数数组须要相应地做减法
+                freq[charArray[left] - 'A']--;
+                left++;
+            }
+            res = Math.max(res, right - left);
+        }
+        return res;
+    }
+}
+
+// 方法二
+class Solution {
+    public int characterReplacement(String s, int k) {
+        int[] num = new int[26];
+        int n = s.length();
+        int maxn = 0;
+        int left = 0, right = 0;
+        while (right < n) {
+            num[s.charAt(right) - 'A']++;
+            maxn = Math.max(maxn, num[s.charAt(right) - 'A']);
+            if (right - left + 1 - maxn > k) {
+                num[s.charAt(left) - 'A']--;
+                left++;
+            }
+            right++;
+        }
+        return right - left;
+    }
+}
+```
 
 
 
