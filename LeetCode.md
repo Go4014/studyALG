@@ -12446,6 +12446,7 @@ class Solution {
 C++版本
 
 ```c++
+// 方法一
 class Solution {
 public:
     int lengthOfLongestSubstring(string s) {
@@ -12471,11 +12472,41 @@ public:
         return ans;
     }
 };
+
+// 方法二
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        int left = 0;
+        int right = 0;
+        std::unordered_map<char, int> window;
+        int ans = 0;
+
+        while (right < s.length()) {
+            if (window.find(s[right]) == window.end()) {
+                window[s[right]] = 1;
+            } else {
+                window[s[right]] += 1;
+            }
+
+            while (window[s[right]] > 1) {
+                window[s[left]] -= 1;
+                left += 1;
+            }
+
+            ans = std::max(ans, right - left + 1);
+            right += 1;
+        }
+
+        return ans;
+    }
+};
 ```
 
 Java版本
 
 ```java
+// 方法一
 class Solution {
     public int lengthOfLongestSubstring(String s) {
         // 哈希集合，记录每个字符是否出现过
@@ -12496,6 +12527,37 @@ class Solution {
             // 第 i 到 rk 个字符是一个极长的无重复字符子串
             ans = Math.max(ans, rk - i + 1);
         }
+        return ans;
+    }
+}
+
+// 方法二
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        int left = 0;
+        int right = 0;
+        Map<Character, Integer> window = new HashMap<>();
+        int ans = 0;
+
+        while (right < s.length()) {
+            char currentChar = s.charAt(right);
+            
+            if (!window.containsKey(currentChar)) {
+                window.put(currentChar, 1);
+            } else {
+                window.put(currentChar, window.get(currentChar) + 1);
+            }
+
+            while (window.get(currentChar) > 1) {
+                char leftChar = s.charAt(left);
+                window.put(leftChar, window.get(leftChar) - 1);
+                left++;
+            }
+
+            ans = Math.max(ans, right - left + 1);
+            right++;
+        }
+
         return ans;
     }
 }
