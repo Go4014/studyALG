@@ -12429,19 +12429,165 @@ class Solution {
 
 
 
+### [3. 无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
+
+中等
+
+给定一个字符串 `s` ，请你找出其中不含有重复字符的 **最长子串** 的长度。
+
+**示例 1:**
+
+```
+输入: s = "abcabcbb"
+输出: 3 
+解释: 因为无重复字符的最长子串是 "abc"，所以其长度为 3。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        // 哈希集合，记录每个字符是否出现过
+        unordered_set<char> occ;
+        int n = s.size();
+        // 右指针，初始值为 -1，相当于我们在字符串的左边界的左侧，还没有开始移动
+        int rk = -1, ans = 0;
+        // 枚举左指针的位置，初始值隐性地表示为 -1
+        for (int i = 0; i < n; ++i) {
+            if (i != 0) {
+                // 左指针向右移动一格，移除一个字符
+                occ.erase(s[i - 1]);
+            }
+            while (rk + 1 < n && !occ.count(s[rk + 1])) {
+                // 不断地移动右指针
+                occ.insert(s[rk + 1]);
+                ++rk;
+            }
+            // 第 i 到 rk 个字符是一个极长的无重复字符子串
+            ans = max(ans, rk - i + 1);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        // 哈希集合，记录每个字符是否出现过
+        Set<Character> occ = new HashSet<Character>();
+        int n = s.length();
+        // 右指针，初始值为 -1，相当于我们在字符串的左边界的左侧，还没有开始移动
+        int rk = -1, ans = 0;
+        for (int i = 0; i < n; ++i) {
+            if (i != 0) {
+                // 左指针向右移动一格，移除一个字符
+                occ.remove(s.charAt(i - 1));
+            }
+            while (rk + 1 < n && !occ.contains(s.charAt(rk + 1))) {
+                // 不断地移动右指针
+                occ.add(s.charAt(rk + 1));
+                ++rk;
+            }
+            // 第 i 到 rk 个字符是一个极长的无重复字符子串
+            ans = Math.max(ans, rk - i + 1);
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [1695. 删除子数组的最大得分](https://leetcode.cn/problems/maximum-erasure-value/)
 
+中等
 
+给你一个正整数数组 `nums` ，请你从中删除一个含有 **若干不同元素** 的子数组**。**删除子数组的 **得分** 就是子数组各元素之 **和** 。
 
+返回 **只删除一个** 子数组可获得的 **最大得分** *。*
 
+如果数组 `b` 是数组 `a` 的一个连续子序列，即如果它等于 `a[l],a[l+1],...,a[r]` ，那么它就是 `a` 的一个子数组。
 
+**示例 1：**
 
+```
+输入：nums = [4,2,4,5,6]
+输出：17
+解释：最优子数组是 [2,4,5,6]
+```
 
+C++版本
 
+```c++
+class Solution {
+public:
+    int maximumUniqueSubarray(vector<int>& nums) {
+        int window_sum = 0;
+        int left = 0, right = 0;
+        std::unordered_map<int, int> window;
+        int ans = 0;
+        
+        while (right < nums.size()) {
+            window_sum += nums[right];
+            if (window.find(nums[right]) == window.end()) {
+                window[nums[right]] = 1;
+            } else {
+                window[nums[right]] += 1;
+            }
 
+            while (window[nums[right]] > 1) {
+                window[nums[left]] -= 1;
+                window_sum -= nums[left];
+                left += 1;
+            }
+            
+            ans = std::max(ans, window_sum);
+            right += 1;
+        }
+        
+        return ans;
+    }
+};
+```
 
+Java版本
+
+```java
+class Solution {
+    public int maximumUniqueSubarray(int[] nums) {
+        int windowSum = 0;
+        int left = 0, right = 0;
+        Map<Integer, Integer> window = new HashMap<>();
+        int ans = 0;
+        
+        while (right < nums.length) {
+            windowSum += nums[right];
+            
+            if (!window.containsKey(nums[right])) {
+                window.put(nums[right], 1);
+            } else {
+                window.put(nums[right], window.get(nums[right]) + 1);
+            }
+
+            while (window.get(nums[right]) > 1) {
+                window.put(nums[left], window.get(nums[left]) - 1);
+                windowSum -= nums[left];
+                left++;
+            }
+            
+            ans = Math.max(ans, windowSum);
+            right++;
+        }
+        
+        return ans;
+    }
+}
+```
 
 
 
