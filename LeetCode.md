@@ -12320,32 +12320,6 @@ class Solution {
 C++版本
 
 ```c++
-// 方法一
-class Solution {
-public:
-    int characterReplacement(string s, int k) {
-        int n = s.size();       
-        int left = 0, right = 0;    // 滑动窗口左右边界
-        int len = 0;                // 窗口初始长度
-        vector<int> cnt(26, 0);     // 26个字母的出现次数
-        int max_cnt = 0;            // 最大出现次数
-        while (right < n) {
-            cnt[s[right] - 'A']++;  // 统计出现次数
-            max_cnt = max(max_cnt, cnt[s[right] - 'A']);
-            // 若当前窗口大小 减去 窗口中最多相同字符的个数 大于 k 时
-            // k不够用了，窗口左边界收缩
-            if (right - left + 1 - max_cnt > k) {
-               cnt[s[left] - 'A']--;
-               left++;
-            }
-            len = max(len, right - left + 1); // 更新最大窗口长度
-            right++;                               // 窗口扩充
-        }
-        return len;
-    }
-};
-
-// 方法二
 class Solution {
 public:
     int characterReplacement(string s, int k) {
@@ -12370,43 +12344,6 @@ public:
 Java版本
 
 ```java
-// 方法一
-public class Solution {
-
-    public int characterReplacement(String s, int k) {
-        int len = s.length();
-        if (len < 2) {
-            return len;
-        }
-
-        char[] charArray = s.toCharArray();
-        int left = 0;
-        int right = 0;
-
-        int res = 0;
-        int maxCount = 0;
-        int[] freq = new int[26];
-        // [left, right) 内最多替换 k 个字符可以得到只有一种字符的子串
-        while (right < len){
-            freq[charArray[right] - 'A']++;
-            // 在这里维护 maxCount，因为每一次右边界读入一个字符，字符频数增加，才会使得 maxCount 增加
-            maxCount = Math.max(maxCount, freq[charArray[right] - 'A']);
-            right++;
-
-            if (right - left > maxCount + k){
-              	// 说明此时 k 不够用
-                // 把其它不是最多出现的字符替换以后，都不能填满这个滑动的窗口，这个时候须要考虑左边界向右移动
-                // 移出滑动窗口的时候，频数数组须要相应地做减法
-                freq[charArray[left] - 'A']--;
-                left++;
-            }
-            res = Math.max(res, right - left);
-        }
-        return res;
-    }
-}
-
-// 方法二
 class Solution {
     public int characterReplacement(String s, int k) {
         int[] num = new int[26];
@@ -12479,7 +12416,7 @@ public:
     int lengthOfLongestSubstring(string s) {
         int left = 0;
         int right = 0;
-        std::unordered_map<char, int> window;
+        unordered_map<char, int> window;
         int ans = 0;
 
         while (right < s.length()) {
@@ -12494,7 +12431,7 @@ public:
                 left += 1;
             }
 
-            ans = std::max(ans, right - left + 1);
+            ans = max(ans, right - left + 1);
             right += 1;
         }
 
@@ -12650,6 +12587,386 @@ class Solution {
     }
 }
 ```
+
+
+
+### [1208. 尽可能使字符串相等](https://leetcode.cn/problems/get-equal-substrings-within-budget/)
+
+中等
+
+给你两个长度相同的字符串，`s` 和 `t`。
+
+将 `s` 中的第 `i` 个字符变到 `t` 中的第 `i` 个字符需要 `|s[i] - t[i]|` 的开销（开销可能为 0），也就是两个字符的 ASCII 码值的差的绝对值。
+
+用于变更字符串的最大预算是 `maxCost`。在转化字符串时，总开销应当小于等于该预算，这也意味着字符串的转化可能是不完全的。
+
+如果你可以将 `s` 的子字符串转化为它在 `t` 中对应的子字符串，则返回可以转化的最大长度。
+
+如果 `s` 中没有子字符串可以转化成 `t` 中对应的子字符串，则返回 `0`。
+
+**提示：**
+
+- `1 <= s.length, t.length <= 10^5`
+- `0 <= maxCost <= 10^6`
+- `s` 和 `t` 都只含小写英文字母。
+
+**示例 1：**
+
+```
+输入：s = "abcd", t = "bcdf", maxCost = 3
+输出：3
+解释：s 中的 "abc" 可以变为 "bcd"。开销为 3，所以最大长度为 3。
+```
+
+C++版本
+
+```c++
+// 方法一：前缀和 + 二分查找
+class Solution {
+public:
+    int binarySearch(const vector<int>& accDiff, int endIndex, int target) {
+        int low = 0, high = endIndex;
+        while (low < high) {
+            int mid = (high - low) / 2 + low;
+            if (accDiff[mid] < target) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+        return low;
+    }
+
+    int equalSubstring(string s, string t, int maxCost) {
+        int n = s.length();
+        vector<int> accDiff(n + 1, 0);
+        for (int i = 0; i < n; i++) {
+            accDiff[i + 1] = accDiff[i] + abs(s[i] - t[i]);
+        }
+        int maxLength = 0;
+        for (int i = 1; i <= n; i++) {
+            int start = binarySearch(accDiff, i, accDiff[i] - maxCost);
+            maxLength = max(maxLength, i - start);
+        }
+        return maxLength;
+    }
+};
+
+// 方法二：滑动窗口
+class Solution {
+public:
+    int equalSubstring(string s, string t, int maxCost) {
+        int n = s.length();
+        vector<int> diff(n, 0);
+        for (int i = 0; i < n; i++) {
+            diff[i] = abs(s[i] - t[i]);
+        }
+        int maxLength = 0;
+        int start = 0, end = 0;
+        int sum = 0;
+        while (end < n) {
+            sum += diff[end];
+            while (sum > maxCost) {
+                sum -= diff[start];
+                start++;
+            }
+            maxLength = max(maxLength, end - start + 1);
+            end++;
+        }
+        return maxLength;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：前缀和 + 二分查找
+class Solution {
+    public int equalSubstring(String s, String t, int maxCost) {
+        int n = s.length();
+        int[] accDiff = new int[n + 1];
+        for (int i = 0; i < n; i++) {
+            accDiff[i + 1] = accDiff[i] + Math.abs(s.charAt(i) - t.charAt(i));
+        }
+        int maxLength = 0;
+        for (int i = 1; i <= n; i++) {
+            int start = binarySearch(accDiff, i, accDiff[i] - maxCost);
+            maxLength = Math.max(maxLength, i - start);
+        }
+        return maxLength;
+    }
+
+    public int binarySearch(int[] accDiff, int endIndex, int target) {
+        int low = 0, high = endIndex;
+        while (low < high) {
+            int mid = (high - low) / 2 + low;
+            if (accDiff[mid] < target) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+        return low;
+    }
+}
+
+// 方法二：滑动窗口
+class Solution {
+    public int equalSubstring(String s, String t, int maxCost) {
+        int n = s.length();
+        int[] diff = new int[n];
+        for (int i = 0; i < n; i++) {
+            diff[i] = Math.abs(s.charAt(i) - t.charAt(i));
+        }
+        int maxLength = 0;
+        int start = 0, end = 0;
+        int sum = 0;
+        while (end < n) {
+            sum += diff[end];
+            while (sum > maxCost) {
+                sum -= diff[start];
+                start++;
+            }
+            maxLength = Math.max(maxLength, end - start + 1);
+            end++;
+        }
+        return maxLength;
+    }
+}
+```
+
+
+
+### [1493. 删掉一个元素以后全为 1 的最长子数组](https://leetcode.cn/problems/longest-subarray-of-1s-after-deleting-one-element/)
+
+中等
+
+给你一个二进制数组 `nums` ，你需要从中删掉一个元素。
+
+请你在删掉元素的结果数组中，返回最长的且只包含 1 的非空子数组的长度。
+
+如果不存在这样的子数组，请返回 0 。
+
+**提示：**
+
+- `1 <= nums.length <= 105`
+- `nums[i]` 要么是 `0` 要么是 `1` 。
+
+**提示 1：**
+
+```
+输入：nums = [1,1,0,1]
+输出：3
+解释：删掉位置 2 的数后，[1,1,1] 包含 3 个 1 。
+```
+
+C++版本
+
+```c++
+// 方法一：递推
+class Solution {
+public:
+    int longestSubarray(vector<int>& nums) {
+        int n = nums.size();
+
+        vector<int> pre(n), suf(n);
+
+        pre[0] = nums[0];
+        for (int i = 1; i < n; ++i) {
+            pre[i] = nums[i] ? pre[i - 1] + 1 : 0; 
+        }
+
+        suf[n - 1] = nums[n - 1];
+        for (int i = n - 2; i >= 0; --i) {
+            suf[i] = nums[i] ? suf[i + 1] + 1 : 0;
+        }
+
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            int preSum = i == 0 ? 0 : pre[i - 1];
+            int sufSum = i == n - 1 ? 0 : suf[i + 1];
+            ans = max(ans, preSum + sufSum);
+        }
+
+        return ans;
+    }
+};
+
+// 方法二：递推优化
+class Solution {
+public:
+    int longestSubarray(vector<int>& nums) {
+        int ans = 0;
+        int p0 = 0, p1 = 0;
+        for (int num: nums) {
+            if (num == 0) {
+                p1 = p0;
+                p0 = 0;
+            }
+            else {
+                ++p0;
+                ++p1;
+            }
+            ans = max(ans, p1);
+        }
+        if (ans == nums.size()) {
+            --ans;
+        }
+        return ans;
+    }
+};
+
+// 方法三：滑动窗口
+class Solution {
+public:
+    int longestSubarray(vector<int>& nums) {
+        int left = 0, right = 0, window_count = 0, ans = 0, len = nums.size();
+        while(right < len) {
+            if(nums[right] == 0) {
+                window_count += 1;
+            }
+            while(window_count > 1) {
+                if(nums[left] == 0) {
+                    window_count -= 1;
+                }
+                left += 1;
+            }
+            ans = max(ans, right - left + 1 - window_count);
+            right += 1;
+        }
+        return ans == len ? len - 1 : ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：递推
+class Solution {
+    public int longestSubarray(int[] nums) {
+        int n = nums.length;
+
+        int[] pre = new int[n];
+        int[] suf = new int[n];
+
+        pre[0] = nums[0];
+        for (int i = 1; i < n; ++i) {
+            pre[i] = nums[i] != 0 ? pre[i - 1] + 1 : 0; 
+        }
+
+        suf[n - 1] = nums[n - 1];
+        for (int i = n - 2; i >= 0; --i) {
+            suf[i] = nums[i] != 0 ? suf[i + 1] + 1 : 0;
+        }
+
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            int preSum = i == 0 ? 0 : pre[i - 1];
+            int sufSum = i == n - 1 ? 0 : suf[i + 1];
+            ans = Math.max(ans, preSum + sufSum);
+        }
+
+        return ans;
+    }
+}
+
+// 方法二：递推优化
+class Solution {
+    public int longestSubarray(int[] nums) {
+        int ans = 0;
+        int p0 = 0, p1 = 0;
+        for (int num : nums) {
+            if (num == 0) {
+                p1 = p0;
+                p0 = 0;
+            } else {
+                ++p0;
+                ++p1;
+            }
+            ans = Math.max(ans, p1);
+        }
+        if (ans == nums.length) {
+            --ans;
+        }
+        return ans;
+    }
+}
+
+// 方法三：滑动窗口
+class Solution {
+    public int longestSubarray(int[] nums) {
+        int left = 0, right = 0, window_count = 0, ans = 0, len = nums.length;
+        while(right < len) {
+            if(nums[right] == 0) {
+                window_count += 1;
+            }
+            while(window_count > 1) {
+                if(nums[left] == 0) {
+                    window_count -= 1;
+                }
+                left += 1;
+            }
+            ans = Math.max(ans, right - left + 1 - window_count);
+            right += 1;
+        }
+        return ans == len ? len - 1 : ans;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
