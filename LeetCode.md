@@ -12918,17 +12918,290 @@ class Solution {
 
 
 
+### [795. 区间子数组个数](https://leetcode.cn/problems/number-of-subarrays-with-bounded-maximum/)
+
+中等
+
+给你一个整数数组 `nums` 和两个整数：`left` 及 `right` 。找出 `nums` 中连续、非空且其中最大元素在范围 `[left, right]` 内的子数组，并返回满足条件的子数组的个数。
+
+生成的测试用例保证结果符合 **32-bit** 整数范围。
+
+**示例 1：**
+
+```
+输入：nums = [2,1,4,3], left = 2, right = 3
+输出：3
+解释：满足条件的三个子数组：[2], [2, 1], [3]
+```
+
+C++版本
+
+```c++
+// 方法一：一次遍历
+class Solution {
+public:
+    int numSubarrayBoundedMax(vector<int>& nums, int left, int right) {
+        int res = 0, last2 = -1, last1 = -1;
+        for (int i = 0; i < nums.size(); i++) {
+            if (nums[i] >= left && nums[i] <= right) {
+                last1 = i;
+            } else if (nums[i] > right) {
+                last2 = i;
+                last1 = -1;
+            }
+            if (last1 != -1) {
+                res += last1 - last2;
+            }
+        }
+        return res;
+    }
+};
+
+// 方法二：计数
+class Solution {
+public:
+    int numSubarrayBoundedMax(vector<int>& nums, int left, int right) {
+        return count(nums, right) - count(nums, left - 1);
+    }
+
+    int count(vector<int>& nums, int lower) {
+        int res = 0, cur = 0;
+        for (auto x : nums) {
+            cur = x <= lower ? cur + 1 : 0;
+            res += cur;
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：一次遍历
+class Solution {
+    public int numSubarrayBoundedMax(int[] nums, int left, int right) {
+        int res = 0, last2 = -1, last1 = -1;
+        for (int i = 0; i < nums.length; i++) {
+            if (nums[i] >= left && nums[i] <= right) {
+                last1 = i;
+            } else if (nums[i] > right) {
+                last2 = i;
+                last1 = -1;
+            }
+            if (last1 != -1) {
+                res += last1 - last2;
+            }
+        }
+        return res;
+    }
+}
+
+// 方法二：计数
+class Solution {
+    public int numSubarrayBoundedMax(int[] nums, int left, int right) {
+        return count(nums, right) - count(nums, left - 1);
+    }
+
+    public int count(int[] nums, int lower) {
+        int res = 0, cur = 0;
+        for (int x : nums) {
+            cur = x <= lower ? cur + 1 : 0;
+            res += cur;
+        }
+        return res;
+    }
+}
+```
 
 
 
+### [992. K 个不同整数的子数组](https://leetcode.cn/problems/subarrays-with-k-different-integers/)
 
+困难
 
+给定一个正整数数组 `nums`和一个整数 `k`，返回 `nums` 中 「**好子数组」** 的数目。
 
+如果 `nums` 的某个子数组中不同整数的个数恰好为 `k`，则称 `nums` 的这个连续、不一定不同的子数组为 **「好子数组」**。
 
+- 例如，`[1,2,3,1,2]` 中有 `3` 个不同的整数：`1`，`2`，以及 `3`。
 
+**子数组** 是数组的 **连续** 部分。
 
+**示例 1：**
 
+```
+输入：nums = [1,2,1,2,3], k = 2
+输出：7
+解释：恰好由 2 个不同整数组成的子数组：[1,2], [2,1], [1,2], [2,3], [1,2,1], [2,1,2], [1,2,1,2].
+```
 
+C++版本
+
+```c++
+// 滑动窗口
+class Solution {
+public:
+    int subarraysWithKDistinct(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> num1(n + 1), num2(n + 1);
+        int tot1 = 0, tot2 = 0;
+        int left1 = 0, left2 = 0, right = 0;
+        int ret = 0;
+        while (right < n) {
+            if (!num1[nums[right]]) {
+                tot1++;
+            }
+            num1[nums[right]]++;
+            if (!num2[nums[right]]) {
+                tot2++;
+            }
+            num2[nums[right]]++;
+            while (tot1 > k) {
+                num1[nums[left1]]--;
+                if (!num1[nums[left1]]) {
+                    tot1--;
+                }
+                left1++;
+            }
+            while (tot2 > k - 1) {
+                num2[nums[left2]]--;
+                if (!num2[nums[left2]]) {
+                    tot2--;
+                }
+                left2++;
+            }
+            ret += left2 - left1;
+            right++;
+        }
+        return ret;
+    }
+};
+
+// 方法：双指针（滑动窗口）
+class Solution {
+public:
+    int atMostKDistinct(vector<int>& A, int K) {
+        int len = A.size();
+        vector<int> freq(len + 1);
+
+        int left = 0;
+        int right = 0;
+        // [left, right) 里不同整数的个数
+        int count = 0;
+        int res = 0;
+        // [left, right) 包含不同整数的个数小于等于 K
+        while (right < len) {
+            if (freq[A[right]] == 0) {
+                count++;
+            }
+            freq[A[right]]++;
+            right++;
+
+            while (count > K) {
+                freq[A[left]]--;
+                if (freq[A[left]] == 0) {
+                    count--;
+                }
+                left++;
+            }
+            // [left, right) 区间的长度就是对结果的贡献
+            res += right - left;
+        }
+        return res;
+    }
+
+    int subarraysWithKDistinct(vector<int>& A, int K) {
+        return atMostKDistinct(A, K) - atMostKDistinct(A, K - 1);
+    }
+};
+```
+
+Java版本
+
+```java
+// 滑动窗口
+class Solution {
+    public int subarraysWithKDistinct(int[] nums, int k) {
+        int n = nums.length;
+        int[] num1 = new int[n + 1];
+        int[] num2 = new int[n + 1];
+        int tot1 = 0, tot2 = 0;
+        int left1 = 0, left2 = 0, right = 0;
+        int ret = 0;
+        while (right < n) {
+            if (num1[nums[right]] == 0) {
+                tot1++;
+            }
+            num1[nums[right]]++;
+            if (num2[nums[right]] == 0) {
+                tot2++;
+            }
+            num2[nums[right]]++;
+            while (tot1 > k) {
+                num1[nums[left1]]--;
+                if (num1[nums[left1]] == 0) {
+                    tot1--;
+                }
+                left1++;
+            }
+            while (tot2 > k - 1) {
+                num2[nums[left2]]--;
+                if (num2[nums[left2]] == 0) {
+                    tot2--;
+                }
+                left2++;
+            }
+            ret += left2 - left1;
+            right++;
+        }
+        return ret;
+    }
+}
+
+// 方法：双指针（滑动窗口）
+public class Solution {
+
+    public int subarraysWithKDistinct(int[] A, int K) {
+        return atMostKDistinct(A, K) - atMostKDistinct(A, K - 1);
+    }
+
+    /**
+     * @param A
+     * @param K
+     * @return 最多包含 K 个不同整数的子区间的个数
+     */
+    private int atMostKDistinct(int[] A, int K) {
+        int len = A.length;
+        int[] freq = new int[len + 1];
+
+        int left = 0;
+        int right = 0;
+        // [left, right) 里不同整数的个数
+        int count = 0;
+        int res = 0;
+        // [left, right) 包含不同整数的个数小于等于 K
+        while (right < len) {
+            if (freq[A[right]] == 0) {
+                count++;
+            }
+            freq[A[right]]++;
+            right++;
+
+            while (count > K) {
+                freq[A[left]]--;
+                if (freq[A[left]] == 0) {
+                    count--;
+                }
+                left++;
+            }
+            // [left, right) 区间的长度就是对结果的贡献
+            res += right - left;
+        }
+        return res;
+    }
+}
+```
 
 
 
