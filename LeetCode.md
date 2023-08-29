@@ -12973,6 +12973,28 @@ public:
         return res;
     }
 };
+
+// 方法三：滑动窗口
+class Solution {
+public:
+    int numSubarrayMaxK(vector<int>& nums, int k) {
+        int ans = 0, count = 0, len = nums.size();
+        for(int i = 0; i < len; i++) {
+            if(nums[i] <= k) {
+                count += 1;
+            } else {
+                count = 0;
+            }
+            ans += count;
+        }
+        return ans;
+    }
+
+    int numSubarrayBoundedMax(vector<int>& nums, int left, int right) {
+        return numSubarrayMaxK(nums, right) - numSubarrayMaxK(nums, left - 1);
+    }
+};
+
 ```
 
 Java版本
@@ -13010,6 +13032,26 @@ class Solution {
             res += cur;
         }
         return res;
+    }
+}
+
+// 方法三：滑动窗口
+class Solution {
+    public int numSubarrayMaxK(int[] nums, int k) {
+        int ans = 0, count = 0, len = nums.length;
+        for(int i = 0; i < len; i++) {
+            if(nums[i] <= k) {
+                count += 1;
+            } else {
+                count = 0;
+            }
+            ans += count;
+        }
+        return ans;
+    }
+
+    public int numSubarrayBoundedMax(int[] nums, int left, int right) {
+        return numSubarrayMaxK(nums, right) - numSubarrayMaxK(nums, left - 1);
     }
 }
 ```
