@@ -383,10 +383,9 @@ public class HeapSort {
 
         // 堆排序
         int heapSize = arr.length;
-        for (int i = arr.length - 1; i >= 1; i--) {
+        for (int i = arr.length - 1; i > 0; i--) {
             swap(arr, 0, i); // 将堆顶元素与末尾元素交换
-            heapSize--;
-            heapify(arr, 0, heapSize); // 重新调整堆
+            heapify(arr, 0, i); // 重新调整堆
         }
     }
 
@@ -414,6 +413,7 @@ public class HeapSort {
 
         if (largest != i) {
             swap(arr, i, largest);
+            // 递归调整被交换的子树
             heapify(arr, largest, heapSize);
         }
     }
@@ -494,7 +494,7 @@ public class QuickSort {
 		int nowLeft = left;
         while (left < right) {
             // 从右边开始找第一个小于基准元素的位置
-            while (left < j && arr[right] >= pivot) {
+            while (left < right && arr[right] >= pivot) {
                 right--;
             }
 
