@@ -13441,17 +13441,316 @@ class Solution {
 
 
 
+### [1358. 包含所有三种字符的子字符串数目](https://leetcode.cn/problems/number-of-substrings-containing-all-three-characters/)
+
+中等
+
+给你一个字符串 `s` ，它只包含三种字符 a, b 和 c 。
+
+请你返回 a，b 和 c 都 **至少** 出现过一次的子字符串数目。
+
+**示例 1：**
+
+```
+输入：s = "abcabc"
+输出：10
+解释：包含 a，b 和 c 各至少一次的子字符串为 "abc", "abca", "abcab", "abcabc", "bca", "bcab", "bcabc", "cab", "cabc" 和 "abc" (相同字符串算多次)。
+```
+
+C++版本
+
+```c++
+// 方法一：枚举 + 二分
+class Solution {
+    #define N 50010
+    int pre[3][N];
+public:
+    int numberOfSubstrings(string s) {
+        int len=(int)s.length(),ans=0;
+        pre[0][0]=pre[1][0]=pre[2][0]=0;
+        for (int i=0;i<(int)s.length();++i){// 预处理前缀和数组
+            for (int j=0;j<3;++j) pre[j][i+1]=pre[j][i];
+            pre[s[i]-'a'][i+1]++;
+        }
+        for (int i=0;i<len;++i){
+            int l=i+1,r=len,pos=-1;
+            while (l<=r){
+                int mid=l+((r-l)>>1);
+                if (pre[0][mid]-pre[0][i]>0 && pre[1][mid]-pre[1][i]>0 && pre[2][mid]-pre[2][i]>0){// 都大于0说明a,b,c至少出现过一次，子串合法
+                    r=mid-1;
+                    pos=mid;
+                }
+                else l=mid+1;
+            }
+            if (~pos) ans+=len-pos+1;
+        }
+        return ans;
+    }
+};
+
+// 方法二：双指针
+class Solution {
+    int cnt[3];
+public:
+    int numberOfSubstrings(string s) {
+        int len=(int)s.length(),ans=0;
+        cnt[0]=cnt[1]=cnt[2]=0;
+        for (int l=0,r=-1;l<len;){
+            while (r<len && !(cnt[0]>=1 && cnt[1]>=1 && cnt[2]>=1)){
+                if (++r==len) break;
+                cnt[s[r]-'a']++;
+            }
+            ans+=len-r;
+            cnt[s[l++]-'a']--;
+        }
+        return ans;
+    }
+};
+
+// 滑动窗口
+```
+
+Java版本
+
+```java
+// 方法一：枚举 + 二分
+
+// 方法二：双指针
+
+// 滑动窗口
+class Solution {
+    public int numberOfSubstrings(String s) {
+        Map<Character, Integer> window = new HashMap<>();
+        int ans = 0, left = 0, right = 0, len = s.length();
+        while(right < len){
+            if(window.containsKey(s.charAt(right))) {
+                window.put(s.charAt(right), window.get(s.charAt(right)) + 1);
+            } else {
+                window.put(s.charAt(right), 1);
+            }
+            while(window.size() >= 3) {
+                ans += len - right;
+                window.put(s.charAt(left), window.get(s.charAt(left)) - 1);
+                if(window.get(s.charAt(left)) == 0) {
+                    window.remove(s.charAt(left));
+                }
+                left += 1;
+            }
+            right += 1;
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [467. 环绕字符串中唯一的子字符串](https://leetcode.cn/problems/unique-substrings-in-wraparound-string/)
+
+中等
+
+定义字符串 `base` 为一个 `"abcdefghijklmnopqrstuvwxyz"` 无限环绕的字符串，所以 `base` 看起来是这样的：
+
+- `"...zabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcd...."`.
+
+给你一个字符串 `s` ，请你统计并返回 `s` 中有多少 **不同****非空子串** 也在 `base` 中出现。
+
+**示例 1：**
+
+```
+输入：s = "zab"
+输出：6
+解释：字符串 s 有六个子字符串 ("z", "a", "b", "za", "ab", and "zab") 在 base 中出现。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int findSubstringInWraproundString(string p) {
+        vector<int> dp(26);
+        int k = 0;
+        for (int i = 0; i < p.length(); ++i) {
+            if (i && (p[i] - p[i - 1] + 26) % 26 == 1) { // 字符之差为 1 或 -25
+                ++k;
+            } else {
+                k = 1;
+            }
+            dp[p[i] - 'a'] = max(dp[p[i] - 'a'], k);
+        }
+        return accumulate(dp.begin(), dp.end(), 0);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int findSubstringInWraproundString(String p) {
+        int[] dp = new int[26];
+        int k = 0;
+        for (int i = 0; i < p.length(); ++i) {
+            if (i > 0 && (p.charAt(i) - p.charAt(i - 1) + 26) % 26 == 1) { // 字符之差为 1 或 -25
+                ++k;
+            } else {
+                k = 1;
+            }
+            dp[p.charAt(i) - 'a'] = Math.max(dp[p.charAt(i) - 'a'], k);
+        }
+        return Arrays.stream(dp).sum();
+    }
+}
+```
 
 
 
+### [1438. 绝对差不超过限制的最长连续子数组](https://leetcode.cn/problems/longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit/)
 
+中等
 
+给你一个整数数组 `nums` ，和一个表示限制的整数 `limit`，请你返回最长连续子数组的长度，该子数组中的任意两个元素之间的绝对差必须小于或者等于 `limit` *。*
 
+如果不存在满足条件的子数组，则返回 `0` 。
 
+**示例 1：**
 
+```
+输入：nums = [8,2,4,7], limit = 4
+输出：2 
+解释：所有子数组如下：
+[8] 最大绝对差 |8-8| = 0 <= 4.
+[8,2] 最大绝对差 |8-2| = 6 > 4. 
+[8,2,4] 最大绝对差 |8-2| = 6 > 4.
+[8,2,4,7] 最大绝对差 |8-2| = 6 > 4.
+[2] 最大绝对差 |2-2| = 0 <= 4.
+[2,4] 最大绝对差 |2-4| = 2 <= 4.
+[2,4,7] 最大绝对差 |2-7| = 5 > 4.
+[4] 最大绝对差 |4-4| = 0 <= 4.
+[4,7] 最大绝对差 |4-7| = 3 <= 4.
+[7] 最大绝对差 |7-7| = 0 <= 4. 
+因此，满足题意的最长子数组的长度为 2 。
+```
+
+C++版本
+
+```c++
+// 方法一：滑动窗口 + 有序集合
+class Solution {
+public:
+    int longestSubarray(vector<int>& nums, int limit) {
+        multiset<int> s;
+        int n = nums.size();
+        int left = 0, right = 0;
+        int ret = 0;
+        while (right < n) {
+            s.insert(nums[right]);
+            while (*s.rbegin() - *s.begin() > limit) {
+                s.erase(s.find(nums[left++]));
+            }
+            ret = max(ret, right - left + 1);
+            right++;
+        }
+        return ret;
+    }
+};
+
+// 方法二：滑动窗口 + 单调队列
+class Solution {
+public:
+    int longestSubarray(vector<int>& nums, int limit) {
+        deque<int> queMax, queMin;
+        int n = nums.size();
+        int left = 0, right = 0;
+        int ret = 0;
+        while (right < n) {
+            while (!queMax.empty() && queMax.back() < nums[right]) {
+                queMax.pop_back();
+            }
+            while (!queMin.empty() && queMin.back() > nums[right]) {
+                queMin.pop_back();
+            }
+            queMax.push_back(nums[right]);
+            queMin.push_back(nums[right]);
+            while (!queMax.empty() && !queMin.empty() && queMax.front() - queMin.front() > limit) {
+                if (nums[left] == queMin.front()) {
+                    queMin.pop_front();
+                }
+                if (nums[left] == queMax.front()) {
+                    queMax.pop_front();
+                }
+                left++;
+            }
+            ret = max(ret, right - left + 1);
+            right++;
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：滑动窗口 + 有序集合
+class Solution {
+    public int longestSubarray(int[] nums, int limit) {
+        TreeMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
+        int n = nums.length;
+        int left = 0, right = 0;
+        int ret = 0;
+        while (right < n) {
+            map.put(nums[right], map.getOrDefault(nums[right], 0) + 1);
+            while (map.lastKey() - map.firstKey() > limit) {
+                map.put(nums[left], map.get(nums[left]) - 1);
+                if (map.get(nums[left]) == 0) {
+                    map.remove(nums[left]);
+                }
+                left++;
+            }
+            ret = Math.max(ret, right - left + 1);
+            right++;
+        }
+        return ret;
+    }
+}
+
+// 方法二：滑动窗口 + 单调队列
+class Solution {
+    public int longestSubarray(int[] nums, int limit) {
+        Deque<Integer> queMax = new LinkedList<Integer>();
+        Deque<Integer> queMin = new LinkedList<Integer>();
+        int n = nums.length;
+        int left = 0, right = 0;
+        int ret = 0;
+        while (right < n) {
+            while (!queMax.isEmpty() && queMax.peekLast() < nums[right]) {
+                queMax.pollLast();
+            }
+            while (!queMin.isEmpty() && queMin.peekLast() > nums[right]) {
+                queMin.pollLast();
+            }
+            queMax.offerLast(nums[right]);
+            queMin.offerLast(nums[right]);
+            while (!queMax.isEmpty() && !queMin.isEmpty() && queMax.peekFirst() - queMin.peekFirst() > limit) {
+                if (nums[left] == queMin.peekFirst()) {
+                    queMin.pollFirst();
+                }
+                if (nums[left] == queMax.peekFirst()) {
+                    queMax.pollFirst();
+                }
+                left++;
+            }
+            ret = Math.max(ret, right - left + 1);
+            right++;
+        }
+        return ret;
+    }
+}
+```
 
 
 
