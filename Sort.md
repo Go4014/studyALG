@@ -155,23 +155,24 @@ public class InsertionSort {
 C++版本
 
 ```c++
-void shellSort(vector<int>& arr) {
-    int n = arr.size();
-    // 初始步长设置为数组长度的一半，不断缩小步长
-    for (int gap = n / 2; gap > 0; gap /= 2) {
-        // 对每个子序列进行插入排序
-        for (int i = gap; i < n; ++i) {
-            int temp = arr[i];
-            int j = i;
-            // 插入排序
-            while (j >= gap && arr[j - gap] > temp) {
-                arr[j] = arr[j - gap];
-                j -= gap;
+class Solution {
+public:
+    void sortArray(vector<int>& nums) {
+        int gap = nums.size() / 2;
+        while(gap > 0) {
+            for(int i = gap; i < nums.size(); i++) {
+                int temp = nums[i];
+                int j = i;
+                while(j >= gap && nums[j - gap] > temp) {
+                    nums[j] = nums[j - gap];
+                    j -= gap;
+                }
+                nums[j] = temp;
             }
-            arr[j] = temp;
+            gap /= 2;
         }
     }
-}
+};
 ```
 
 Java版本
@@ -181,28 +182,22 @@ import java.util.Arrays;
 
 public class ShellSort {
 
-    public static void shellSort(int[] arr) {
-        if (arr == null || arr.length <= 1) {
+    public static void shellSort(int[] nums) {
+        if (nums == null || nums.length <= 1) {
             return;
         }
-
-        int n = arr.length;
-        // 初始步长为数组长度的一半
-        int h = n / 2;
-
-        while (h > 0) {
-            // 对各个子序列进行插入排序
-            for (int i = h; i < n; i++) {
+        int gap = nums.length / 2;
+        while(gap > 0) {
+            for(int i = gap; i < nums.length; i++) {
+                int temp = nums[i];
                 int j = i;
-                int temp = arr[i];
-                while (j >= h && arr[j - h] > temp) {
-                    arr[j] = arr[j - h];
-                    j -= h;
+                while(j >= gap && nums[j - gap] > temp) {
+                    nums[j] = nums[j - gap];
+                    j -= gap;
                 }
-                arr[j] = temp;
+                nums[j] = temp;
             }
-            // 缩小步长
-            h /= 2;
+            gap /= 2;
         }
     }
 }
@@ -213,55 +208,51 @@ public class ShellSort {
 C++版本
 
 ```c++
-void merge(vector<int>& arr, int left, int mid, int right) {
-    int n1 = mid - left + 1;
-    int n2 = right - mid;
-    
-    vector<int> leftArr(n1);
-    vector<int> rightArr(n2);
-    
-    for (int i = 0; i < n1; ++i) {
-        leftArr[i] = arr[left + i];
+class Solution {
+public:
+    void sortArray(vector<int>& nums) {
+        vector<int> temp(nums.size());
+        mergeSort(nums, 0, nums.size() - 1, temp);
     }
-    for (int j = 0; j < n2; ++j) {
-        rightArr[j] = arr[mid + 1 + j];
-    }
-    
-    int i = 0, j = 0, k = left;
-    while (i < n1 && j < n2) {
-        if (leftArr[i] <= rightArr[j]) {
-            arr[k] = leftArr[i];
-            ++i;
-        } else {
-            arr[k] = rightArr[j];
-            ++j;
-        }
-        ++k;
-    }
-    
-    while (i < n1) {
-        arr[k] = leftArr[i];
-        ++i;
-        ++k;
-    }
-    
-    while (j < n2) {
-        arr[k] = rightArr[j];
-        ++j;
-        ++k;
-    }
-}
 
-void mergeSort(vector<int>& arr, int left, int right) {
-    if (left >= right) {
-        return;
+    void mergeSort(vector<int>& nums, int left, int right, vector<int>& temp) {
+        if(left >= right) {
+            return;
+        }
+        int mid = (left + right) / 2;
+        mergeSort(nums, left, mid, temp);
+        mergeSort(nums, mid+1, right, temp);
+        merge(nums, left, right, temp);
     }
-    
-    int mid = left + (right - left) / 2;
-    mergeSort(arr, left, mid);
-    mergeSort(arr, mid + 1, right);
-    merge(arr, left, mid, right);
-}
+
+    void merge(vector<int>& nums, int left, int right, vector<int>& temp) {
+        int i = left; // 左半部分的起始位置
+        int j = mid + 1; // 右半部分的起始位置
+        int index = left; // 合并后的数组的起始位置
+
+        // 将两个有序子数组按顺序合并到temp数组中
+        while (i <= mid && j <= right) {
+            if (arr[i] <= arr[j]) {
+                temp[index++] = arr[i++];
+            } else {
+                temp[index++] = arr[j++];
+            }
+        }
+
+        // 处理剩余元素
+        while (i <= mid) {
+            temp[index++] = arr[i++];
+        }
+        while (j <= right) {
+            temp[index++] = arr[j++];
+        }
+
+        // 将合并后的结果复制回原数组
+        for (index = left; index <= right; index++) {
+            arr[index] = temp[index];
+        }
+    }
+};
 ```
 
 Java版本
@@ -294,29 +285,28 @@ public class MergeSort {
     private static void merge(int[] arr, int left, int mid, int right, int[] temp) {
         int i = left; // 左半部分的起始位置
         int j = mid + 1; // 右半部分的起始位置
-        int k = left; // 合并后的数组的起始位置
+        int index = left; // 合并后的数组的起始位置
 
         // 将两个有序子数组按顺序合并到temp数组中
         while (i <= mid && j <= right) {
             if (arr[i] <= arr[j]) {
-                temp[k++] = arr[i++];
+                temp[index++] = arr[i++];
             } else {
-                temp[k++] = arr[j++];
+                temp[index++] = arr[j++];
             }
         }
 
         // 处理剩余元素
         while (i <= mid) {
-            temp[k++] = arr[i++];
+            temp[index++] = arr[i++];
         }
-
         while (j <= right) {
-            temp[k++] = arr[j++];
+            temp[index++] = arr[j++];
         }
 
         // 将合并后的结果复制回原数组
-        for (k = left; k <= right; k++) {
-            arr[k] = temp[k];
+        for (index = left; index <= right; index++) {
+            arr[index] = temp[index];
         }
     }
 }
@@ -327,43 +317,45 @@ public class MergeSort {
 C++版本
 
 ```c++
-void heapify(vector<int>& arr, int n, int i) {
-    int largest = i; // 假设父节点最大
-    int left = 2 * i + 1; // 左子节点的索引
-    int right = 2 * i + 2; // 右子节点的索引
-
-    // 如果左子节点比父节点大，更新最大值的索引
-    if (left < n && arr[left] > arr[largest]) {
-        largest = left;
+class Solution {
+public:
+    void sortArray(vector<int>& nums) {
+        int len = nums.size();
+        buildMaxHeap(nums);
+        for(int i = 0; i < len; i++) {
+            swap(nums[0], nums[len - i - 1]);
+            heapify(nums, 0, len - i - 2);
+        }
     }
 
-    // 如果右子节点比父节点大，更新最大值的索引
-    if (right < n && arr[right] > arr[largest]) {
-        largest = right;
+    void buildMaxHeap(vector<int>& nums) {
+        int len = nums.size();
+        for(int i = (len - 2) / 2; i >= 0; i--) {
+            heapify(nums, i, len - 1);
+        }
     }
 
-    // 如果最大值不是父节点，则交换父节点和最大值
-    if (largest != i) {
-        swap(arr[i], arr[largest]);
-        // 递归调整被交换的子树
-        heapify(arr, n, largest);
+    void heapify(vector<int>& nums, int index, int end) {
+        int left = index * 2 + 1;
+        int right = left + 1;
+        while(left <= end) {
+            int maxIndex = index;
+            if(nums[left] > nums[maxIndex]) {
+                maxIndex = left;
+            }
+            if(right <= end && nums[right] > nums[maxIndex]) {
+                maxIndex = right;
+            }
+            if(maxIndex == index) {
+                break;
+            }
+            swap(nums[index], nums[maxIndex]);
+            index = maxIndex;
+            left = index * 2 + 1;
+            right = left + 1;
+        }
     }
-}
-
-void heapSort(std::vector<int>& arr) {
-    int n = arr.size();
-
-    // 建立最大堆，从最后一个非叶子节点开始调整
-    for (int i = n / 2 - 1; i >= 0; --i) {
-        heapify(arr, n, i);
-    }
-
-    // 从堆顶开始取出元素，再调整堆
-    for (int i = n - 1; i > 0; --i) {
-        swap(arr[0], arr[i]);
-        heapify(arr, i, 0);
-    }
-}
+};
 ```
 
 Java版本
@@ -372,54 +364,52 @@ Java版本
 import java.util.Arrays;
 
 public class HeapSort {
-
-    public static void heapSort(int[] arr) {
-        if (arr == null || arr.length <= 1) {
-            return;
-        }
-
+    public void heapSort(int[] nums) {
+        int heapSize = nums.length;
+        
         // 构建最大堆
-        buildMaxHeap(arr);
-
+        buildMaxHeap(nums);
+        
         // 堆排序
-        int heapSize = arr.length;
-        for (int i = arr.length - 1; i > 0; i--) {
-            swap(arr, 0, i); // 将堆顶元素与末尾元素交换
-            heapify(arr, 0, i); // 重新调整堆
+        for (int i = 0; i <= nums.length; i++) {
+            swap(nums, 0, heapSize - i - 1);
+            heapify(nums, 0, heapSize - i - 2);
         }
     }
 
     // 构建最大堆
-    private static void buildMaxHeap(int[] arr) {
-        int heapSize = arr.length;
-        for (int i = arr.length / 2 - 1; i >= 0; i--) {
-            heapify(arr, i, heapSize);
-        }
+    public void buildMaxHeap(int[] arr) {
+        int heapSize = nums.length;
+        for (int i = (heapSize - 2) / 2; i >= 0; --i) {
+            heapify(arr, i, heapSize - 1);
+        } 
     }
 
     // 调整堆
-    private static void heapify(int[] arr, int i, int heapSize) {
-        int leftChild = 2 * i + 1;
-        int rightChild = 2 * i + 2;
-        int largest = i;
-
-        if (leftChild < heapSize && arr[leftChild] > arr[largest]) {
-            largest = leftChild;
-        }
-
-        if (rightChild < heapSize && arr[rightChild] > arr[largest]) {
-            largest = rightChild;
-        }
-
-        if (largest != i) {
-            swap(arr, i, largest);
-            // 递归调整被交换的子树
-            heapify(arr, largest, heapSize);
+    public void heapify(int[] arr, int index, int end) {
+        int left = index * 2 + 1;
+        int right = left + 1;
+        
+        while(left <= end) {
+            int maxIndex = index;
+            if(nums[left] > nums[maxIndex]) {
+                maxIndex = left;
+            }
+            if(right <= end && nums[right] > nums[maxIndex]) {
+                maxIndex = right;
+            }
+            if(maxIndex == index) {
+                break;
+            }
+            swap(nums[index], nums[maxIndex]);
+            index = maxIndex;
+            left = index * 2 + 1;
+            right = left + 1;
         }
     }
 
     // 交换数组中的两个元素
-    private static void swap(int[] arr, int i, int j) {
+    public void swap(int[] arr, int i, int j) {
         int temp = arr[i];
         arr[i] = arr[j];
         arr[j] = temp;
@@ -432,95 +422,74 @@ public class HeapSort {
 C++版本
 
 ```c++
-int partition(vector<int>& arr, int low, int high) {
-    int pivot = arr[high]; // 选择基准元素为最后一个元素
-    int i = low - 1; // i 初始化为最小元素的索引
+class Solution {
+public:
+    void sortArray(vector<int>& nums) {
+        quickSort(nums, 0, nums.size() - 1);
+    }
 
-    for (int j = low; j < high; ++j) {
-        // 如果当前元素小于或等于基准元素，将其交换到前面
-        if (arr[j] <= pivot) {
-            ++i;
-            swap(arr[i], arr[j]);
+    void quickSort(vector<int>& nums, int left, int right) {
+        if(left < right) {
+            int point = partion(nums,left,right);
+            quickSort(nums, left, point-1);
+            quickSort(nums, point+1, right);
         }
     }
-    swap(arr[i + 1], arr[high]); // 将基准元素交换到正确的位置
-    return i + 1; // 返回基准元素的索引
-}
 
-void quickSort(vector<int>& arr, int low, int high) {
-    if (low < high) {
-        // pi 是划分索引，arr[pi] 已经在正确的位置
-        int pi = partition(arr, low, high);
-
-        // 递归地对划分的两个子数组进行快速排序
-        quickSort(arr, low, pi - 1);
-        quickSort(arr, pi + 1, high);
+    int partion(vector<int>& nums, int left, int right) {
+        int index = rand() % (right - left + 1) + left;
+        swap(nums[left], nums[index]);
+        int key = nums[left];
+        while(left < right) {
+            while(left < right && nums[right] >= key) right--;
+            if(left < right) nums[left] = nums[right];
+            
+            while(left < right && nums[left] <= key) left++;
+            if(left < right) nums[right] = nums[left];
+        }
+        nums[left] = key;
+        return left;
     }
-}
+};
 ```
 
 Java版本
 
 ```java
-import java.util.Arrays;
-
-public class QuickSort {
-
-    public static void quickSort(int[] arr) {
-        if (arr == null || arr.length <= 1) {
-            return;
-        }
-        quickSort(arr, 0, arr.length - 1);
+class Solution {
+    public void sortArray(int[] nums) {
+        quicksort(nums, 0, nums.length - 1);
     }
 
-    private static void quickSort(int[] arr, int left, int right) {
-        if (left >= right) {
-            return;
+    public void quicksort(int[] nums, int left, int right) {
+        if (left < right) {
+            int pos = partition(nums, left, right);
+            quicksort(nums, left, pos - 1);
+            quicksort(nums, pos + 1, right);
         }
-
-        // 选取基准元素（可以选择第一个元素、最后一个元素、中间元素等）
-        int pivotIndex = partition(arr, left, right);
-
-        // 对基准元素左边的子数组进行快速排序
-        quickSort(arr, left, pivotIndex - 1);
-
-        // 对基准元素右边的子数组进行快速排序
-        quickSort(arr, pivotIndex + 1, right);
     }
 
-    private static int partition(int[] arr, int left, int right) {
-        // 选取第一个元素作为基准元素
-        int pivot = arr[left];
-		int nowLeft = left;
-        while (left < right) {
-            // 从右边开始找第一个小于基准元素的位置
-            while (left < right && arr[right] >= pivot) {
-                right--;
-            }
-
-            // 从左边开始找第一个大于基准元素的位置
-            while (left < right && arr[left] <= pivot) {
-                left++;
-            }
-
-            // 交换这两个位置的元素
-            if (left < right) {
-                swap(arr, left, right);
-            }
+    public int partition(int[] nums, int left, int right) {
+        // 随机选一个作为我们的主元
+        int index = new Random().nextInt(right - left + 1) + left;
+        swap(nums, left, index);
+        
+        int key = nums[left];
+        while(left < right) {
+            while(left < right && nums[right] >= key) right--;
+            if(left < right) nums[left] = nums[right];
+            
+            while(left < right && nums[left] <= key) left++;
+            if(left < right) nums[right] = nums[left];
         }
-
-        // 将基准元素放入正确的位置
-        swap(arr, left, nowLeft);
-
-        // 返回基准元素的位置
+        nums[left] = key;
         return left;
     }
 
-    // 交换数组中的两个元素
-    private static void swap(int[] arr, int i, int j) {
-        int temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
+    private void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
     }
 }
 ```
