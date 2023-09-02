@@ -14221,3 +14221,315 @@ class Solution {
 }
 ```
 
+
+
+### [82. 删除排序链表中的重复元素 II](https://leetcode.cn/problems/remove-duplicates-from-sorted-list-ii/)
+
+中等
+
+给定一个已排序的链表的头 `head` ， *删除原始链表中所有重复数字的节点，只留下不同的数字* 。返回 *已排序的链表* 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/04/linkedlist1.jpg)
+
+```
+输入：head = [1,2,3,3,4,4,5]
+输出：[1,2,5]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+        if (!head) {
+            return head;
+        }
+        
+        ListNode* dummy = new ListNode(0, head);
+
+        ListNode* cur = dummy;
+        while (cur->next && cur->next->next) {
+            if (cur->next->val == cur->next->next->val) {
+                int x = cur->next->val;
+                while (cur->next && cur->next->val == x) {
+                    cur->next = cur->next->next;
+                }
+            }
+            else {
+                cur = cur->next;
+            }
+        }
+
+        return dummy->next;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if (head == null) {
+            return head;
+        }
+        
+        ListNode dummy = new ListNode(0, head);
+
+        ListNode cur = dummy;
+        while (cur.next != null && cur.next.next != null) {
+            if (cur.next.val == cur.next.next.val) {
+                int x = cur.next.val;
+                while (cur.next != null && cur.next.val == x) {
+                    cur.next = cur.next.next;
+                }
+            } else {
+                cur = cur.next;
+            }
+        }
+
+        return dummy.next;
+    }
+}
+```
+
+
+
+### [206. 反转链表](https://leetcode.cn/problems/reverse-linked-list/)
+
+简单
+
+给你单链表的头节点 `head` ，请你反转链表，并返回反转后的链表。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/rev1ex1.jpg)
+
+```
+输入：head = [1,2,3,4,5]
+输出：[5,4,3,2,1]
+```
+
+C++版本
+
+```c++
+// 方法一：迭代
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        ListNode *temp = head, *preTemp = nullptr, *nextTemp = nullptr;
+        while(temp != nullptr) {
+            nextTemp = temp->next;
+            temp->next = preTemp;
+            preTemp = temp;
+            temp = nextTemp;
+        }
+        head = preTemp;
+        return head;
+    }
+};
+
+// 方法二：递归
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        if (!head || !head->next) {
+            return head;
+        }
+        ListNode* newHead = reverseList(head->next);
+        head->next->next = head;
+        head->next = nullptr;
+        return newHead;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：迭代
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        ListNode temp = head, preTemp = null, nextTemp = null;
+        while(temp != null) {
+            nextTemp = temp.next;
+            temp.next = preTemp;
+            preTemp = temp;
+            temp = nextTemp;
+        }
+        head = preTemp;
+        return head;
+    }
+}
+
+// 方法二：递归
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode newHead = reverseList(head.next);
+        head.next.next = head;
+        head.next = null;
+        return newHead;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
