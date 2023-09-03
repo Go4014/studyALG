@@ -14611,19 +14611,313 @@ class Solution {
 
 
 
+### [203. 移除链表元素](https://leetcode.cn/problems/remove-linked-list-elements/)
+
+简单
+
+给你一个链表的头节点 `head` 和一个整数 `val` ，请你删除链表中所有满足 `Node.val == val` 的节点，并返回 **新的头节点** 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/03/06/removelinked-list.jpg)
+
+```
+输入：head = [1,2,6,3,4,5,6], val = 6
+输出：[1,2,3,4,5]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* removeElements(ListNode* head, int val) {
+        ListNode *preHead = new ListNode(0, head);
+        ListNode *temp = head, *preTemp = preHead;
+        while(temp != nullptr) {
+            if (temp->val == val) {
+                preTemp->next = temp->next;
+            } else {
+                preTemp = temp;
+            }
+            temp = temp->next;
+        }
+        return preHead->next;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode removeElements(ListNode head, int val) {
+        ListNode preHead = new ListNode(0, head);
+        ListNode temp = head, preTemp = preHead;
+        while(temp != null) {
+            if (temp.val == val) {
+                preTemp.next = temp.next;
+            } else {
+                preTemp = temp;
+            }
+            temp = temp.next;
+        }
+        return preHead.next;
+    }
+}
+```
 
 
 
+### [25. K 个一组翻转链表](https://leetcode.cn/problems/reverse-nodes-in-k-group/)
+
+困难
+
+给你链表的头节点 `head` ，每 `k` 个节点一组进行翻转，请你返回修改后的链表。
+
+`k` 是一个正整数，它的值小于或等于链表的长度。如果节点总数不是 `k` 的整数倍，那么请将最后剩余的节点保持原有顺序。
+
+你不能只是单纯的改变节点内部的值，而是需要实际进行节点交换。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/03/reverse_ex1.jpg)
+
+```
+输入：head = [1,2,3,4,5], k = 2
+输出：[2,1,4,3,5]
+```
+
+**提示：**
+
+- 链表中的节点数目为 `n`
+- `1 <= k <= n <= 5000`
+- `0 <= Node.val <= 1000`
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    // 翻转一个子链表，并且返回新的头与尾
+    pair<ListNode*, ListNode*> myReverse(ListNode* head, ListNode* tail) {
+        ListNode* prev = tail->next;
+        ListNode* p = head;
+        while (prev != tail) {
+            ListNode* nex = p->next;
+            p->next = prev;
+            prev = p;
+            p = nex;
+        }
+        return {tail, head};
+    }
+
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        ListNode* hair = new ListNode(0);
+        hair->next = head;
+        ListNode* pre = hair;
+
+        while (head) {
+            ListNode* tail = pre;
+            // 查看剩余部分长度是否大于等于 k
+            for (int i = 0; i < k; ++i) {
+                tail = tail->next;
+                if (!tail) {
+                    return hair->next;
+                }
+            }
+            ListNode* nex = tail->next;
+            // 这里是 C++17 的写法，也可以写成
+            // pair<ListNode*, ListNode*> result = myReverse(head, tail);
+            // head = result.first;
+            // tail = result.second;
+            tie(head, tail) = myReverse(head, tail);
+            // 把子链表重新接回原链表
+            pre->next = head;
+            tail->next = nex;
+            pre = tail;
+            head = tail->next;
+        }
+
+        return hair->next;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode reverseKGroup(ListNode head, int k) {
+        ListNode hair = new ListNode(0);
+        hair.next = head;
+        ListNode pre = hair;
+
+        while (head != null) {
+            ListNode tail = pre;
+            // 查看剩余部分长度是否大于等于 k
+            for (int i = 0; i < k; ++i) {
+                tail = tail.next;
+                if (tail == null) {
+                    return hair.next;
+                }
+            }
+            ListNode nex = tail.next;
+            ListNode[] reverse = myReverse(head, tail);
+            head = reverse[0];
+            tail = reverse[1];
+            // 把子链表重新接回原链表
+            pre.next = head;
+            tail.next = nex;
+            pre = tail;
+            head = tail.next;
+        }
+
+        return hair.next;
+    }
+
+    public ListNode[] myReverse(ListNode head, ListNode tail) {
+        ListNode prev = tail.next;
+        ListNode p = head;
+        while (prev != tail) {
+            ListNode nex = p.next;
+            p.next = prev;
+            prev = p;
+            p = nex;
+        }
+        return new ListNode[]{tail, head};
+    }
+}
+```
 
 
 
+### [328. 奇偶链表](https://leetcode.cn/problems/odd-even-linked-list/)
 
+中等
 
+给定单链表的头节点 `head` ，将所有索引为奇数的节点和索引为偶数的节点分别组合在一起，然后返回重新排序的列表。
 
+**第一个**节点的索引被认为是 **奇数** ， **第二个**节点的索引为 **偶数** ，以此类推。
 
+请注意，偶数组和奇数组内部的相对顺序应该与输入时保持一致。
 
+你必须在 `O(1)` 的额外空间复杂度和 `O(n)` 的时间复杂度下解决这个问题。
 
+**示例 1:**
 
+![img](https://assets.leetcode.com/uploads/2021/03/10/oddeven-linked-list.jpg)
+
+```
+输入: head = [1,2,3,4,5]
+输出: [1,3,5,2,4]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* oddEvenList(ListNode* head) {
+        if (head == nullptr) {
+            return head;
+        }
+        ListNode* evenHead = head->next;
+        ListNode* odd = head;
+        ListNode* even = evenHead;
+        while (even != nullptr && even->next != nullptr) {
+            odd->next = even->next;
+            odd = odd->next;
+            even->next = odd->next;
+            even = even->next;
+        }
+        odd->next = evenHead;
+        return head;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode oddEvenList(ListNode head) {
+        if (head == null) {
+            return head;
+        }
+        ListNode evenHead = head.next;
+        ListNode odd = head, even = evenHead;
+        while (even != null && even.next != null) {
+            odd.next = even.next;
+            odd = odd.next;
+            even.next = odd.next;
+            even = even.next;
+        }
+        odd.next = evenHead;
+        return head;
+    }
+}
+```
 
 
 
