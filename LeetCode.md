@@ -14921,19 +14921,420 @@ class Solution {
 
 
 
+### [234. 回文链表](https://leetcode.cn/problems/palindrome-linked-list/)
+
+简单
+
+给你一个单链表的头节点 `head` ，请你判断该链表是否为回文链表。如果是，返回 `true` ；否则，返回 `false` 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/03/03/pal1linked-list.jpg)
+
+```
+输入：head = [1,2,2,1]
+输出：true
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+
+// 方法一：将值复制到数组中后用双指针法
+class Solution {
+public:
+    bool isPalindrome(ListNode* head) {
+        vector<int> vals;
+        while (head != nullptr) {
+            vals.emplace_back(head->val);
+            head = head->next;
+        }
+        for (int i = 0, j = (int)vals.size() - 1; i < j; ++i, --j) {
+            if (vals[i] != vals[j]) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+
+// 方法二：递归
+class Solution {
+    ListNode* frontPointer;
+public:
+    bool recursivelyCheck(ListNode* currentNode) {
+        if (currentNode != nullptr) {
+            if (!recursivelyCheck(currentNode->next)) {
+                return false;
+            }
+            if (currentNode->val != frontPointer->val) {
+                return false;
+            }
+            frontPointer = frontPointer->next;
+        }
+        return true;
+    }
+
+    bool isPalindrome(ListNode* head) {
+        frontPointer = head;
+        return recursivelyCheck(head);
+    }
+};
+
+// 方法三：快慢指针
+class Solution {
+public:
+    bool isPalindrome(ListNode* head) {
+        if (head == nullptr) {
+            return true;
+        }
+
+        // 找到前半部分链表的尾节点并反转后半部分链表
+        ListNode* firstHalfEnd = endOfFirstHalf(head);
+        ListNode* secondHalfStart = reverseList(firstHalfEnd->next);
+
+        // 判断是否回文
+        ListNode* p1 = head;
+        ListNode* p2 = secondHalfStart;
+        bool result = true;
+        while (result && p2 != nullptr) {
+            if (p1->val != p2->val) {
+                result = false;
+            }
+            p1 = p1->next;
+            p2 = p2->next;
+        }        
+
+        // 还原链表并返回结果
+        firstHalfEnd->next = reverseList(secondHalfStart);
+        return result;
+    }
+
+    ListNode* reverseList(ListNode* head) {
+        ListNode* prev = nullptr;
+        ListNode* curr = head;
+        while (curr != nullptr) {
+            ListNode* nextTemp = curr->next;
+            curr->next = prev;
+            prev = curr;
+            curr = nextTemp;
+        }
+        return prev;
+    }
+
+    ListNode* endOfFirstHalf(ListNode* head) {
+        ListNode* fast = head;
+        ListNode* slow = head;
+        while (fast->next != nullptr && fast->next->next != nullptr) {
+            fast = fast->next->next;
+            slow = slow->next;
+        }
+        return slow;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+
+// 方法一：将值复制到数组中后用双指针法
+class Solution {
+    public boolean isPalindrome(ListNode head) {
+        List<Integer> vals = new ArrayList<Integer>();
+
+        // 将链表的值复制到数组中
+        ListNode currentNode = head;
+        while (currentNode != null) {
+            vals.add(currentNode.val);
+            currentNode = currentNode.next;
+        }
+
+        // 使用双指针判断是否回文
+        int front = 0;
+        int back = vals.size() - 1;
+        while (front < back) {
+            if (!vals.get(front).equals(vals.get(back))) {
+                return false;
+            }
+            front++;
+            back--;
+        }
+        return true;
+    }
+}
+
+// 方法二：递归
+class Solution {
+    private ListNode frontPointer;
+
+    private boolean recursivelyCheck(ListNode currentNode) {
+        if (currentNode != null) {
+            if (!recursivelyCheck(currentNode.next)) {
+                return false;
+            }
+            if (currentNode.val != frontPointer.val) {
+                return false;
+            }
+            frontPointer = frontPointer.next;
+        }
+        return true;
+    }
+
+    public boolean isPalindrome(ListNode head) {
+        frontPointer = head;
+        return recursivelyCheck(head);
+    }
+}
+
+// 方法三：快慢指针
+class Solution {
+    public boolean isPalindrome(ListNode head) {
+        if (head == null) {
+            return true;
+        }
+
+        // 找到前半部分链表的尾节点并反转后半部分链表
+        ListNode firstHalfEnd = endOfFirstHalf(head);
+        ListNode secondHalfStart = reverseList(firstHalfEnd.next);
+
+        // 判断是否回文
+        ListNode p1 = head;
+        ListNode p2 = secondHalfStart;
+        boolean result = true;
+        while (result && p2 != null) {
+            if (p1.val != p2.val) {
+                result = false;
+            }
+            p1 = p1.next;
+            p2 = p2.next;
+        }        
+
+        // 还原链表并返回结果
+        firstHalfEnd.next = reverseList(secondHalfStart);
+        return result;
+    }
+
+    private ListNode reverseList(ListNode head) {
+        ListNode prev = null;
+        ListNode curr = head;
+        while (curr != null) {
+            ListNode nextTemp = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = nextTemp;
+        }
+        return prev;
+    }
+
+    private ListNode endOfFirstHalf(ListNode head) {
+        ListNode fast = head;
+        ListNode slow = head;
+        while (fast.next != null && fast.next.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        return slow;
+    }
+}
+```
 
 
 
+### [430. 扁平化多级双向链表](https://leetcode.cn/problems/flatten-a-multilevel-doubly-linked-list/)
+
+中等
+
+你会得到一个双链表，其中包含的节点有一个下一个指针、一个前一个指针和一个额外的 **子指针** 。这个子指针可能指向一个单独的双向链表，也包含这些特殊的节点。这些子列表可以有一个或多个自己的子列表，以此类推，以生成如下面的示例所示的 **多层数据结构** 。
+
+给定链表的头节点 head ，将链表 **扁平化** ，以便所有节点都出现在单层双链表中。让 `curr` 是一个带有子列表的节点。子列表中的节点应该出现在**扁平化列表**中的 `curr` **之后** 和 `curr.next` **之前** 。
+
+返回 *扁平列表的 `head` 。列表中的节点必须将其 **所有** 子指针设置为 `null` 。*
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/11/09/flatten11.jpg)
+
+```
+输入：head = [1,2,3,4,5,6,null,null,null,7,8,9,10,null,null,11,12]
+输出：[1,2,3,7,8,11,12,9,10,4,5,6]
+解释：输入的多级列表如上图所示。
+扁平化后的链表如下图：
+```
+
+C++版本
+
+```c++
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    Node* prev;
+    Node* next;
+    Node* child;
+};
+*/
+
+class Solution {
+public:
+    Node* flatten(Node* head) {
+        unificate(head);
+        return head;
+    }
+
+    Node* unificate(Node* head) {
+        Node *temp = head, *preTemp = head, *tail = nullptr;
+        while(temp != nullptr) {
+            if(temp->child != nullptr) {
+                tail = unificate(temp->child);
+                tail->next = temp->next;
+                if(temp->next != nullptr) {
+                    temp->next->prev = tail;
+                }
+                temp->next = temp->child;
+                temp->next->prev = temp;
+                temp->child = nullptr;
+            }
+            preTemp = temp;
+            temp = temp->next;
+        }
+        return preTemp;
+    }
+    
+};
+```
+
+Java版本
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public Node prev;
+    public Node next;
+    public Node child;
+};
+*/
+
+class Solution {
+    public Node flatten(Node head) {
+        unificate(head);
+        return head;
+    }
+
+    public Node unificate(Node head) {
+        Node temp = head, preTemp = head, tail = null;
+        while(temp != null) {
+            if(temp.child != null) {
+                tail = unificate(temp.child);
+                tail.next = temp.next;
+                if(temp.next != null) {
+                    temp.next.prev = tail;
+                }
+                temp.next = temp.child;
+                temp.next.prev = temp;
+                temp.child = null;
+            }
+            preTemp = temp;
+            temp = temp.next;
+        }
+        return preTemp;
+    }
+}
+```
 
 
 
+### [138. 复制带随机指针的链表](https://leetcode.cn/problems/copy-list-with-random-pointer/)
+
+中等
+
+给你一个长度为 `n` 的链表，每个节点包含一个额外增加的随机指针 `random` ，该指针可以指向链表中的任何节点或空节点。
+
+构造这个链表的 **[深拷贝](https://baike.baidu.com/item/深拷贝/22785317?fr=aladdin)**。 深拷贝应该正好由 `n` 个 **全新** 节点组成，其中每个新节点的值都设为其对应的原节点的值。新节点的 `next` 指针和 `random` 指针也都应指向复制链表中的新节点，并使原链表和复制链表中的这些指针能够表示相同的链表状态。**复制链表中的指针都不应指向原链表中的节点** 。
+
+例如，如果原链表中有 `X` 和 `Y` 两个节点，其中 `X.random --> Y` 。那么在复制链表中对应的两个节点 `x` 和 `y` ，同样有 `x.random --> y` 。
+
+返回复制链表的头节点。
+
+用一个由 `n` 个节点组成的链表来表示输入/输出中的链表。每个节点用一个 `[val, random_index]` 表示：
+
+- `val`：一个表示 `Node.val` 的整数。
+- `random_index`：随机指针指向的节点索引（范围从 `0` 到 `n-1`）；如果不指向任何节点，则为 `null` 。
+
+你的代码 **只** 接受原链表的头节点 `head` 作为传入参数。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/01/09/e1.png)
+
+```
+输入：head = [[7,null],[13,0],[11,4],[10,2],[1,0]]
+输出：[[7,null],[13,0],[11,4],[10,2],[1,0]]
+```
+
+C++版本
+
+```c++
+
+```
+
+Java版本
+
+```java
+
+```
 
 
 
+### [61. 旋转链表](https://leetcode.cn/problems/rotate-list/)
 
+中等
 
+给你一个链表的头节点 `head` ，旋转链表，将链表每个节点向右移动 `k` 个位置。
 
+**示例 1：**
 
+![img](https://assets.leetcode.com/uploads/2020/11/13/rotate1.jpg)
+
+```
+输入：head = [1,2,3,4,5], k = 2
+输出：[4,5,1,2,3]
+```
+
+C++版本
+
+```c++
+
+```
+
+Java版本
+
+```java
+
+```
 
 
 
