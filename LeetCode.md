@@ -15298,13 +15298,209 @@ class Solution {
 C++版本
 
 ```c++
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    Node* next;
+    Node* random;
+    
+    Node(int _val) {
+        val = _val;
+        next = NULL;
+        random = NULL;
+    }
+};
+*/
+// 方法一：回溯 + 哈希表
+class Solution {
+public:
+    unordered_map<Node*, Node*> cachedNode;
 
+    Node* copyRandomList(Node* head) {
+        if (head == nullptr) {
+            return nullptr;
+        }
+        if (!cachedNode.count(head)) {
+            Node* headNew = new Node(head->val);
+            cachedNode[head] = headNew;
+            headNew->next = copyRandomList(head->next);
+            headNew->random = copyRandomList(head->random);
+        }
+        return cachedNode[head];
+    }
+};
+
+// 方法二：迭代 + 节点拆分
+class Solution {
+public:
+    Node* copyRandomList(Node* head) {
+        if (head == nullptr) {
+            return nullptr;
+        }
+        for (Node* node = head; node != nullptr; node = node->next->next) {
+            Node* nodeNew = new Node(node->val);
+            nodeNew->next = node->next;
+            node->next = nodeNew;
+        }
+        for (Node* node = head; node != nullptr; node = node->next->next) {
+            Node* nodeNew = node->next;
+            nodeNew->random = (node->random != nullptr) ? node->random->next : nullptr;
+        }
+        Node* headNew = head->next;
+        for (Node* node = head; node != nullptr; node = node->next) {
+            Node* nodeNew = node->next;
+            node->next = node->next->next;
+            nodeNew->next = (nodeNew->next != nullptr) ? nodeNew->next->next : nullptr;
+        }
+        return headNew;
+    }
+};
+
+// 方法三
+class Solution {
+public:
+    Node* copyRandomList(Node* head) {
+        if (!head) {
+            return nullptr;
+        }
+
+        // 第一遍循环：复制每个节点并将其插入原节点后面
+        Node* cur = head;
+        while (cur) {
+            Node* copy = new Node(cur->val);
+            copy->next = cur->next;
+            cur->next = copy;
+            cur = cur->next->next;
+        }
+
+        // 第二遍循环：处理随机指针
+        cur = head;
+        while (cur) {
+            if (cur->random) {
+                cur->next->random = cur->random->next;
+            }
+            cur = cur->next->next;
+        }
+
+        // 第三遍循环：拆分链表
+        cur = head;
+        Node* result = head->next; // 复制链表的头节点
+        while (cur) {
+            Node* temp = cur->next->next;
+            if (temp) {
+                cur->next->next = temp->next;
+            }
+            cur->next = temp;
+            cur = temp;
+        }
+
+        return result;
+    }
+};
 ```
 
 Java版本
 
 ```java
+/*
+// Definition for a Node.
+class Node {
+    int val;
+    Node next;
+    Node random;
 
+    public Node(int val) {
+        this.val = val;
+        this.next = null;
+        this.random = null;
+    }
+}
+*/
+// 方法一：回溯 + 哈希表
+class Solution {
+    Map<Node, Node> cachedNode = new HashMap<Node, Node>();
+
+    public Node copyRandomList(Node head) {
+        if (head == null) {
+            return null;
+        }
+        if (!cachedNode.containsKey(head)) {
+            Node headNew = new Node(head.val);
+            cachedNode.put(head, headNew);
+            headNew.next = copyRandomList(head.next);
+            headNew.random = copyRandomList(head.random);
+        }
+        return cachedNode.get(head);
+    }
+}
+
+// 方法二：迭代 + 节点拆分
+class Solution {
+    public Node copyRandomList(Node head) {
+        if (head == null) {
+            return null;
+        }
+        for (Node node = head; node != null; node = node.next.next) {
+            Node nodeNew = new Node(node.val);
+            nodeNew.next = node.next;
+            node.next = nodeNew;
+        }
+        for (Node node = head; node != null; node = node.next.next) {
+            Node nodeNew = node.next;
+            nodeNew.random = (node.random != null) ? node.random.next : null;
+        }
+        Node headNew = head.next;
+        for (Node node = head; node != null; node = node.next) {
+            Node nodeNew = node.next;
+            node.next = node.next.next;
+            nodeNew.next = (nodeNew.next != null) ? nodeNew.next.next : null;
+        }
+        return headNew;
+    }
+}
+
+// 方法三
+class Solution {
+    public Node copyRandomList(Node head) {
+        if (head == null) {
+            return null;
+        }
+
+        // 第一遍循环：复制每个节点并将其插入原节点后面
+        Node cur = head;
+        while (cur != null) {
+            Node copy = new Node(cur.val);
+            copy.next = cur.next;
+            cur.next = copy;
+            cur = cur.next.next;
+        }
+
+        // 第二遍循环：处理随机指针
+        cur = head;
+        while (cur != null) {
+            if (cur.random != null) {
+                cur.next.random = cur.random.next;
+            }
+            cur = cur.next.next;
+        }
+
+        // 第三遍循环：拆分链表
+        cur = head;
+        Node result = head.next; // 复制链表的头节点
+        while (cur != null) {
+            Node temp = cur.next.next;
+            if (temp != null) {
+                cur.next.next = temp.next;
+            }
+            cur.next = temp;
+            cur = temp;
+        }
+
+        return result;
+    }
+}
 ```
 
 
@@ -15327,13 +15523,82 @@ Java版本
 C++版本
 
 ```c++
-
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+// 方法一：闭合为环
+class Solution {
+public:
+    ListNode* rotateRight(ListNode* head, int k) {
+        if (k == 0 || head == nullptr || head->next == nullptr) {
+            return head;
+        }
+        int n = 1;
+        ListNode* iter = head;
+        while (iter->next != nullptr) {
+            iter = iter->next;
+            n++;
+        }
+        int add = n - k % n;
+        if (add == n) {
+            return head;
+        }
+        iter->next = head;
+        while (add--) {
+            iter = iter->next;
+        }
+        ListNode* ret = iter->next;
+        iter->next = nullptr;
+        return ret;
+    }
+};
 ```
 
 Java版本
 
 ```java
-
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+// 方法一：闭合为环
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        if (k == 0 || head == null || head.next == null) {
+            return head;
+        }
+        int n = 1;
+        ListNode iter = head;
+        while (iter.next != null) {
+            iter = iter.next;
+            n++;
+        }
+        int add = n - k % n;
+        if (add == n) {
+            return head;
+        }
+        iter.next = head;
+        while (add-- > 0) {
+            iter = iter.next;
+        }
+        ListNode ret = iter.next;
+        iter.next = null;
+        return ret;
+    }
+}
 ```
 
 
