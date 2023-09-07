@@ -16116,17 +16116,371 @@ class Solution {
 
 
 
+### [147. 对链表进行插入排序](https://leetcode.cn/problems/insertion-sort-list/)
+
+中等
+
+给定单个链表的头 `head` ，使用 **插入排序** 对链表进行排序，并返回 *排序后链表的头* 。
+
+**插入排序** 算法的步骤:
+
+1. 插入排序是迭代的，每次只移动一个元素，直到所有元素可以形成一个有序的输出列表。
+2. 每次迭代中，插入排序只从输入数据中移除一个待排序的元素，找到它在序列中适当的位置，并将其插入。
+3. 重复直到所有输入数据插入完为止。
+
+下面是插入排序算法的一个图形示例。部分排序的列表(黑色)最初只包含列表中的第一个元素。每次迭代时，从输入数据中删除一个元素(红色)，并就地插入已排序的列表中。
+
+对链表进行插入排序。
+
+![img](https://upload.wikimedia.org/wikipedia/commons/0/0f/Insertion-sort-example-300px.gif)
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/03/04/sort1linked-list.jpg)
+
+```
+输入: head = [4,2,1,3]
+输出: [1,2,3,4]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* insertionSortList(ListNode* head) {
+        if (!head || !head->next) {
+            return head;
+        }
+
+        ListNode* dummyHead = new ListNode(-1);
+        dummyHead->next = head;
+        ListNode* sortedList = head;
+        ListNode* cur = head->next;
+
+        while (cur) {
+            if (sortedList->val <= cur->val) {
+                // 将 cur 插入到 sortedList 之后
+                sortedList = sortedList->next;
+            } else {
+                ListNode* prev = dummyHead;
+                while (prev->next->val <= cur->val) {
+                    prev = prev->next;
+                }
+                // 将 cur 插入到链表中间
+                sortedList->next = cur->next;
+                cur->next = prev->next;
+                prev->next = cur;
+            }
+            cur = sortedList->next;
+        }
+
+        return dummyHead->next;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode insertionSortList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        ListNode dummyHead = new ListNode(-1);
+        dummyHead.next = head;
+        ListNode sortedList = head;
+        ListNode cur = head.next;
+
+        while (cur != null) {
+            if (sortedList.val <= cur.val) {
+                // 将 cur 插入到 sortedList 之后
+                sortedList = sortedList.next;
+            } else {
+                ListNode prev = dummyHead;
+                while (prev.next.val <= cur.val) {
+                    prev = prev.next;
+                }
+                // 将 cur 插入到链表中间
+                sortedList.next = cur.next;
+                cur.next = prev.next;
+                prev.next = cur;
+            }
+            cur = sortedList.next;
+        }
+
+        return dummyHead.next;
+    }
+}
+```
 
 
 
+### [23. 合并 K 个升序链表](https://leetcode.cn/problems/merge-k-sorted-lists/)
 
+困难
 
+给你一个链表数组，每个链表都已经按升序排列。
 
+请你将所有链表合并到一个升序链表中，返回合并后的链表。
 
+**示例 1：**
 
+```
+输入：lists = [[1,4,5],[1,3,4],[2,6]]
+输出：[1,1,2,3,4,4,5,6]
+解释：链表数组如下：
+[
+  1->4->5,
+  1->3->4,
+  2->6
+]
+将它们合并到一个有序链表中得到。
+1->1->2->3->4->4->5->6
+```
 
+C++版本
 
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+// 方法一：顺序合并
+class Solution {
+public:
+    ListNode* mergeTwoLists(ListNode *a, ListNode *b) {
+        if ((!a) || (!b)) return a ? a : b;
+        ListNode head, *tail = &head, *aPtr = a, *bPtr = b;
+        while (aPtr && bPtr) {
+            if (aPtr->val < bPtr->val) {
+                tail->next = aPtr; aPtr = aPtr->next;
+            } else {
+                tail->next = bPtr; bPtr = bPtr->next;
+            }
+            tail = tail->next;
+        }
+        tail->next = (aPtr ? aPtr : bPtr);
+        return head.next;
+    }
 
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        ListNode *ans = nullptr;
+        for (size_t i = 0; i < lists.size(); ++i) {
+            ans = mergeTwoLists(ans, lists[i]);
+        }
+        return ans;
+    }
+};
+
+// 方法二：分治合并
+class Solution {
+public:
+    ListNode* mergeTwoLists(ListNode *a, ListNode *b) {
+        if ((!a) || (!b)) return a ? a : b;
+        ListNode head, *tail = &head, *aPtr = a, *bPtr = b;
+        while (aPtr && bPtr) {
+            if (aPtr->val < bPtr->val) {
+                tail->next = aPtr; aPtr = aPtr->next;
+            } else {
+                tail->next = bPtr; bPtr = bPtr->next;
+            }
+            tail = tail->next;
+        }
+        tail->next = (aPtr ? aPtr : bPtr);
+        return head.next;
+    }
+
+    ListNode* merge(vector <ListNode*> &lists, int l, int r) {
+        if (l == r) return lists[l];
+        if (l > r) return nullptr;
+        int mid = (l + r) >> 1;
+        return mergeTwoLists(merge(lists, l, mid), merge(lists, mid + 1, r));
+    }
+
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        return merge(lists, 0, lists.size() - 1);
+    }
+};
+
+// 方法三：使用优先队列合并
+class Solution {
+public:
+    struct Status {
+        int val;
+        ListNode *ptr;
+        bool operator < (const Status &rhs) const {
+            return val > rhs.val;
+        }
+    };
+
+    priority_queue <Status> q;
+
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        for (auto node: lists) {
+            if (node) q.push({node->val, node});
+        }
+        ListNode head, *tail = &head;
+        while (!q.empty()) {
+            auto f = q.top(); q.pop();
+            tail->next = f.ptr; 
+            tail = tail->next;
+            if (f.ptr->next) q.push({f.ptr->next->val, f.ptr->next});
+        }
+        return head.next;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+
+// 方法一：顺序合并
+class Solution {
+    public ListNode mergeKLists(ListNode[] lists) {
+        ListNode ans = null;
+        for (int i = 0; i < lists.length; ++i) {
+            ans = mergeTwoLists(ans, lists[i]);
+        }
+        return ans;
+    }
+
+    public ListNode mergeTwoLists(ListNode a, ListNode b) {
+        if (a == null || b == null) {
+            return a != null ? a : b;
+        }
+        ListNode head = new ListNode(0);
+        ListNode tail = head, aPtr = a, bPtr = b;
+        while (aPtr != null && bPtr != null) {
+            if (aPtr.val < bPtr.val) {
+                tail.next = aPtr;
+                aPtr = aPtr.next;
+            } else {
+                tail.next = bPtr;
+                bPtr = bPtr.next;
+            }
+            tail = tail.next;
+        }
+        tail.next = (aPtr != null ? aPtr : bPtr);
+        return head.next;
+    }
+}
+
+// 方法二：分治合并
+class Solution {
+    public ListNode mergeKLists(ListNode[] lists) {
+        return merge(lists, 0, lists.length - 1);
+    }
+
+    public ListNode merge(ListNode[] lists, int l, int r) {
+        if (l == r) {
+            return lists[l];
+        }
+        if (l > r) {
+            return null;
+        }
+        int mid = (l + r) >> 1;
+        return mergeTwoLists(merge(lists, l, mid), merge(lists, mid + 1, r));
+    }
+
+    public ListNode mergeTwoLists(ListNode a, ListNode b) {
+        if (a == null || b == null) {
+            return a != null ? a : b;
+        }
+        ListNode head = new ListNode(0);
+        ListNode tail = head, aPtr = a, bPtr = b;
+        while (aPtr != null && bPtr != null) {
+            if (aPtr.val < bPtr.val) {
+                tail.next = aPtr;
+                aPtr = aPtr.next;
+            } else {
+                tail.next = bPtr;
+                bPtr = bPtr.next;
+            }
+            tail = tail.next;
+        }
+        tail.next = (aPtr != null ? aPtr : bPtr);
+        return head.next;
+    }
+}
+
+// 方法三：使用优先队列合并
+class Solution {
+    class Status implements Comparable<Status> {
+        int val;
+        ListNode ptr;
+
+        Status(int val, ListNode ptr) {
+            this.val = val;
+            this.ptr = ptr;
+        }
+
+        public int compareTo(Status status2) {
+            return this.val - status2.val;
+        }
+    }
+
+    PriorityQueue<Status> queue = new PriorityQueue<Status>();
+
+    public ListNode mergeKLists(ListNode[] lists) {
+        for (ListNode node: lists) {
+            if (node != null) {
+                queue.offer(new Status(node.val, node));
+            }
+        }
+        ListNode head = new ListNode(0);
+        ListNode tail = head;
+        while (!queue.isEmpty()) {
+            Status f = queue.poll();
+            tail.next = f.ptr;
+            tail = tail.next;
+            if (f.ptr.next != null) {
+                queue.offer(new Status(f.ptr.next.val, f.ptr.next));
+            }
+        }
+        return head.next;
+    }
+}
+```
 
 
 
