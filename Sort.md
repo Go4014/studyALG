@@ -1,4 +1,4 @@
-# 排序算法
+# 数组排序
 
 ## 选择排序
 
@@ -330,7 +330,7 @@ public:
 
     void buildMaxHeap(vector<int>& nums) {
         int len = nums.size();
-        for(int i = (len - 2) / 2; i >= 0; i--) {
+        for(int i = (len - 2) / 2; i >= 0; i--) {+
             heapify(nums, i, len - 1);
         }
     }
@@ -789,29 +789,1051 @@ public class RadixSort {
 
 
 
+# 链表排序
+
+## 冒泡排序
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* bubbleSort(ListNode* head) {
+        ListNode* nodeI = head;
+        ListNode* tail = nullptr;
+
+        while (nodeI) {
+            ListNode* nodeJ = head;
+            while (nodeJ && nodeJ->next != tail) {
+                if (nodeJ->val > nodeJ->next->val) {
+                    // 交换两个节点的值
+                    int temp = nodeJ->val;
+                    nodeJ->val = nodeJ->next->val;
+                    nodeJ->next->val = temp;
+                }
+                nodeJ = nodeJ->next;
+            }
+            // 尾指针向前移动 1 位，此时尾指针右侧为排好序的链表
+            tail = nodeJ;
+            nodeI = nodeI->next;
+        }
+
+        return head;
+    }
+    
+    ListNode* sortList(ListNode* head) {
+        return bubbleSort(head);
+    }
+};
+```
+
+Java版本
+
+```java
+public class Solution {
+    public ListNode bubbleSort(ListNode head) {
+        ListNode nodeI = head;
+        ListNode tail = null;
+
+        while (nodeI != null) {
+            ListNode nodeJ = head;
+            while (nodeJ != null && nodeJ.next != tail) {
+                if (nodeJ.val > nodeJ.next.val) {
+                    // 交换两个节点的值
+                    int temp = nodeJ.val;
+                    nodeJ.val = nodeJ.next.val;
+                    nodeJ.next.val = temp;
+                }
+                nodeJ = nodeJ.next;
+            }
+            // 尾指针向前移动 1 位，此时尾指针右侧为排好序的链表
+            tail = nodeJ;
+            nodeI = nodeI.next;
+        }
+
+        return head;
+    }
+    
+    public ListNode sortList(ListNode head) {
+        return bubbleSort(head);
+    }
+}
+```
 
 
 
+## 选择排序
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* selectionSort(ListNode* head) {
+        ListNode* nodeI = head;
+
+        while (nodeI && nodeI->next) {
+            ListNode* minNode = nodeI;
+            ListNode* nodeJ = nodeI->next;
+
+            while (nodeJ) {
+                if (nodeJ->val < minNode->val) {
+                    minNode = nodeJ;
+                }
+                nodeJ = nodeJ->next;
+            }
+
+            if (nodeI != minNode) {
+                swap(nodeI->val, minNode->val);
+            }
+
+            nodeI = nodeI->next;
+        }
+
+        return head;
+    }
+    
+    ListNode* sortList(ListNode* head) {
+        return selectionSort(head);
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public ListNode selectionSort(ListNode head) {
+        ListNode nodeI = head;
+
+        while (nodeI != null && nodeI.next != null) {
+            ListNode minNode = nodeI;
+            ListNode nodeJ = nodeI.next;
+
+            while (nodeJ != null) {
+                if (nodeJ.val < minNode.val) {
+                    minNode = nodeJ;
+                }
+                nodeJ = nodeJ.next;
+            }
+
+            if (nodeI != minNode) {
+                int temp = nodeI.val;
+                nodeI.val = minNode.val;
+                minNode.val = temp;
+            }
+
+            nodeI = nodeI.next;
+        }
+
+        return head;
+    }
+    
+    public ListNode sortList(ListNode head) {
+        return selectionSort(head);
+    }
+}
+```
 
 
 
+## 插入排序
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* insertionSort(ListNode* head) {
+        if (!head || !head->next) {
+            return head;
+        }
+
+        ListNode* dummyHead = new ListNode(-1);
+        dummyHead->next = head;
+        ListNode* sortedList = head;
+        ListNode* cur = head->next;
+
+        while (cur) {
+            if (sortedList->val <= cur->val) {
+                // 将 cur 插入到 sortedList 之后
+                sortedList = sortedList->next;
+            } else {
+                ListNode* prev = dummyHead;
+                while (prev->next->val <= cur->val) {
+                    prev = prev->next;
+                }
+                // 将 cur 插入到链表中间
+                sortedList->next = cur->next;
+                cur->next = prev->next;
+                prev->next = cur;
+            }
+            cur = sortedList->next;
+        }
+
+        return dummyHead->next;
+    }
+    
+    ListNode* sortList(ListNode* head) {
+        return insertionSort(head);
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public ListNode insertionSort(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        ListNode dummyHead = new ListNode(-1);
+        dummyHead.next = head;
+        ListNode sortedList = head;
+        ListNode cur = head.next;
+
+        while (cur != null) {
+            if (sortedList.val <= cur.val) {
+                // 将 cur 插入到 sortedList 之后
+                sortedList = sortedList.next;
+            } else {
+                ListNode prev = dummyHead;
+                while (prev.next.val <= cur.val) {
+                    prev = prev.next;
+                }
+                // 将 cur 插入到链表中间
+                sortedList.next = cur.next;
+                cur.next = prev.next;
+                prev.next = cur;
+            }
+            cur = sortedList.next;
+        }
+
+        return dummyHead.next;
+    }
+    
+    public ListNode sortList(ListNode head) {
+        return insertionSort(head);
+    }
+}
+```
 
 
 
+## 归并排序
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode* next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* merge(ListNode* left, ListNode* right) {
+        // 归并环节
+        ListNode* dummyHead = new ListNode(-1);
+        ListNode* cur = dummyHead;
+        while (left && right) {
+            if (left->val <= right->val) {
+                cur->next = left;
+                left = left->next;
+            } else {
+                cur->next = right;
+                right = right->next;
+            }
+            cur = cur->next;
+        }
+
+        if (left) {
+            cur->next = left;
+        } else if (right) {
+            cur->next = right;
+        }
+
+        return dummyHead->next;
+    }
+
+    ListNode* mergeSort(ListNode* head) {
+        // 分割环节
+        if (!head || !head->next) {
+            return head;
+        }
+
+        // 快慢指针找到中心链节点
+        ListNode* slow = head;
+        ListNode* fast = head->next;
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+
+        // 断开左右链节点
+        ListNode* leftHead = head;
+        ListNode* rightHead = slow->next;
+        slow->next = nullptr;
+
+        // 归并操作
+        return merge(mergeSort(leftHead), mergeSort(rightHead));
+    }
+    
+    ListNode* sortList(ListNode* head) {
+        return mergeSort(head);
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public ListNode merge(ListNode left, ListNode right) {
+        // 归并环节
+        ListNode dummyHead = new ListNode(-1);
+        ListNode cur = dummyHead;
+        while (left != null && right != null) {
+            if (left.val <= right.val) {
+                cur.next = left;
+                left = left.next;
+            } else {
+                cur.next = right;
+                right = right.next;
+            }
+            cur = cur.next;
+        }
+
+        if (left != null) {
+            cur.next = left;
+        } else if (right != null) {
+            cur.next = right;
+        }
+
+        return dummyHead.next;
+    }
+
+    public ListNode mergeSort(ListNode head) {
+        // 分割环节
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        // 快慢指针找到中心链节点
+        ListNode slow = head;
+        ListNode fast = head.next;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+
+        // 断开左右链节点
+        ListNode leftHead = head;
+        ListNode rightHead = slow.next;
+        slow.next = null;
+
+        // 归并操作
+        return merge(mergeSort(leftHead), mergeSort(rightHead));
+    }
+
+    public ListNode sortList(ListNode head) {
+        return mergeSort(head);
+    }
+}
+```
 
 
 
+## 快速排序
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode* next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* partition(ListNode* left, ListNode* right) {
+        // 左闭右开，区间没有元素或者只有一个元素，直接返回第一个节点
+        if (left == right || left->next == right) {
+            return left;
+        }
+        // 选择头节点为基准节点
+        int pivot = left->val;
+        // 使用 nodeI, nodeJ 双指针，保证 nodeI 之前的节点值都小于基准节点值，
+        // nodeI 与 nodeJ 之间的节点值都大于等于基准节点值
+        ListNode* nodeI = left;
+        ListNode* nodeJ = left->next;
+
+        while (nodeJ != right) {
+            // 发现一个小于基准值的元素
+            if (nodeJ->val < pivot) {
+                // 因为 nodeI 之前节点都小于基准值，所以先将 nodeI 向右移动一位
+                // 此时 nodeI 节点值大于等于基准节点值
+                nodeI = nodeI->next;
+                // 将小于基准值的元素 nodeJ 与当前 nodeI 换位，
+                // 换位后可以保证 nodeI 之前的节点都小于基准节点值
+                int temp = nodeI->val;
+                nodeI->val = nodeJ->val;
+                nodeJ->val = temp;
+            }
+            nodeJ = nodeJ->next;
+        }
+        // 将基准节点放到正确位置上
+        int temp = left->val;
+        left->val = nodeI->val;
+        nodeI->val = temp;
+        return nodeI;
+    }
+
+    ListNode* quickSort(ListNode* left, ListNode* right) {
+        if (left == right || left->next == right) {
+            return left;
+        }
+        ListNode* pi = partition(left, right);
+        quickSort(left, pi);
+        quickSort(pi->next, right);
+        return left;
+    }
+
+    ListNode* sortList(ListNode* head) {
+        if (!head || !head->next) {
+            return head;
+        }
+        return quickSort(head, nullptr);
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public ListNode partition(ListNode left, ListNode right) {
+        // 左闭右开，区间没有元素或者只有一个元素，直接返回第一个节点
+        if (left == right || left.next == right) {
+            return left;
+        }
+        // 选择头节点为基准节点
+        int pivot = left.val;
+        // 使用 nodeI, nodeJ 双指针，保证 nodeI 之前的节点值都小于基准节点值，
+        // nodeI 与 nodeJ 之间的节点值都大于等于基准节点值
+        ListNode nodeI = left;
+        ListNode nodeJ = left.next;
+
+        while (nodeJ != right) {
+            // 发现一个小于基准值的元素
+            if (nodeJ.val < pivot) {
+                // 因为 nodeI 之前的节点都小于基准值，所以先将 nodeI 向右移动一位
+                // 此时 nodeI 节点值大于等于基准节点值
+                nodeI = nodeI.next;
+                // 将小于基准值的元素 nodeJ 与当前 nodeI 换位，
+                // 换位后可以保证 nodeI 之前的节点都小于基准节点值
+                int temp = nodeI.val;
+                nodeI.val = nodeJ.val;
+                nodeJ.val = temp;
+            }
+            nodeJ = nodeJ.next;
+        }
+        // 将基准节点放到正确位置上
+        int temp = left.val;
+        left.val = nodeI.val;
+        nodeI.val = temp;
+        return nodeI;
+    }
+
+    public ListNode quickSort(ListNode left, ListNode right) {
+        if (left == right || left.next == right) {
+            return left;
+        }
+        ListNode pi = partition(left, right);
+        quickSort(left, pi);
+        quickSort(pi.next, right);
+        return left;
+    }
+
+    public ListNode sortList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        return quickSort(head, null);
+    }
+}
+```
 
 
 
+## 计数排序
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode* next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* countingSort(ListNode* head) {
+        if (!head) {
+            return head;
+        }
+
+        // 找出链表中最大值 listMax 和最小值 listMin
+        int listMin = INT_MAX;
+        int listMax = INT_MIN;
+        ListNode* cur = head;
+        while (cur) {
+            listMin = std::min(listMin, cur->val);
+            listMax = std::max(listMax, cur->val);
+            cur = cur->next;
+        }
+
+        int size = listMax - listMin + 1;
+        vector<int> counts(size, 0);
+
+        cur = head;
+        while (cur) {
+            counts[cur->val - listMin]++;
+            cur = cur->next;
+        }
+
+        ListNode* dummyHead = new ListNode(-1);
+        cur = dummyHead;
+        for (int i = 0; i < size; i++) {
+            while (counts[i] > 0) {
+                cur->next = new ListNode(i + listMin);
+                counts[i]--;
+                cur = cur->next;
+            }
+        }
+
+        return dummyHead->next;
+    }
+
+    ListNode* sortList(ListNode* head) {
+        return countingSort(head);
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+public class Solution {
+    public ListNode countingSort(ListNode head) {
+        if (head == null) {
+            return head;
+        }
+
+        // 找出链表中最大值 listMax 和最小值 listMin
+        int listMin = Integer.MAX_VALUE;
+        int listMax = Integer.MIN_VALUE;
+        ListNode cur = head;
+        while (cur != null) {
+            listMin = Math.min(listMin, cur.val);
+            listMax = Math.max(listMax, cur.val);
+            cur = cur.next;
+        }
+
+        int size = listMax - listMin + 1;
+        int[] counts = new int[size];
+
+        cur = head;
+        while (cur != null) {
+            counts[cur.val - listMin]++;
+            cur = cur.next;
+        }
+
+        ListNode dummyHead = new ListNode(-1);
+        cur = dummyHead;
+        for (int i = 0; i < size; i++) {
+            while (counts[i] > 0) {
+                cur.next = new ListNode(i + listMin);
+                counts[i]--;
+                cur = cur.next;
+            }
+        }
+
+        return dummyHead.next;
+    }
+
+    public ListNode sortList(ListNode head) {
+        return countingSort(head);
+    }
+}
+```
 
 
 
+## 桶排序
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode* next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    // 将链表节点值 val 添加到对应桶 buckets[index] 中
+    void insertion(vector<ListNode*>& buckets, int index, int val) {
+        if (!buckets[index]) {
+            buckets[index] = new ListNode(val);
+            return;
+        }
+
+        ListNode* node = new ListNode(val);
+        node->next = buckets[index];
+        buckets[index] = node;
+    }
+
+    // 归并环节
+    ListNode* merge(ListNode* left, ListNode* right) {
+        ListNode dummyHead(-1);
+        ListNode* cur = &dummyHead;
+        while (left && right) {
+            if (left->val <= right->val) {
+                cur->next = left;
+                left = left->next;
+            } else {
+                cur->next = right;
+                right = right->next;
+            }
+            cur = cur->next;
+        }
+
+        if (left) {
+            cur->next = left;
+        } else if (right) {
+            cur->next = right;
+        }
+
+        return dummyHead.next;
+    }
+
+    ListNode* mergeSort(ListNode* head) {
+        // 分割环节
+        if (!head || !head->next) {
+            return head;
+        }
+
+        // 快慢指针找到中心链节点
+        ListNode* slow = head;
+        ListNode* fast = head->next;
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+
+        // 断开左右链节点
+        ListNode* leftHead = head;
+        ListNode* rightHead = slow->next;
+        slow->next = nullptr;
+
+        // 归并操作
+        return merge(mergeSort(leftHead), mergeSort(rightHead));
+    }
+
+    ListNode* bucketSort(ListNode* head, int bucketSize = 5) {
+        if (!head) {
+            return head;
+        }
+
+        // 找出链表中最大值 listMax 和最小值 listMin
+        int listMin = INT_MAX;
+        int listMax = INT_MIN;
+        ListNode* cur = head;
+        while (cur) {
+            listMin = min(listMin, cur->val);
+            listMax = max(listMax, cur->val);
+            cur = cur->next;
+        }
+
+        // 计算桶的个数，并定义桶
+        int bucketCount = (listMax - listMin) / bucketSize + 1;
+        vector<ListNode*> buckets(bucketCount, nullptr);
+
+        // 将链表节点值依次添加到对应桶中
+        cur = head;
+        while (cur) {
+            int index = (cur->val - listMin) / bucketSize;
+            insertion(buckets, index, cur->val);
+            cur = cur->next;
+        }
+
+        ListNode dummyHead(-1);
+        cur = &dummyHead;
+        // 将元素依次出桶，并拼接成有序链表
+        for (ListNode* bucketHead : buckets) {
+            ListNode* bucketCur = mergeSort(bucketHead);
+            while (bucketCur) {
+                cur->next = bucketCur;
+                cur = cur->next;
+                bucketCur = bucketCur->next;
+            }
+        }
+
+        return dummyHead.next;
+    }
+
+    ListNode* sortList(ListNode* head) {
+        return bucketSort(head);
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    // 将链表节点值 val 添加到对应桶 buckets[index] 中
+    private void insertion(ListNode[] buckets, int index, int val) {
+        if (buckets[index] == null) {
+            buckets[index] = new ListNode(val);
+            return;
+        }
+
+        ListNode node = new ListNode(val);
+        node.next = buckets[index];
+        buckets[index] = node;
+    }
+
+    // 归并环节
+    private ListNode merge(ListNode left, ListNode right) {
+        ListNode dummyHead = new ListNode(-1);
+        ListNode cur = dummyHead;
+        while (left != null && right != null) {
+            if (left.val <= right.val) {
+                cur.next = left;
+                left = left.next;
+            } else {
+                cur.next = right;
+                right = right.next;
+            }
+            cur = cur.next;
+        }
+
+        if (left != null) {
+            cur.next = left;
+        } else if (right != null) {
+            cur.next = right;
+        }
+
+        return dummyHead.next;
+    }
+
+    private ListNode mergeSort(ListNode head) {
+        // 分割环节
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        // 快慢指针找到中心链节点
+        ListNode slow = head, fast = head.next;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+
+        // 断开左右链节点
+        ListNode leftHead = head, rightHead = slow.next;
+        slow.next = null;
+
+        // 归并操作
+        return merge(mergeSort(leftHead), mergeSort(rightHead));
+    }
+
+    public ListNode sortList(ListNode head) {
+        if (head == null) {
+            return head;
+        }
+
+        // 找出链表中最大值 listMax 和最小值 listMin
+        int listMin = Integer.MAX_VALUE;
+        int listMax = Integer.MIN_VALUE;
+        ListNode cur = head;
+        while (cur != null) {
+            listMin = Math.min(listMin, cur.val);
+            listMax = Math.max(listMax, cur.val);
+            cur = cur.next;
+        }
+
+        // 计算桶的个数，并定义桶
+        int bucketCount = (listMax - listMin) / 5 + 1;
+        ListNode[] buckets = new ListNode[bucketCount];
+
+        // 将链表节点值依次添加到对应桶中
+        cur = head;
+        while (cur != null) {
+            int index = (cur.val - listMin) / 5;
+            insertion(buckets, index, cur.val);
+            cur = cur.next;
+        }
+
+        ListNode dummyHead = new ListNode(-1);
+        cur = dummyHead;
+        // 将元素依次出桶，并拼接成有序链表
+        for (ListNode bucketHead : buckets) {
+            ListNode bucketCur = mergeSort(bucketHead);
+            while (bucketCur != null) {
+                cur.next = bucketCur;
+                cur = cur.next;
+                bucketCur = bucketCur.next;
+            }
+        }
+
+        return dummyHead.next;
+    }
+}
+```
 
 
 
+## 基数排序
 
+C++版本
 
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode* next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int getMaxBit(ListNode* head) {
+        int maxBit = 0;
+        ListNode* cur = head;
+        while (cur) {
+            int valLen = 0;
+            int val = cur->val;
+            while (val > 0) {
+                valLen++;
+                val /= 10;
+            }
+            maxBit = max(maxBit, valLen);
+            cur = cur->next;
+        }
+        return maxBit;
+    }
+
+    ListNode* radixSort(ListNode* head) {
+        int maxBit = getMaxBit(head);
+
+        for (int i = 0; i < maxBit; i++) {
+            vector<ListNode*> buckets(10, nullptr);
+            ListNode dummyHead(-1);
+            ListNode* cur = head;
+
+            while (cur) {
+                int num = cur->val / static_cast<int>(pow(10, i)) % 10;
+                if (!buckets[num]) {
+                    buckets[num] = new ListNode(cur->val);
+                } else {
+                    ListNode* node = new ListNode(cur->val);
+                    node->next = buckets[num];
+                    buckets[num] = node;
+                }
+                cur = cur->next;
+            }
+
+            head = nullptr;
+            ListNode* tail = &dummyHead;
+            for (int j = 0; j < 10; j++) {
+                if (buckets[j]) {
+                    tail->next = buckets[j];
+                    while (tail->next) {
+                        tail = tail->next;
+                    }
+                }
+            }
+
+            head = dummyHead.next;
+        }
+
+        return head;
+    }
+
+    ListNode* sortList(ListNode* head) {
+        return radixSort(head);
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+public class Solution {
+    public int getMaxBit(ListNode head) {
+        int maxBit = 0;
+        ListNode cur = head;
+        while (cur != null) {
+            int valLen = 0;
+            int val = cur.val;
+            while (val > 0) {
+                valLen++;
+                val /= 10;
+            }
+            maxBit = Math.max(maxBit, valLen);
+            cur = cur.next;
+        }
+        return maxBit;
+    }
+
+    public ListNode radixSort(ListNode head) {
+        int maxBit = getMaxBit(head);
+
+        for (int i = 0; i < maxBit; i++) {
+            List<ListNode> buckets = new ArrayList<>();
+            for (int j = 0; j < 10; j++) {
+                buckets.add(null);
+            }
+
+            ListNode dummyHead = new ListNode(-1);
+            ListNode cur = head;
+
+            while (cur != null) {
+                int num = cur.val / (int) Math.pow(10, i) % 10;
+                if (buckets.get(num) == null) {
+                    buckets.set(num, new ListNode(cur.val));
+                } else {
+                    ListNode node = new ListNode(cur.val);
+                    node.next = buckets.get(num);
+                    buckets.set(num, node);
+                }
+                cur = cur.next;
+            }
+
+            head = null;
+            ListNode tail = dummyHead;
+            for (int j = 0; j < 10; j++) {
+                if (buckets.get(j) != null) {
+                    tail.next = buckets.get(j);
+                    while (tail.next != null) {
+                        tail = tail.next;
+                    }
+                }
+            }
+
+            head = dummyHead.next;
+        }
+
+        return head;
+    }
+
+    public ListNode sortList(ListNode head) {
+        return radixSort(head);
+    }
+}
+```
 
 
 
