@@ -16484,21 +16484,411 @@ class Solution {
 
 
 
+### [141. 环形链表](https://leetcode.cn/problems/linked-list-cycle/)
+
+简单
+
+给你一个链表的头节点 `head` ，判断链表中是否有环。
+
+如果链表中有某个节点，可以通过连续跟踪 `next` 指针再次到达，则链表中存在环。 为了表示给定链表中的环，评测系统内部使用整数 `pos` 来表示链表尾连接到链表中的位置（索引从 0 开始）。**注意：`pos` 不作为参数进行传递** 。仅仅是为了标识链表的实际情况。
+
+*如果链表中存在环* ，则返回 `true` 。 否则，返回 `false` 。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/07/circularlinkedlist.png)
+
+```
+输入：head = [3,2,0,-4], pos = 1
+输出：true
+解释：链表中有一个环，其尾部连接到第二个节点。
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+// 方法一：哈希表
+class Solution {
+public:
+    bool hasCycle(ListNode *head) {
+        unordered_set<ListNode*> seen;
+        while (head != nullptr) {
+            if (seen.count(head)) {
+                return true;
+            }
+            seen.insert(head);
+            head = head->next;
+        }
+        return false;
+    }
+};
+
+// 方法二：快慢指针
+class Solution {
+public:
+    bool hasCycle(ListNode* head) {
+        if (head == nullptr || head->next == nullptr) {
+            return false;
+        }
+        ListNode* slow = head;
+        ListNode* fast = head->next;
+        while (slow != fast) {
+            if (fast == nullptr || fast->next == nullptr) {
+                return false;
+            }
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        return true;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+// 方法一：哈希表
+public class Solution {
+    public boolean hasCycle(ListNode head) {
+        Set<ListNode> seen = new HashSet<ListNode>();
+        while (head != null) {
+            if (!seen.add(head)) {
+                return true;
+            }
+            head = head.next;
+        }
+        return false;
+    }
+}
+
+// 方法二：快慢指针
+public class Solution {
+    public boolean hasCycle(ListNode head) {
+        if (head == null || head.next == null) {
+            return false;
+        }
+        ListNode slow = head;
+        ListNode fast = head.next;
+        while (slow != fast) {
+            if (fast == null || fast.next == null) {
+                return false;
+            }
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return true;
+    }
+}
+```
 
 
 
+### [160. 相交链表](https://leetcode.cn/problems/intersection-of-two-linked-lists/)
+
+简单
+
+给你两个单链表的头节点 `headA` 和 `headB` ，请你找出并返回两个单链表相交的起始节点。如果两个链表不存在相交节点，返回 `null` 。
+
+图示两个链表在节点 `c1` 开始相交**：**
+
+[![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/14/160_statement.png)](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/14/160_statement.png)
+
+题目数据 **保证** 整个链式结构中不存在环。
+
+**注意**，函数返回结果后，链表必须 **保持其原始结构** 。
+
+**自定义评测：**
+
+**评测系统** 的输入如下（你设计的程序 **不适用** 此输入）：
+
+- `intersectVal` - 相交的起始节点的值。如果不存在相交节点，这一值为 `0`
+- `listA` - 第一个链表
+- `listB` - 第二个链表
+- `skipA` - 在 `listA` 中（从头节点开始）跳到交叉节点的节点数
+- `skipB` - 在 `listB` 中（从头节点开始）跳到交叉节点的节点数
+
+评测系统将根据这些输入创建链式数据结构，并将两个头节点 `headA` 和 `headB` 传递给你的程序。如果程序能够正确返回相交节点，那么你的解决方案将被 **视作正确答案** 。
+
+**示例 1：**
+
+[![img](https://assets.leetcode.com/uploads/2021/03/05/160_example_1_1.png)](https://assets.leetcode.com/uploads/2018/12/13/160_example_1.png)
+
+```
+输入：intersectVal = 8, listA = [4,1,8,4,5], listB = [5,6,1,8,4,5], skipA = 2, skipB = 3
+输出：Intersected at '8'
+解释：相交节点的值为 8 （注意，如果两个链表相交则不能为 0）。
+从各自的表头开始算起，链表 A 为 [4,1,8,4,5]，链表 B 为 [5,6,1,8,4,5]。
+在 A 中，相交节点前有 2 个节点；在 B 中，相交节点前有 3 个节点。
+— 请注意相交节点的值不为 1，因为在链表 A 和链表 B 之中值为 1 的节点 (A 中第二个节点和 B 中第三个节点) 是不同的节点。换句话说，它们在内存中指向两个不同的位置，而链表 A 和链表 B 中值为 8 的节点 (A 中第三个节点，B 中第四个节点) 在内存中指向相同的位置。
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+// 方法一：哈希集合
+class Solution {
+public:
+    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+        unordered_set<ListNode *> visited;
+        ListNode *temp = headA;
+        while (temp != nullptr) {
+            visited.insert(temp);
+            temp = temp->next;
+        }
+        temp = headB;
+        while (temp != nullptr) {
+            if (visited.count(temp)) {
+                return temp;
+            }
+            temp = temp->next;
+        }
+        return nullptr;
+    }
+};
+
+// 方法二：双指针
+class Solution {
+public:
+    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+        if (headA == nullptr || headB == nullptr) {
+            return nullptr;
+        }
+        ListNode *pA = headA, *pB = headB;
+        while (pA != pB) {
+            pA = pA == nullptr ? headB : pA->next;
+            pB = pB == nullptr ? headA : pB->next;
+        }
+        return pA;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+// 方法一：哈希集合
+public class Solution {
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        Set<ListNode> visited = new HashSet<ListNode>();
+        ListNode temp = headA;
+        while (temp != null) {
+            visited.add(temp);
+            temp = temp.next;
+        }
+        temp = headB;
+        while (temp != null) {
+            if (visited.contains(temp)) {
+                return temp;
+            }
+            temp = temp.next;
+        }
+        return null;
+    }
+}
+
+// 方法二：双指针
+public class Solution {
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        if (headA == null || headB == null) {
+            return null;
+        }
+        ListNode pA = headA, pB = headB;
+        while (pA != pB) {
+            pA = pA == null ? headB : pA.next;
+            pB = pB == null ? headA : pB.next;
+        }
+        return pA;
+    }
+}
+```
 
 
 
+### [876. 链表的中间结点](https://leetcode.cn/problems/middle-of-the-linked-list/)
+
+简单
+
+给你单链表的头结点 `head` ，请你找出并返回链表的中间结点。
+
+如果有两个中间结点，则返回第二个中间结点。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/07/23/lc-midlist1.jpg)
+
+```
+输入：head = [1,2,3,4,5]
+输出：[3,4,5]
+解释：链表只有一个中间结点，值为 3 。
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* middleNode(ListNode* head) {
+        if(head->next == nullptr) {
+            return head;
+        }
+        ListNode *slow = head, *fast = head->next;
+        while(fast->next != nullptr && fast->next->next != nullptr) {
+            fast = fast->next->next;
+            slow = slow->next;
+        }
+        return slow->next;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode middleNode(ListNode head) {
+        if(head.next == null) {
+            return head;
+        }
+        ListNode slow = head, fast = head.next;
+        while(fast.next != null && fast.next.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        return slow.next;
+    }
+}
+```
 
 
 
+### [剑指 Offer 22. 链表中倒数第k个节点](https://leetcode.cn/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof/)
 
+简单
 
+输入一个链表，输出该链表中倒数第k个节点。为了符合大多数人的习惯，本题从1开始计数，即链表的尾节点是倒数第1个节点。
 
+例如，一个链表有 `6` 个节点，从头节点开始，它们的值依次是 `1、2、3、4、5、6`。这个链表的倒数第 `3` 个节点是值为 `4` 的节点。
 
+**示例：**
 
+```
+给定一个链表: 1->2->3->4->5, 和 k = 2.
 
+返回链表 4->5.
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* getKthFromEnd(ListNode* head, int k) {
+        ListNode *slow = head, *fast = head;
+        while(k > 0) {
+            fast = fast->next;
+            k--;
+        }
+        while(fast != nullptr) {
+            fast = fast->next;
+            slow = slow->next;
+        }
+        return slow;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public ListNode getKthFromEnd(ListNode head, int k) {
+        ListNode slow = head, fast = head;
+        while(k > 0) {
+            fast = fast.next;
+            k--;
+        }
+        while(fast != null) {
+            fast = fast.next;
+            slow = slow.next;
+        }
+        return slow;
+    }
+}
+```
 
 
 
