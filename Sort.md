@@ -330,7 +330,8 @@ public:
 
     void buildMaxHeap(vector<int>& nums) {
         int len = nums.size();
-        for(int i = (len - 2) / 2; i >= 0; i--) {
+        // [(len - 2) / 2 == (len / 2) - 1]
+        for(int i = (len - 2) / 2; i >= 0; i--) { 
             heapify(nums, i, len - 1);
         }
     }
