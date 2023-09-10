@@ -16484,6 +16484,8 @@ class Solution {
 
 
 
+## 链表双指针
+
 ### [141. 环形链表](https://leetcode.cn/problems/linked-list-cycle/)
 
 简单
@@ -17165,17 +17167,519 @@ class Solution {
 
 
 
+### [143. 重排链表](https://leetcode.cn/problems/reorder-list/)
+
+中等
+
+给定一个单链表 `L` 的头节点 `head` ，单链表 `L` 表示为：
+
+```
+L0 → L1 → … → Ln - 1 → Ln
+```
+
+请将其重新排列后变为：
+
+```
+L0 → Ln → L1 → Ln - 1 → L2 → Ln - 2 → …
+```
+
+不能只是单纯的改变节点内部的值，而是需要实际的进行节点交换。
+
+**示例 1：**
+
+![img](https://pic.leetcode-cn.com/1626420311-PkUiGI-image.png)
+
+```
+输入：head = [1,2,3,4]
+输出：[1,4,2,3]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+// 方法一：线性表
+class Solution {
+public:
+    void reorderList(ListNode *head) {
+        if (head == nullptr) {
+            return;
+        }
+        vector<ListNode *> vec;
+        ListNode *node = head;
+        while (node != nullptr) {
+            vec.emplace_back(node);
+            node = node->next;
+        }
+        int i = 0, j = vec.size() - 1;
+        while (i < j) {
+            vec[i]->next = vec[j];
+            i++;
+            if (i == j) {
+                break;
+            }
+            vec[j]->next = vec[i];
+            j--;
+        }
+        vec[i]->next = nullptr;
+    }
+};
+
+// 方法二：寻找链表中点 + 链表逆序 + 合并链表
+class Solution {
+public:
+    void reorderList(ListNode* head) {
+        if (head == nullptr) {
+            return;
+        }
+        ListNode* mid = middleNode(head);
+        ListNode* l1 = head;
+        ListNode* l2 = mid->next;
+        mid->next = nullptr;
+        l2 = reverseList(l2);
+        mergeList(l1, l2);
+    }
+
+    ListNode* middleNode(ListNode* head) {
+        ListNode* slow = head;
+        ListNode* fast = head;
+        while (fast->next != nullptr && fast->next->next != nullptr) {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        return slow;
+    }
+
+    ListNode* reverseList(ListNode* head) {
+        ListNode* prev = nullptr;
+        ListNode* curr = head;
+        while (curr != nullptr) {
+            ListNode* nextTemp = curr->next;
+            curr->next = prev;
+            prev = curr;
+            curr = nextTemp;
+        }
+        return prev;
+    }
+
+    void mergeList(ListNode* l1, ListNode* l2) {
+        ListNode* l1_tmp;
+        ListNode* l2_tmp;
+        while (l1 != nullptr && l2 != nullptr) {
+            l1_tmp = l1->next;
+            l2_tmp = l2->next;
+
+            l1->next = l2;
+            l1 = l1_tmp;
+
+            l2->next = l1;
+            l2 = l2_tmp;
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+// 方法一：线性表
+class Solution {
+    public void reorderList(ListNode head) {
+        if (head == null) {
+            return;
+        }
+        List<ListNode> list = new ArrayList<ListNode>();
+        ListNode node = head;
+        while (node != null) {
+            list.add(node);
+            node = node.next;
+        }
+        int i = 0, j = list.size() - 1;
+        while (i < j) {
+            list.get(i).next = list.get(j);
+            i++;
+            if (i == j) {
+                break;
+            }
+            list.get(j).next = list.get(i);
+            j--;
+        }
+        list.get(i).next = null;
+    }
+}
+
+// 方法二：寻找链表中点 + 链表逆序 + 合并链表
+class Solution {
+    public void reorderList(ListNode head) {
+        if (head == null) {
+            return;
+        }
+        ListNode mid = middleNode(head);
+        ListNode l1 = head;
+        ListNode l2 = mid.next;
+        mid.next = null;
+        l2 = reverseList(l2);
+        mergeList(l1, l2);
+    }
+
+    public ListNode middleNode(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast.next != null && fast.next.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return slow;
+    }
+
+    public ListNode reverseList(ListNode head) {
+        ListNode prev = null;
+        ListNode curr = head;
+        while (curr != null) {
+            ListNode nextTemp = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = nextTemp;
+        }
+        return prev;
+    }
+
+    public void mergeList(ListNode l1, ListNode l2) {
+        ListNode l1_tmp;
+        ListNode l2_tmp;
+        while (l1 != null && l2 != null) {
+            l1_tmp = l1.next;
+            l2_tmp = l2.next;
+
+            l1.next = l2;
+            l1 = l1_tmp;
+
+            l2.next = l1;
+            l2 = l2_tmp;
+        }
+    }
+}
+```
 
 
 
+### [2. 两数相加](https://leetcode.cn/problems/add-two-numbers/)
+
+中等
+
+给你两个 **非空** 的链表，表示两个非负的整数。它们每位数字都是按照 **逆序** 的方式存储的，并且每个节点只能存储 **一位** 数字。
+
+请你将两个数相加，并以相同形式返回一个表示和的链表。
+
+你可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2021/01/02/addtwonumber1.jpg)
+
+```
+输入：l1 = [2,4,3], l2 = [5,6,4]
+输出：[7,0,8]
+解释：342 + 465 = 807.
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+// 自解
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        ListNode *head = l1, *pre = l1;;
+        int val = 0;
+        while(l1 != nullptr && l2 != nullptr) {
+            int num = val;
+            val = (l1->val + l2->val + val) / 10;
+            l1->val = (l1->val + l2->val + num) % 10;
+            pre = l1;
+            l1 = l1->next;
+            l2 = l2->next;
+        }
+        if(l1 != nullptr && val != 0) {
+            while(l1 != nullptr && val != 0) {
+                int num = val;
+                val = (l1->val +  val) / 10;
+                l1->val = (l1->val + num) % 10;
+                pre = l1;
+                l1 = l1->next;
+            }
+            
+        }
+        if(l2 != nullptr) {
+            pre->next = l2;
+            while(l2 != nullptr && val != 0) {
+                int num = val;
+                val = (l2->val + val) / 10;
+                l2->val = (l2->val + num) % 10;
+                pre = l2;
+                l2 = l2->next;
+            }
+        }
+        if(val != 0) {
+            ListNode *node = new ListNode(val, nullptr);
+            pre->next = node;
+        }
+        return head;
+    }
+};
+
+// 官解
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        ListNode *head = nullptr, *tail = nullptr;
+        int carry = 0;
+        while (l1 || l2) {
+            int n1 = l1 ? l1->val: 0;
+            int n2 = l2 ? l2->val: 0;
+            int sum = n1 + n2 + carry;
+            if (!head) {
+                head = tail = new ListNode(sum % 10);
+            } else {
+                tail->next = new ListNode(sum % 10);
+                tail = tail->next;
+            }
+            carry = sum / 10;
+            if (l1) {
+                l1 = l1->next;
+            }
+            if (l2) {
+                l2 = l2->next;
+            }
+        }
+        if (carry > 0) {
+            tail->next = new ListNode(carry);
+        }
+        return head;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+// 自解
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode head = l1, pre = l1;;
+        int val = 0;
+        while(l1 != null && l2 != null) {
+            int num = val;
+            val = (l1.val + l2.val + val) / 10;
+            l1.val = (l1.val + l2.val + num) % 10;
+            pre = l1;
+            l1 = l1.next;
+            l2 = l2.next;
+        }
+        if(l1 != null && val != 0) {
+            while(l1 != null && val != 0) {
+                int num = val;
+                val = (l1.val +  val) / 10;
+                l1.val = (l1.val + num) % 10;
+                pre = l1;
+                l1 = l1.next;
+            }
+            
+        }
+        if(l2 != null) {
+            pre.next = l2;
+            while(l2 != null && val != 0) {
+                int num = val;
+                val = (l2.val +  val) / 10;
+                l2.val = (l2.val + num) % 10;
+                pre = l2;
+                l2 = l2.next;
+            }
+        }
+        if(val != 0) {
+            ListNode node = new ListNode(val, null);
+            pre.next = node;
+        }
+        return head;
+    }
+}
+
+// 官解
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode head = null, tail = null;
+        int carry = 0;
+        while (l1 != null || l2 != null) {
+            int n1 = l1 != null ? l1.val : 0;
+            int n2 = l2 != null ? l2.val : 0;
+            int sum = n1 + n2 + carry;
+            if (head == null) {
+                head = tail = new ListNode(sum % 10);
+            } else {
+                tail.next = new ListNode(sum % 10);
+                tail = tail.next;
+            }
+            carry = sum / 10;
+            if (l1 != null) {
+                l1 = l1.next;
+            }
+            if (l2 != null) {
+                l2 = l2.next;
+            }
+        }
+        if (carry > 0) {
+            tail.next = new ListNode(carry);
+        }
+        return head;
+    }
+}
+```
 
 
 
+### [445. 两数相加 II](https://leetcode.cn/problems/add-two-numbers-ii/)
 
+中等
 
+给你两个 **非空** 链表来代表两个非负整数。数字最高位位于链表开始位置。它们的每个节点只存储一位数字。将这两数相加会返回一个新的链表。
 
+你可以假设除了数字 0 之外，这两个数字都不会以零开头。
 
+**示例1：**
 
+![img](https://pic.leetcode-cn.com/1626420025-fZfzMX-image.png)
+
+```
+输入：l1 = [7,2,4,3], l2 = [5,6,4]
+输出：[7,8,0,7]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+// 方法一：栈
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        stack<int> s1, s2;
+        while (l1) {
+            s1.push(l1 -> val);
+            l1 = l1 -> next;
+        }
+        while (l2) {
+            s2.push(l2 -> val);
+            l2 = l2 -> next;
+        }
+        int carry = 0;
+        ListNode* ans = nullptr;
+        while (!s1.empty() or !s2.empty() or carry != 0) {
+            int a = s1.empty() ? 0 : s1.top();
+            int b = s2.empty() ? 0 : s2.top();
+            if (!s1.empty()) s1.pop();
+            if (!s2.empty()) s2.pop();
+            int cur = a + b + carry;
+            carry = cur / 10;
+            cur %= 10;
+            auto curnode = new ListNode(cur);
+            curnode -> next = ans;
+            ans = curnode;
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+// 方法一：栈
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        Deque<Integer> stack1 = new ArrayDeque<Integer>();
+        Deque<Integer> stack2 = new ArrayDeque<Integer>();
+        while (l1 != null) {
+            stack1.push(l1.val);
+            l1 = l1.next;
+        }
+        while (l2 != null) {
+            stack2.push(l2.val);
+            l2 = l2.next;
+        }
+        int carry = 0;
+        ListNode ans = null;
+        while (!stack1.isEmpty() || !stack2.isEmpty() || carry != 0) {
+            int a = stack1.isEmpty() ? 0 : stack1.pop();
+            int b = stack2.isEmpty() ? 0 : stack2.pop();
+            int cur = a + b + carry;
+            carry = cur / 10;
+            cur %= 10;
+            ListNode curnode = new ListNode(cur);
+            curnode.next = ans;
+            ans = curnode;
+        }
+        return ans;
+    }
+}
+```
 
 
 
