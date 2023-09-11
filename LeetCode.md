@@ -17683,6 +17683,371 @@ class Solution {
 
 
 
+# 堆栈
+
+## 基础知识
+
+### [1047. 删除字符串中的所有相邻重复项](https://leetcode.cn/problems/remove-all-adjacent-duplicates-in-string/)
+
+简单
+
+给出由小写字母组成的字符串 `S`，**重复项删除操作**会选择两个相邻且相同的字母，并删除它们。
+
+在 S 上反复执行重复项删除操作，直到无法继续删除。
+
+在完成所有重复项删除操作后返回最终的字符串。答案保证唯一。
+
+**示例：**
+
+```
+输入："abbaca"
+输出："ca"
+解释：
+例如，在 "abbaca" 中，我们可以删除 "bb" 由于两字母相邻且相同，这是此时唯一可以执行删除操作的重复项。之后我们得到字符串 "aaca"，其中又只有 "aa" 可以执行重复项删除操作，所以最后的字符串为 "ca"。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    string removeDuplicates(string s) {
+        string stk;
+        for (char ch : s) {
+            if (!stk.empty() && stk.back() == ch) {
+                stk.pop_back();
+            } else {
+                stk.push_back(ch);
+            }
+        }
+        return stk;
+    }
+};
+```
+
+Java版本
+
+```java
+// 栈-自解
+class Solution {
+    public String removeDuplicates(String s) {
+        int length = s.length();
+        Deque<Character> stack = new ArrayDeque<Character>();
+        for(int i = 0; i < length; i++) {
+            if(stack.isEmpty()) {
+                stack.push(s.charAt(i));
+            } else {
+                if(stack.peek() == s.charAt(i)) {
+                    stack.pop();
+                } else {
+                    stack.push(s.charAt(i));
+                }
+            }
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        while(!stack.isEmpty()) {
+            sb.append(stack.pollLast());
+        }
+        return sb.toString();
+    }
+}
+// 栈-官解
+class Solution {
+    public String removeDuplicates(String s) {
+        StringBuffer stack = new StringBuffer();
+        int top = -1;
+        for (int i = 0; i < s.length(); ++i) {
+            char ch = s.charAt(i);
+            if (top >= 0 && stack.charAt(top) == ch) {
+                stack.deleteCharAt(top);
+                --top;
+            } else {
+                stack.append(ch);
+                ++top;
+            }
+        }
+        return stack.toString();
+    }
+}
+```
+
+
+
+### [155. 最小栈](https://leetcode.cn/problems/min-stack/)
+
+中等
+
+设计一个支持 `push` ，`pop` ，`top` 操作，并能在常数时间内检索到最小元素的栈。
+
+实现 `MinStack` 类:
+
+- `MinStack()` 初始化堆栈对象。
+- `void push(int val)` 将元素val推入堆栈。
+- `void pop()` 删除堆栈顶部的元素。
+- `int top()` 获取堆栈顶部的元素。
+- `int getMin()` 获取堆栈中的最小元素。
+
+**示例 1:**
+
+```
+输入：
+["MinStack","push","push","push","getMin","pop","top","getMin"]
+[[],[-2],[0],[-3],[],[],[],[]]
+
+输出：
+[null,null,null,null,-3,null,0,-2]
+
+解释：
+MinStack minStack = new MinStack();
+minStack.push(-2);
+minStack.push(0);
+minStack.push(-3);
+minStack.getMin();   --> 返回 -3.
+minStack.pop();
+minStack.top();      --> 返回 0.
+minStack.getMin();   --> 返回 -2.
+```
+
+C++版本
+
+```c++
+class MinStack {
+    stack<int> x_stack;
+    stack<int> min_stack;
+public:
+    MinStack() {
+        min_stack.push(INT_MAX);
+    }
+    
+    void push(int x) {
+        x_stack.push(x);
+        min_stack.push(min(min_stack.top(), x));
+    }
+    
+    void pop() {
+        x_stack.pop();
+        min_stack.pop();
+    }
+    
+    int top() {
+        return x_stack.top();
+    }
+    
+    int getMin() {
+        return min_stack.top();
+    }
+};
+```
+
+Java版本
+
+```java
+class MinStack {
+    Deque<Integer> xStack;
+    Deque<Integer> minStack;
+
+    public MinStack() {
+        xStack = new LinkedList<Integer>();
+        minStack = new LinkedList<Integer>();
+        minStack.push(Integer.MAX_VALUE);
+    }
+    
+    public void push(int x) {
+        xStack.push(x);
+        minStack.push(Math.min(minStack.peek(), x));
+    }
+    
+    public void pop() {
+        xStack.pop();
+        minStack.pop();
+    }
+    
+    public int top() {
+        return xStack.peek();
+    }
+    
+    public int getMin() {
+        return minStack.peek();
+    }
+}
+```
+
+
+
+### [20. 有效的括号](https://leetcode.cn/problems/valid-parentheses/)
+
+简单
+
+给定一个只包括 `'('`，`')'`，`'{'`，`'}'`，`'['`，`']'` 的字符串 `s` ，判断字符串是否有效。
+
+有效字符串需满足：
+
+1. 左括号必须用相同类型的右括号闭合。
+2. 左括号必须以正确的顺序闭合。
+3. 每个右括号都有一个对应的相同类型的左括号。
+
+**示例 1：**
+
+```
+输入：s = "()"
+输出：true
+```
+
+C++版本
+
+```c++
+// 栈-官解
+class Solution {
+public:
+    bool isValid(string s) {
+        int n = s.size();
+        if (n % 2 == 1) {
+            return false;
+        }
+
+        unordered_map<char, char> pairs = {
+            {')', '('},
+            {']', '['},
+            {'}', '{'}
+        };
+        stack<char> stk;
+        for (char ch: s) {
+            if (pairs.count(ch)) {
+                if (stk.empty() || stk.top() != pairs[ch]) {
+                    return false;
+                }
+                stk.pop();
+            }
+            else {
+                stk.push(ch);
+            }
+        }
+        return stk.empty();
+    }
+};
+```
+
+Java版本
+
+```java
+// 栈-自解
+class Solution {
+    public boolean isValid(String s) {
+        int length = s.length();
+        if(length % 2 == 1) {
+            return false;
+        }
+        int top = -1;
+        StringBuilder stack = new StringBuilder();
+        for(int i = 0; i < length; i++) {
+            if(isEmbrace(s.charAt(i))) {
+                if (top >= 0) {
+                    switch(s.charAt(i)) {
+                        case ')': 
+                            if(stack.charAt(top) != '(') {
+                                return false;
+                            }
+                            break;
+                        case ']': 
+                            if(stack.charAt(top) != '[') {
+                                return false;
+                            }
+                            break;
+                        case '}': 
+                            if(stack.charAt(top) != '{') {
+                                return false;
+                            }
+                            break;
+                        default:
+                            return false;
+                    }
+                    stack.deleteCharAt(top);
+                    --top;
+                } else {
+                    return false;
+                }
+            } else {
+                stack.append(s.charAt(i));
+                ++top;
+            }
+            
+        }
+        return top == -1;
+    }
+
+    public boolean isEmbrace(char ziFu) {
+        if(ziFu == ')' || ziFu == ']' || ziFu == '}') {
+            return true;
+        }
+        return false;
+    }
+}
+
+// 栈-官解
+class Solution {
+    public boolean isValid(String s) {
+        int n = s.length();
+        if (n % 2 == 1) {
+            return false;
+        }
+
+        Map<Character, Character> pairs = new HashMap<Character, Character>() {{
+            put(')', '(');
+            put(']', '[');
+            put('}', '{');
+        }};
+        Deque<Character> stack = new LinkedList<Character>();
+        for (int i = 0; i < n; i++) {
+            char ch = s.charAt(i);
+            if (pairs.containsKey(ch)) {
+                if (stack.isEmpty() || stack.peek() != pairs.get(ch)) {
+                    return false;
+                }
+                stack.pop();
+            } else {
+                stack.push(ch);
+            }
+        }
+        return stack.isEmpty();
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
