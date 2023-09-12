@@ -18016,19 +18016,159 @@ class Solution {
 
 
 
+### [227.基本计算器 II](https://leetcode.cn/problems/basic-calculator-ii/)
+
+中等
+
+给你一个字符串表达式 `s` ，请你实现一个基本计算器来计算并返回它的值。
+
+整数除法仅保留整数部分。
+
+你可以假设给定的表达式总是有效的。所有中间结果将在 `[-231, 231 - 1]` 的范围内。
+
+**注意：**不允许使用任何将字符串作为数学表达式计算的内置函数，比如 `eval()` 。
+
+**示例 1：**
+
+```
+输入：s = "3+2*2"
+输出：7
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int calculate(string s) {
+        vector<int> stk;
+        char preSign = '+';
+        int num = 0;
+        int n = s.length();
+        for (int i = 0; i < n; ++i) {
+            if (isdigit(s[i])) {
+                num = num * 10 + int(s[i] - '0');
+            }
+            if (!isdigit(s[i]) && s[i] != ' ' || i == n - 1) {
+                switch (preSign) {
+                    case '+':
+                        stk.push_back(num);
+                        break;
+                    case '-':
+                        stk.push_back(-num);
+                        break;
+                    case '*':
+                        stk.back() *= num;
+                        break;
+                    default:
+                        stk.back() /= num;
+                }
+                preSign = s[i];
+                num = 0;
+            }
+        }
+        return accumulate(stk.begin(), stk.end(), 0);
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int calculate(String s) {
+        Deque<Integer> stack = new ArrayDeque<Integer>();
+        char preSign = '+';
+        int num = 0;
+        int n = s.length();
+        for (int i = 0; i < n; ++i) {
+            if (Character.isDigit(s.charAt(i))) {
+                num = num * 10 + s.charAt(i) - '0';
+            }
+            if (!Character.isDigit(s.charAt(i)) && s.charAt(i) != ' ' || i == n - 1) {
+                switch (preSign) {
+                case '+':
+                    stack.push(num);
+                    break;
+                case '-':
+                    stack.push(-num);
+                    break;
+                case '*':
+                    stack.push(stack.pop() * num);
+                    break;
+                default:
+                    stack.push(stack.pop() / num);
+                }
+                preSign = s.charAt(i);
+                num = 0;
+            }
+        }
+        int ans = 0;
+        while (!stack.isEmpty()) {
+            ans += stack.pop();
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [739.每日温度](https://leetcode.cn/problems/daily-temperatures/description/)
 
+中等
 
+给定一个整数数组 `temperatures` ，表示每天的温度，返回一个数组 `answer` ，其中 `answer[i]` 是指对于第 `i` 天，下一个更高温度出现在几天后。如果气温在这之后都不会升高，请在该位置用 `0` 来代替。
 
+**示例 1:**
 
+```
+输入: temperatures = [73,74,75,71,69,72,76,73]
+输出: [1,1,4,2,1,1,0,0]
+```
 
+C++版本
 
+```c++
+class Solution {
+public:
+    vector<int> dailyTemperatures(vector<int>& temperatures) {
+        int n = temperatures.size();
+        vector<int> ans(n);
+        stack<int> s;
+        for (int i = 0; i < n; ++i) {
+            while (!s.empty() && temperatures[i] > temperatures[s.top()]) {
+                int previousIndex = s.top();
+                ans[previousIndex] = i - previousIndex;
+                s.pop();
+            }
+            s.push(i);
+        }
+        return ans;
+    }
+};
+```
 
+Java版本
 
-
-
+```java
+class Solution {
+    public int[] dailyTemperatures(int[] temperatures) {
+        int length = temperatures.length;
+        int[] ans = new int[length];
+        Deque<Integer> stack = new LinkedList<Integer>();
+        for (int i = 0; i < length; i++) {
+            int temperature = temperatures[i];
+            while (!stack.isEmpty() && temperature > temperatures[stack.peek()]) {
+                int prevIndex = stack.pop();
+                ans[prevIndex] = i - prevIndex;
+            }
+            stack.push(i);
+        }
+        return ans;
+    }
+}
+```
 
 
 
