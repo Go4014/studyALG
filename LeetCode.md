@@ -18172,17 +18172,394 @@ class Solution {
 
 
 
+### [150.逆波兰表达式求值](https://leetcode.cn/problems/evaluate-reverse-polish-notation/description/)
+
+中等
+
+给你一个字符串数组 `tokens` ，表示一个根据 [逆波兰表示法](https://baike.baidu.com/item/逆波兰式/128437) 表示的算术表达式。
+
+请你计算该表达式。返回一个表示表达式值的整数。
+
+**注意：**
+
+- 有效的算符为 `'+'`、`'-'`、`'*'` 和 `'/'` 。
+- 每个操作数（运算对象）都可以是一个整数或者另一个表达式。
+- 两个整数之间的除法总是 **向零截断** 。
+- 表达式中不含除零运算。
+- 输入是一个根据逆波兰表示法表示的算术表达式。
+- 答案及所有中间计算结果可以用 **32 位** 整数表示。
+
+**示例 1：**
+
+```
+输入：tokens = ["2","1","+","3","*"]
+输出：9
+解释：该算式转化为常见的中缀算术表达式为：((2 + 1) * 3) = 9
+```
+
+C++版本
+
+```c++
+// 方法一：栈
+class Solution {
+public:
+    int evalRPN(vector<string>& tokens) {
+        stack<int> stk;
+        int n = tokens.size();
+        for (int i = 0; i < n; i++) {
+            string& token = tokens[i];
+            if (isNumber(token)) {
+                stk.push(atoi(token.c_str()));
+            } else {
+                int num2 = stk.top();
+                stk.pop();
+                int num1 = stk.top();
+                stk.pop();
+                switch (token[0]) {
+                    case '+':
+                        stk.push(num1 + num2);
+                        break;
+                    case '-':
+                        stk.push(num1 - num2);
+                        break;
+                    case '*':
+                        stk.push(num1 * num2);
+                        break;
+                    case '/':
+                        stk.push(num1 / num2);
+                        break;
+                }
+            }
+        }
+        return stk.top();
+    }
+
+    bool isNumber(string& token) {
+        return !(token == "+" || token == "-" || token == "*" || token == "/");
+    }
+};
+
+// 方法二：数组模拟栈
+class Solution {
+public:
+    int evalRPN(vector<string>& tokens) {
+        int n = tokens.size();
+        vector<int> stk((n + 1) / 2);
+        int index = -1;
+        for (int i = 0; i < n; i++) {
+            string& token = tokens[i];
+            if (token.length() > 1 || isdigit(token[0])) {
+                index++;
+                stk[index] = atoi(token.c_str());
+            } else {
+                switch (token[0]) {
+                    case '+':
+                        index--;
+                        stk[index] += stk[index + 1];
+                        break;
+                    case '-':
+                        index--;
+                        stk[index] -= stk[index + 1];
+                        break;
+                    case '*':
+                        index--;
+                        stk[index] *= stk[index + 1];
+                        break;
+                    case '/':
+                        index--;
+                        stk[index] /= stk[index + 1];
+                        break;
+                }
+            }
+        }
+        return stk[index];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：栈
+class Solution {
+    public int evalRPN(String[] tokens) {
+        Deque<Integer> stack = new LinkedList<Integer>();
+        int n = tokens.length;
+        for (int i = 0; i < n; i++) {
+            String token = tokens[i];
+            if (isNumber(token)) {
+                stack.push(Integer.parseInt(token));
+            } else {
+                int num2 = stack.pop();
+                int num1 = stack.pop();
+                switch (token) {
+                    case "+":
+                        stack.push(num1 + num2);
+                        break;
+                    case "-":
+                        stack.push(num1 - num2);
+                        break;
+                    case "*":
+                        stack.push(num1 * num2);
+                        break;
+                    case "/":
+                        stack.push(num1 / num2);
+                        break;
+                    default:
+                }
+            }
+        }
+        return stack.pop();
+    }
+
+    public boolean isNumber(String token) {
+        return !("+".equals(token) || "-".equals(token) || "*".equals(token) || "/".equals(token));
+    }
+}
+
+// 方法二：数组模拟栈
+class Solution {
+    public int evalRPN(String[] tokens) {
+        int n = tokens.length;
+        int[] stack = new int[(n + 1) / 2];
+        int index = -1;
+        for (int i = 0; i < n; i++) {
+            String token = tokens[i];
+            switch (token) {
+                case "+":
+                    index--;
+                    stack[index] += stack[index + 1];
+                    break;
+                case "-":
+                    index--;
+                    stack[index] -= stack[index + 1];
+                    break;
+                case "*":
+                    index--;
+                    stack[index] *= stack[index + 1];
+                    break;
+                case "/":
+                    index--;
+                    stack[index] /= stack[index + 1];
+                    break;
+                default:
+                    index++;
+                    stack[index] = Integer.parseInt(token);
+            }
+        }
+        return stack[index];
+    }
+}
+```
 
 
 
+### [232.用栈实现队列](https://leetcode.cn/problems/implement-queue-using-stacks/description/)
+
+简单
+
+请你仅使用两个栈实现先入先出队列。队列应当支持一般队列支持的所有操作（`push`、`pop`、`peek`、`empty`）：
+
+实现 `MyQueue` 类：
+
+- `void push(int x)` 将元素 x 推到队列的末尾
+- `int pop()` 从队列的开头移除并返回元素
+- `int peek()` 返回队列开头的元素
+- `boolean empty()` 如果队列为空，返回 `true` ；否则，返回 `false`
+
+**说明：**
+
+- 你 **只能** 使用标准的栈操作 —— 也就是只有 `push to top`, `peek/pop from top`, `size`, 和 `is empty` 操作是合法的。
+- 你所使用的语言也许不支持栈。你可以使用 list 或者 deque（双端队列）来模拟一个栈，只要是标准的栈操作即可。
+
+**示例 1：**
+
+```
+输入：
+["MyQueue", "push", "push", "peek", "pop", "empty"]
+[[], [1], [2], [], [], []]
+输出：
+[null, null, null, 1, 1, false]
+
+解释：
+MyQueue myQueue = new MyQueue();
+myQueue.push(1); // queue is: [1]
+myQueue.push(2); // queue is: [1, 2] (leftmost is front of the queue)
+myQueue.peek(); // return 1
+myQueue.pop(); // return 1, queue is [2]
+myQueue.empty(); // return false
+```
+
+C++版本
+
+```c++
+class MyQueue {
+private:
+    stack<int> inStack, outStack;
+
+    void in2out() {
+        while (!inStack.empty()) {
+            outStack.push(inStack.top());
+            inStack.pop();
+        }
+    }
+
+public:
+    MyQueue() {}
+
+    void push(int x) {
+        inStack.push(x);
+    }
+
+    int pop() {
+        if (outStack.empty()) {
+            in2out();
+        }
+        int x = outStack.top();
+        outStack.pop();
+        return x;
+    }
+
+    int peek() {
+        if (outStack.empty()) {
+            in2out();
+        }
+        return outStack.top();
+    }
+
+    bool empty() {
+        return inStack.empty() && outStack.empty();
+    }
+};
+```
+
+Java版本
+
+```java
+class MyQueue {
+    Deque<Integer> inStack;
+    Deque<Integer> outStack;
+
+    public MyQueue() {
+        inStack = new ArrayDeque<Integer>();
+        outStack = new ArrayDeque<Integer>();
+    }
+
+    public void push(int x) {
+        inStack.push(x);
+    }
+
+    public int pop() {
+        if (outStack.isEmpty()) {
+            in2out();
+        }
+        return outStack.pop();
+    }
+
+    public int peek() {
+        if (outStack.isEmpty()) {
+            in2out();
+        }
+        return outStack.peek();
+    }
+
+    public boolean empty() {
+        return inStack.isEmpty() && outStack.isEmpty();
+    }
+
+    private void in2out() {
+        while (!inStack.isEmpty()) {
+            outStack.push(inStack.pop());
+        }
+    }
+}
+```
 
 
 
+### [剑指 Offer 09. 用两个栈实现队列](https://leetcode.cn/problems/yong-liang-ge-zhan-shi-xian-dui-lie-lcof/)
 
+简单
 
+用两个栈实现一个队列。队列的声明如下，请实现它的两个函数 `appendTail` 和 `deleteHead` ，分别完成在队列尾部插入整数和在队列头部删除整数的功能。(若队列中没有元素，`deleteHead` 操作返回 -1 )
 
+**示例 1：**
 
+```
+输入：
+["CQueue","appendTail","deleteHead","deleteHead","deleteHead"]
+[[],[3],[],[],[]]
+输出：[null,null,3,-1,-1]
+```
 
+C++版本
+
+```c++
+class CQueue {
+private:
+    stack<int> inStack, outStack;
+
+    void in2out() {
+        while (!inStack.empty()) {
+            outStack.push(inStack.top());
+            inStack.pop();
+        }
+    }
+
+public:
+    CQueue() {}
+
+    void appendTail(int value) {
+        inStack.push(value);
+    }
+
+    int deleteHead() {
+        if (outStack.empty()) {
+            if (inStack.empty()) {
+                return -1;
+            }
+            in2out();
+        }
+        int value = outStack.top();
+        outStack.pop();
+        return value;
+    }
+};
+```
+
+Java版本
+
+```java
+class CQueue {
+    Deque<Integer> inStack;
+    Deque<Integer> outStack;
+
+    public CQueue() {
+        inStack = new ArrayDeque<Integer>();
+        outStack = new ArrayDeque<Integer>();
+    }
+
+    public void appendTail(int value) {
+        inStack.push(value);
+    }
+
+    public int deleteHead() {
+        if (outStack.isEmpty()) {
+            if (inStack.isEmpty()) {
+                return -1;
+            }
+            in2out();
+        }
+        return outStack.pop();
+    }
+
+    private void in2out() {
+        while (!inStack.isEmpty()) {
+            outStack.push(inStack.pop());
+        }
+    }
+}
+```
 
 
 
