@@ -18987,9 +18987,163 @@ class Solution {
 
 
 
+### [946. 验证栈序列](https://leetcode.cn/problems/validate-stack-sequences/)
+
+中等
+
+给定 `pushed` 和 `popped` 两个序列，每个序列中的 **值都不重复**，只有当它们可能是在最初空栈上进行的推入 push 和弹出 pop 操作序列的结果时，返回 `true`；否则，返回 `false` 。
+
+**示例 1：**
+
+```
+输入：pushed = [1,2,3,4,5], popped = [4,5,3,2,1]
+输出：true
+解释：我们可以按以下顺序执行：
+push(1), push(2), push(3), push(4), pop() -> 4,
+push(5), pop() -> 5, pop() -> 3, pop() -> 2, pop() -> 1
+```
+
+C++版本
+
+```c++
+// 官解
+class Solution {
+public:
+    bool validateStackSequences(vector<int>& pushed, vector<int>& popped) {
+        stack<int> st;
+        int n = pushed.size();
+        for (int i = 0, j = 0; i < n; i++) {
+            st.emplace(pushed[i]);
+            while (!st.empty() && st.top() == popped[j]) {
+                st.pop();
+                j++;
+            }
+        }
+        return st.empty();
+    }
+};
+```
+
+Java版本
+
+```java
+// 官解
+class Solution {
+    public boolean validateStackSequences(int[] pushed, int[] popped) {
+        Deque<Integer> stack = new ArrayDeque<Integer>();
+        int n = pushed.length;
+        for (int i = 0, j = 0; i < n; i++) {
+            stack.push(pushed[i]);
+            while (!stack.isEmpty() && stack.peek() == popped[j]) {
+                stack.pop();
+                j++;
+            }
+        }
+        return stack.isEmpty();
+    }
+}
+
+// 自解
+class Solution {
+    public boolean validateStackSequences(int[] pushed, int[] popped) {
+        int len = pushed.length, index = 0, pointer = 0;
+        Deque<Integer> stack = new ArrayDeque<Integer>();
+        while(!stack.isEmpty() || index < len) {
+            if(!stack.isEmpty()) {
+                if(stack.peek() != popped[pointer]) {
+                    if(index >= len) {
+                        return false;
+                    } 
+                    stack.push(pushed[index++]);
+                } else {
+                    stack.pop();
+                    pointer++;
+                }
+            } else if(index < len) {
+                stack.push(pushed[index++]);
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
 
 
 
+### [剑指 Offer 06. 从尾到头打印链表](https://leetcode.cn/problems/cong-wei-dao-tou-da-yin-lian-biao-lcof/)
+
+简单
+
+输入一个链表的头节点，从尾到头反过来返回每个节点的值（用数组返回）。
+
+**示例 1：**
+
+```
+输入：head = [1,3,2]
+输出：[2,3,1]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<int> reversePrint(ListNode* head) {
+        std::stack<int> stack;
+        ListNode* temp = head;
+        while (temp != nullptr) {
+            stack.push(temp->val);
+            temp = temp->next;
+        }
+        std::vector<int> arr(stack.size());
+        int index = 0;
+        while (!stack.empty()) {
+            arr[index++] = stack.top();
+            stack.pop();
+        }
+        return arr;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public int[] reversePrint(ListNode head) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        ListNode temp = head;
+        while(temp != null) {
+            stack.push(temp.val);
+            temp = temp.next;
+        }
+        int[] arr = new int[stack.size()];
+        int index = 0;
+        while(!stack.isEmpty()) {
+            arr[index++] = stack.pop();
+        }
+        return arr;
+    }
+}
+```
 
 
 
