@@ -19493,6 +19493,333 @@ class Solution {
 
 
 
+### [901. 股票价格跨度](https://leetcode.cn/problems/online-stock-span/)
+
+中等
+
+设计一个算法收集某些股票的每日报价，并返回该股票当日价格的 **跨度** 。
+
+当日股票价格的 **跨度** 被定义为股票价格小于或等于今天价格的最大连续日数（从今天开始往回数，包括今天）。
+
+- 例如，如果未来 7 天股票的价格是 `[100,80,60,70,60,75,85]`，那么股票跨度将是 `[1,1,1,2,1,4,6]` 。
+
+实现 `StockSpanner` 类：
+
+- `StockSpanner()` 初始化类对象。
+- `int next(int price)` 给出今天的股价 `price` ，返回该股票当日价格的 **跨度** 。
+
+**示例：**
+
+```
+输入：
+["StockSpanner", "next", "next", "next", "next", "next", "next", "next"]
+[[], [100], [80], [60], [70], [60], [75], [85]]
+输出：
+[null, 1, 1, 1, 2, 1, 4, 6]
+
+解释：
+StockSpanner stockSpanner = new StockSpanner();
+stockSpanner.next(100); // 返回 1
+stockSpanner.next(80);  // 返回 1
+stockSpanner.next(60);  // 返回 1
+stockSpanner.next(70);  // 返回 2
+stockSpanner.next(60);  // 返回 1
+stockSpanner.next(75);  // 返回 4 ，因为截至今天的最后 4 个股价 (包括今天的股价 75) 都小于或等于今天的股价。
+stockSpanner.next(85);  // 返回 6
+```
+
+C++版本
+
+```c++
+// 单调栈
+// 方法一：
+class StockSpanner {
+public:
+    stack<int> prices, weights;
+
+    StockSpanner() {
+    }
+
+    int next(int price) {
+        int w = 1;
+        while (!prices.empty() && prices.top() <= price) {
+            prices.pop();
+            w += weights.top();
+            weights.pop();
+        }
+
+        prices.push(price);
+        weights.push(w);
+        return w;
+    }
+};
+
+/**
+ * Your StockSpanner object will be instantiated and called as such:
+ * StockSpanner* obj = new StockSpanner();
+ * int param_1 = obj->next(price);
+ */
+
+// 方法二：
+class StockSpanner {
+public:
+    StockSpanner() {
+        this->stk.emplace(-1, INT_MAX);
+        this->idx = -1;
+    }
+    
+    int next(int price) {
+        idx++;
+        while (price >= stk.top().second) {
+            stk.pop();
+        }
+        int ret = idx - stk.top().first;
+        stk.emplace(idx, price);
+        return ret;
+    }
+
+private:
+    stack<pair<int, int>> stk; 
+    int idx;
+};
+```
+
+Java版本
+
+```java
+// 单调栈
+// 方法一：
+class StockSpanner {
+    Stack<Integer> prices, weights;
+
+    public StockSpanner() {
+        prices = new Stack();
+        weights = new Stack();
+    }
+
+    public int next(int price) {
+        int w = 1;
+        while (!prices.isEmpty() && prices.peek() <= price) {
+            prices.pop();
+            w += weights.pop();
+        }
+
+        prices.push(price);
+        weights.push(w);
+        return w;
+    }
+}
+
+/**
+ * Your StockSpanner object will be instantiated and called as such:
+ * StockSpanner obj = new StockSpanner();
+ * int param_1 = obj.next(price);
+ */
+
+// 方法二：
+class StockSpanner {
+    Deque<int[]> stack;
+    int idx;
+
+    public StockSpanner() {
+        stack = new ArrayDeque<int[]>();
+        stack.push(new int[]{-1, Integer.MAX_VALUE});
+        idx = -1;
+    }
+
+    public int next(int price) {
+        idx++;
+        while (price >= stack.peek()[1]) {
+            stack.pop();
+        }
+        int ret = idx - stack.peek()[0];
+        stack.push(new int[]{idx, price});
+        return ret;
+    }
+}
+```
+
+
+
+### [84. 柱状图中最大的矩形](https://leetcode.cn/problems/largest-rectangle-in-histogram/)
+
+困难
+
+给定 *n* 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 1 。
+
+求在该柱状图中，能够勾勒出来的矩形的最大面积。
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2021/01/04/histogram.jpg)
+
+```
+输入：heights = [2,1,5,6,2,3]
+输出：10
+解释：最大的矩形为图中红色区域，面积为 10
+```
+
+C++版本
+
+```c++
+// 方法一：单调栈
+class Solution {
+public:
+    int largestRectangleArea(vector<int>& heights) {
+        int n = heights.size();
+        vector<int> left(n), right(n);
+        
+        stack<int> mono_stack;
+        for (int i = 0; i < n; ++i) {
+            while (!mono_stack.empty() && heights[mono_stack.top()] >= heights[i]) {
+                mono_stack.pop();
+            }
+            left[i] = (mono_stack.empty() ? -1 : mono_stack.top());
+            mono_stack.push(i);
+        }
+
+        mono_stack = stack<int>();
+        for (int i = n - 1; i >= 0; --i) {
+            while (!mono_stack.empty() && heights[mono_stack.top()] >= heights[i]) {
+                mono_stack.pop();
+            }
+            right[i] = (mono_stack.empty() ? n : mono_stack.top());
+            mono_stack.push(i);
+        }
+        
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            ans = max(ans, (right[i] - left[i] - 1) * heights[i]);
+        }
+        return ans;
+    }
+};
+
+// 方法二：单调栈 + 常数优化
+class Solution {
+public:
+    int largestRectangleArea(vector<int>& heights) {
+        int n = heights.size();
+        vector<int> left(n), right(n, n);
+        
+        stack<int> mono_stack;
+        for (int i = 0; i < n; ++i) {
+            while (!mono_stack.empty() && heights[mono_stack.top()] >= heights[i]) {
+                right[mono_stack.top()] = i;
+                mono_stack.pop();
+            }
+            left[i] = (mono_stack.empty() ? -1 : mono_stack.top());
+            mono_stack.push(i);
+        }
+        
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            ans = max(ans, (right[i] - left[i] - 1) * heights[i]);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：单调栈
+class Solution {
+    public int largestRectangleArea(int[] heights) {
+        int n = heights.length;
+        int[] left = new int[n];
+        int[] right = new int[n];
+        
+        Deque<Integer> mono_stack = new ArrayDeque<Integer>();
+        for (int i = 0; i < n; ++i) {
+            while (!mono_stack.isEmpty() && heights[mono_stack.peek()] >= heights[i]) {
+                mono_stack.pop();
+            }
+            left[i] = (mono_stack.isEmpty() ? -1 : mono_stack.peek());
+            mono_stack.push(i);
+        }
+
+        mono_stack.clear();
+        for (int i = n - 1; i >= 0; --i) {
+            while (!mono_stack.isEmpty() && heights[mono_stack.peek()] >= heights[i]) {
+                mono_stack.pop();
+            }
+            right[i] = (mono_stack.isEmpty() ? n : mono_stack.peek());
+            mono_stack.push(i);
+        }
+        
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            ans = Math.max(ans, (right[i] - left[i] - 1) * heights[i]);
+        }
+        return ans;
+    }
+}
+
+// 方法二：单调栈 + 常数优化
+class Solution {
+    public int largestRectangleArea(int[] heights) {
+        int n = heights.length;
+        int[] left = new int[n];
+        int[] right = new int[n];
+        Arrays.fill(right, n);
+        
+        Deque<Integer> mono_stack = new ArrayDeque<Integer>();
+        for (int i = 0; i < n; ++i) {
+            while (!mono_stack.isEmpty() && heights[mono_stack.peek()] >= heights[i]) {
+                right[mono_stack.peek()] = i;
+                mono_stack.pop();
+            }
+            left[i] = (mono_stack.isEmpty() ? -1 : mono_stack.peek());
+            mono_stack.push(i);
+        }
+        
+        int ans = 0;
+        for (int i = 0; i < n; ++i) {
+            ans = Math.max(ans, (right[i] - left[i] - 1) * heights[i]);
+        }
+        return ans;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
