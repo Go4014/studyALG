@@ -19950,11 +19950,199 @@ class Solution {
 
 
 
+### [42. 接雨水](https://leetcode.cn/problems/trapping-rain-water/)
+
+困难
+
+给定 `n` 个非负整数表示每个宽度为 `1` 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/10/22/rainwatertrap.png)
+
+```
+输入：height = [0,1,0,2,1,0,1,3,2,1,2,1]
+输出：6
+解释：上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，可以接 6 个单位的雨水（蓝色部分表示雨水）。 
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int trap(vector<int>& height) {
+        int ans = 0;
+        stack<int> stk;
+        int n = height.size();
+        for (int i = 0; i < n; ++i) {
+            while (!stk.empty() && height[i] > height[stk.top()]) {
+                int top = stk.top();
+                stk.pop();
+                if (stk.empty()) {
+                    break;
+                }
+                int left = stk.top();
+                int currWidth = i - left - 1;
+                int currHeight = min(height[left], height[i]) - height[top];
+                ans += currWidth * currHeight;
+            }
+            stk.push(i);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int trap(int[] height) {
+        int ans = 0;
+        Deque<Integer> stack = new LinkedList<Integer>();
+        int n = height.length;
+        for (int i = 0; i < n; ++i) {
+            while (!stack.isEmpty() && height[i] > height[stack.peek()]) {
+                int top = stack.pop();
+                if (stack.isEmpty()) {
+                    break;
+                }
+                int left = stack.peek();
+                int currWidth = i - left - 1;
+                int currHeight = Math.min(height[left], height[i]) - height[top];
+                ans += currWidth * currHeight;
+            }
+            stack.push(i);
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [85. 最大矩形](https://leetcode.cn/problems/maximal-rectangle/)
 
+困难
 
+给定一个仅包含 `0` 和 `1` 、大小为 `rows x cols` 的二维二进制矩阵，找出只包含 `1` 的最大矩形，并返回其面积。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/14/maximal.jpg)
+
+```
+输入：matrix = [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
+输出：6
+解释：最大矩形如上图所示。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int maximalRectangle(vector<vector<char>>& matrix) {
+        int m = matrix.size();
+        if (m == 0) {
+            return 0;
+        }
+        int n = matrix[0].size();
+        vector<vector<int>> left(m, vector<int>(n, 0));
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == '1') {
+                    left[i][j] = (j == 0 ? 0: left[i][j - 1]) + 1;
+                }
+            }
+        }
+
+        int ret = 0;
+        for (int j = 0; j < n; j++) { // 对于每一列，使用基于柱状图的方法
+            vector<int> up(m, 0), down(m, 0);
+
+            stack<int> stk;
+            for (int i = 0; i < m; i++) {
+                while (!stk.empty() && left[stk.top()][j] >= left[i][j]) {
+                    stk.pop();
+                }
+                up[i] = stk.empty() ? -1 : stk.top();
+                stk.push(i);
+            }
+            stk = stack<int>();
+            for (int i = m - 1; i >= 0; i--) {
+                while (!stk.empty() && left[stk.top()][j] >= left[i][j]) {
+                    stk.pop();
+                }
+                down[i] = stk.empty() ? m : stk.top();
+                stk.push(i);
+            }
+
+            for (int i = 0; i < m; i++) {
+                int height = down[i] - up[i] - 1;
+                int area = height * left[i][j];
+                ret = max(ret, area);
+            }
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int maximalRectangle(char[][] matrix) {
+        int m = matrix.length;
+        if (m == 0) {
+            return 0;
+        }
+        int n = matrix[0].length;
+        int[][] left = new int[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == '1') {
+                    left[i][j] = (j == 0 ? 0 : left[i][j - 1]) + 1;
+                }
+            }
+        }
+
+        int ret = 0;
+        for (int j = 0; j < n; j++) { // 对于每一列，使用基于柱状图的方法
+            int[] up = new int[m];
+            int[] down = new int[m];
+
+            Deque<Integer> stack = new LinkedList<Integer>();
+            for (int i = 0; i < m; i++) {
+                while (!stack.isEmpty() && left[stack.peek()][j] >= left[i][j]) {
+                    stack.pop();
+                }
+                up[i] = stack.isEmpty() ? -1 : stack.peek();
+                stack.push(i);
+            }
+            stack.clear();
+            for (int i = m - 1; i >= 0; i--) {
+                while (!stack.isEmpty() && left[stack.peek()][j] >= left[i][j]) {
+                    stack.pop();
+                }
+                down[i] = stack.isEmpty() ? m : stack.peek();
+                stack.push(i);
+            }
+
+            for (int i = 0; i < m; i++) {
+                int height = down[i] - up[i] - 1;
+                int area = height * left[i][j];
+                ret = Math.max(ret, area);
+            }
+        }
+        return ret;
+    }
+}
+```
 
 
 
