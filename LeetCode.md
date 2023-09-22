@@ -20672,6 +20672,279 @@ class MyStack {
 
 
 
+## 优先队列
+
+### [703. 数据流中的第 K 大元素](https://leetcode.cn/problems/kth-largest-element-in-a-stream/)
+
+简单
+
+设计一个找到数据流中第 `k` 大元素的类（class）。注意是排序后的第 `k` 大元素，不是第 `k` 个不同的元素。
+
+请实现 `KthLargest` 类：
+
+- `KthLargest(int k, int[] nums)` 使用整数 `k` 和整数流 `nums` 初始化对象。
+- `int add(int val)` 将 `val` 插入数据流 `nums` 后，返回当前数据流中第 `k` 大的元素。
+
+ 
+
+**示例：**
+
+```
+输入：
+["KthLargest", "add", "add", "add", "add", "add"]
+[[3, [4, 5, 8, 2]], [3], [5], [10], [9], [4]]
+输出：
+[null, 4, 5, 5, 8, 8]
+
+解释：
+KthLargest kthLargest = new KthLargest(3, [4, 5, 8, 2]);
+kthLargest.add(3);   // return 4
+kthLargest.add(5);   // return 5
+kthLargest.add(10);  // return 5
+kthLargest.add(9);   // return 8
+kthLargest.add(4);   // return 8
+```
+
+ C++版本
+
+```c++
+class KthLargest {
+public:
+    priority_queue<int, vector<int>, greater<int>> q;
+    int k;
+    KthLargest(int k, vector<int>& nums) {
+        this->k = k;
+        for (auto& x: nums) {
+            add(x);
+        }
+    }
+    
+    int add(int val) {
+        q.push(val);
+        if (q.size() > k) {
+            q.pop();
+        }
+        return q.top();
+    }
+};
+```
+
+Java版本
+
+```java
+class KthLargest {
+    PriorityQueue<Integer> pq;
+    int k;
+
+    public KthLargest(int k, int[] nums) {
+        this.k = k;
+        pq = new PriorityQueue<Integer>();
+        for (int x : nums) {
+            add(x);
+        }
+    }
+    
+    public int add(int val) {
+        pq.offer(val);
+        if (pq.size() > k) {
+            pq.poll();
+        }
+        return pq.peek();
+    }
+}
+```
+
+
+
+### [347. 前 K 个高频元素](https://leetcode.cn/problems/top-k-frequent-elements/)
+
+中等
+
+给你一个整数数组 `nums` 和一个整数 `k` ，请你返回其中出现频率前 `k` 高的元素。你可以按 **任意顺序** 返回答案。
+
+**示例 1:**
+
+```
+输入: nums = [1,1,1,2,2,3], k = 2
+输出: [1,2]
+```
+
+C++版本
+
+```c++
+// 方法一：堆
+class Solution {
+public:
+    static bool cmp(pair<int, int>& m, pair<int, int>& n) {
+        return m.second > n.second;
+    }
+
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+        unordered_map<int, int> occurrences;
+        for (auto& v : nums) {
+            occurrences[v]++;
+        }
+
+        // pair 的第一个元素代表数组的值，第二个元素代表了该值出现的次数
+        priority_queue<pair<int, int>, vector<pair<int, int>>, decltype(&cmp)> q(cmp);
+        for (auto& [num, count] : occurrences) {
+            if (q.size() == k) {
+                if (q.top().second < count) {
+                    q.pop();
+                    q.emplace(num, count);
+                }
+            } else {
+                q.emplace(num, count);
+            }
+        }
+        vector<int> ret;
+        while (!q.empty()) {
+            ret.emplace_back(q.top().first);
+            q.pop();
+        }
+        return ret;
+    }
+};
+
+// 方法二：基于快速排序
+class Solution {
+public:
+    void qsort(vector<pair<int, int>>& v, int start, int end, vector<int>& ret, int k) {
+        int picked = rand() % (end - start + 1) + start;
+        swap(v[picked], v[start]);
+
+        int pivot = v[start].second;
+        int index = start;
+        for (int i = start + 1; i <= end; i++) {
+            // 使用双指针把不小于基准值的元素放到左边，
+            // 小于基准值的元素放到右边
+            if (v[i].second >= pivot) {
+                swap(v[index + 1], v[i]);
+                index++;
+            }
+        }
+        swap(v[start], v[index]);
+
+        if (k <= index - start) {
+            // 前 k 大的值在左侧的子数组里
+            qsort(v, start, index - 1, ret, k);
+        } else {
+            // 前 k 大的值等于左侧的子数组全部元素
+            // 加上右侧子数组中前 k - (index - start + 1) 大的值
+            for (int i = start; i <= index; i++) {
+                ret.push_back(v[i].first);
+            }
+            if (k > index - start + 1) {
+                qsort(v, index + 1, end, ret, k - (index - start + 1));
+            }
+        }
+    }
+
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+        // 获取每个数字出现次数
+        unordered_map<int, int> occurrences;
+        for (auto& v: nums) {
+            occurrences[v]++;
+        }
+
+        vector<pair<int, int>> values;
+        for (auto& kv: occurrences) {
+            values.push_back(kv);
+        }
+        vector<int> ret;
+        qsort(values, 0, values.size() - 1, ret, k);
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：堆
+class Solution {
+    public int[] topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> occurrences = new HashMap<Integer, Integer>();
+        for (int num : nums) {
+            occurrences.put(num, occurrences.getOrDefault(num, 0) + 1);
+        }
+
+        // int[] 的第一个元素代表数组的值，第二个元素代表了该值出现的次数
+        PriorityQueue<int[]> queue = new PriorityQueue<int[]>(new Comparator<int[]>() {
+            public int compare(int[] m, int[] n) {
+                return m[1] - n[1];
+            }
+        });
+        for (Map.Entry<Integer, Integer> entry : occurrences.entrySet()) {
+            int num = entry.getKey(), count = entry.getValue();
+            if (queue.size() == k) {
+                if (queue.peek()[1] < count) {
+                    queue.poll();
+                    queue.offer(new int[]{num, count});
+                }
+            } else {
+                queue.offer(new int[]{num, count});
+            }
+        }
+        int[] ret = new int[k];
+        for (int i = 0; i < k; ++i) {
+            ret[i] = queue.poll()[0];
+        }
+        return ret;
+    }
+}
+
+// 方法二：基于快速排序
+class Solution {
+    public int[] topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> occurrences = new HashMap<Integer, Integer>();
+        for (int num : nums) {
+            occurrences.put(num, occurrences.getOrDefault(num, 0) + 1);
+        }
+        // 获取每个数字出现次数
+        List<int[]> values = new ArrayList<int[]>();
+        for (Map.Entry<Integer, Integer> entry : occurrences.entrySet()) {
+            int num = entry.getKey(), count = entry.getValue();
+            values.add(new int[]{num, count});
+        }
+        int[] ret = new int[k];
+        qsort(values, 0, values.size() - 1, ret, 0, k);
+        return ret;
+    }
+
+    public void qsort(List<int[]> values, int start, int end, int[] ret, int retIndex, int k) {
+        int picked = (int) (Math.random() * (end - start + 1)) + start;
+        Collections.swap(values, picked, start);
+        
+        int pivot = values.get(start)[1];
+        int index = start;
+        for (int i = start + 1; i <= end; i++) {
+            // 使用双指针把不小于基准值的元素放到左边，
+            // 小于基准值的元素放到右边
+            if (values.get(i)[1] >= pivot) {
+                Collections.swap(values, index + 1, i);
+                index++;
+            }
+        }
+        Collections.swap(values, start, index);
+
+        if (k <= index - start) {
+            // 前 k 大的值在左侧的子数组里
+            qsort(values, start, index - 1, ret, retIndex, k);
+        } else {
+            // 前 k 大的值等于左侧的子数组全部元素
+            // 加上右侧子数组中前 k - (index - start + 1) 大的值
+            for (int i = start; i <= index; i++) {
+                ret[retIndex++] = values.get(i)[0];
+            }
+            if (k > index - start + 1) {
+                qsort(values, index + 1, end, ret, retIndex, k - (index - start + 1));
+            }
+        }
+    }
+}
+```
+
 
 
 
