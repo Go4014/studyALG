@@ -20947,6 +20947,528 @@ class Solution {
 
 
 
+### [451. 根据字符出现频率排序](https://leetcode.cn/problems/sort-characters-by-frequency/)
+
+中等
+
+给定一个字符串 `s` ，根据字符出现的 **频率** 对其进行 **降序排序** 。一个字符出现的 **频率** 是它出现在字符串中的次数。
+
+返回 *已排序的字符串* 。如果有多个答案，返回其中任何一个。
+
+**示例 1:**
+
+```
+输入: s = "tree"
+输出: "eert"
+解释: 'e'出现两次，'r'和't'都只出现一次。
+因此'e'必须出现在'r'和't'之前。此外，"eetr"也是一个有效的答案。
+```
+
+C++版本
+
+```c++
+// 方法一：按照出现频率排序
+class Solution {
+public:
+    string frequencySort(string s) {
+        unordered_map<char, int> mp;
+        int length = s.length();
+        for (auto &ch : s) {
+            mp[ch]++;
+        }
+        vector<pair<char, int>> vec;
+        for (auto &it : mp) {
+            vec.emplace_back(it);
+        }
+        sort(vec.begin(), vec.end(), [](const pair<char, int> &a, const pair<char, int> &b) {
+            return a.second > b.second;
+        });
+        string ret;
+        for (auto &[ch, num] : vec) {
+            for (int i = 0; i < num; i++) {
+                ret.push_back(ch);
+            }
+        }
+        return ret;
+    }
+};
+
+// 方法二：桶排序
+class Solution {
+public:
+    string frequencySort(string s) {
+        unordered_map<char, int> mp;
+        int maxFreq = 0;
+        int length = s.size();
+        for (auto &ch : s) {
+            maxFreq = max(maxFreq, ++mp[ch]);
+        }
+        vector<string> buckets(maxFreq + 1);
+        for (auto &[ch, num] : mp) {
+            buckets[num].push_back(ch);
+        }
+        string ret;
+        for (int i = maxFreq; i > 0; i--) {
+            string &bucket = buckets[i];
+            for (auto &ch : bucket) {
+                for (int k = 0; k < i; k++) {
+                    ret.push_back(ch);
+                }
+            }
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：按照出现频率排序
+class Solution {
+    public String frequencySort(String s) {
+        Map<Character, Integer> map = new HashMap<Character, Integer>();
+        int length = s.length();
+        for (int i = 0; i < length; i++) {
+            char c = s.charAt(i);
+            int frequency = map.getOrDefault(c, 0) + 1;
+            map.put(c, frequency);
+        }
+        List<Character> list = new ArrayList<Character>(map.keySet());
+        Collections.sort(list, (a, b) -> map.get(b) - map.get(a));
+        StringBuffer sb = new StringBuffer();
+        int size = list.size();
+        for (int i = 0; i < size; i++) {
+            char c = list.get(i);
+            int frequency = map.get(c);
+            for (int j = 0; j < frequency; j++) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+}
+
+// 方法二：桶排序
+class Solution {
+    public String frequencySort(String s) {
+        Map<Character, Integer> map = new HashMap<Character, Integer>();
+        int maxFreq = 0;
+        int length = s.length();
+        for (int i = 0; i < length; i++) {
+            char c = s.charAt(i);
+            int frequency = map.getOrDefault(c, 0) + 1;
+            map.put(c, frequency);
+            maxFreq = Math.max(maxFreq, frequency);
+        }
+        StringBuffer[] buckets = new StringBuffer[maxFreq + 1];
+        for (int i = 0; i <= maxFreq; i++) {
+            buckets[i] = new StringBuffer();
+        }
+        for (Map.Entry<Character, Integer> entry : map.entrySet()) {
+            char c = entry.getKey();
+            int frequency = entry.getValue();
+            buckets[frequency].append(c);
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = maxFreq; i > 0; i--) {
+            StringBuffer bucket = buckets[i];
+            int size = bucket.length();
+            for (int j = 0; j < size; j++) {
+                for (int k = 0; k < i; k++) {
+                    sb.append(bucket.charAt(j));
+                }
+            }
+        }
+        return sb.toString();
+    }
+}
+```
+
+
+
+[973. 最接近原点的 K 个点](https://leetcode.cn/problems/k-closest-points-to-origin/)
+
+中等
+
+相关标签
+
+相关企业
+
+给定一个数组 `points` ，其中 `points[i] = [xi, yi]` 表示 **X-Y** 平面上的一个点，并且是一个整数 `k` ，返回离原点 `(0,0)` 最近的 `k` 个点。
+
+这里，平面上两点之间的距离是 **欧几里德距离**（ `√(x1 - x2)2 + (y1 - y2)2` ）。
+
+你可以按 **任何顺序** 返回答案。除了点坐标的顺序之外，答案 **确保** 是 **唯一** 的。
+
+
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/03/03/closestplane1.jpg)
+
+```
+输入：points = [[1,3],[-2,2]], k = 1
+输出：[[-2,2]]
+解释： 
+(1, 3) 和原点之间的距离为 sqrt(10)，
+(-2, 2) 和原点之间的距离为 sqrt(8)，
+由于 sqrt(8) < sqrt(10)，(-2, 2) 离原点更近。
+我们只需要距离原点最近的 K = 1 个点，所以答案就是 [[-2,2]]。
+```
+
+C++版本
+
+```c++
+// 方法一：排序
+class Solution {
+public:
+    vector<vector<int>> kClosest(vector<vector<int>>& points, int k) {
+        sort(points.begin(), points.end(), [](const vector<int>& u, const vector<int>& v) {
+            return u[0] * u[0] + u[1] * u[1] < v[0] * v[0] + v[1] * v[1];
+        });
+        return {points.begin(), points.begin() + k};
+    }
+};
+
+// 方法二：堆
+class Solution {
+public:
+    vector<vector<int>> kClosest(vector<vector<int>>& points, int k) {
+        priority_queue<pair<int, int>> q;
+        for (int i = 0; i < k; ++i) {
+            q.emplace(points[i][0] * points[i][0] + points[i][1] * points[i][1], i);
+        }
+        int n = points.size();
+        for (int i = k; i < n; ++i) {
+            int dist = points[i][0] * points[i][0] + points[i][1] * points[i][1];
+            if (dist < q.top().first) {
+                q.pop();
+                q.emplace(dist, i);
+            }
+        }
+        vector<vector<int>> ans;
+        while (!q.empty()) {
+            ans.push_back(points[q.top().second]);
+            q.pop();
+        }
+        return ans;
+    }
+};
+
+// 方法三：快速选择（快速排序的思想）
+class Solution {
+private:
+    mt19937 gen{random_device{}()};
+
+public:
+    void random_select(vector<vector<int>>& points, int left, int right, int k) {
+        int pivot_id = uniform_int_distribution<int>{left, right}(gen);
+        int pivot = points[pivot_id][0] * points[pivot_id][0] + points[pivot_id][1] * points[pivot_id][1];
+        swap(points[right], points[pivot_id]);
+        int i = left - 1;
+        for (int j = left; j < right; ++j) {
+            int dist = points[j][0] * points[j][0] + points[j][1] * points[j][1];
+            if (dist <= pivot) {
+                ++i;
+                swap(points[i], points[j]);
+            }
+        }
+        ++i;
+        swap(points[i], points[right]);
+        // [left, i-1] 都小于等于 pivot, [i+1, right] 都大于 pivot
+        if (k < i - left + 1) {
+            random_select(points, left, i - 1, k);
+        }
+        else if (k > i - left + 1) {
+            random_select(points, i + 1, right, k - (i - left + 1));
+        }
+    }
+
+    vector<vector<int>> kClosest(vector<vector<int>>& points, int k) {
+        int n = points.size();
+        random_select(points, 0, n - 1, k);
+        return {points.begin(), points.begin() + k};
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：排序
+class Solution {
+    public int[][] kClosest(int[][] points, int k) {
+        Arrays.sort(points, new Comparator<int[]>() {
+            public int compare(int[] point1, int[] point2) {
+                return (point1[0] * point1[0] + point1[1] * point1[1]) - (point2[0] * point2[0] + point2[1] * point2[1]);
+            }
+        });
+        return Arrays.copyOfRange(points, 0, k);
+    }
+}
+
+// 方法二：堆
+class Solution {
+    public int[][] kClosest(int[][] points, int k) {
+        PriorityQueue<int[]> pq = new PriorityQueue<int[]>(new Comparator<int[]>() {
+            public int compare(int[] array1, int[] array2) {
+                return array2[0] - array1[0];
+            }
+        });
+        for (int i = 0; i < k; ++i) {
+            pq.offer(new int[]{points[i][0] * points[i][0] + points[i][1] * points[i][1], i});
+        }
+        int n = points.length;
+        for (int i = k; i < n; ++i) {
+            int dist = points[i][0] * points[i][0] + points[i][1] * points[i][1];
+            if (dist < pq.peek()[0]) {
+                pq.poll();
+                pq.offer(new int[]{dist, i});
+            }
+        }
+        int[][] ans = new int[k][2];
+        for (int i = 0; i < k; ++i) {
+            ans[i] = points[pq.poll()[1]];
+        }
+        return ans;
+    }
+}
+
+// 方法三：快速选择（快速排序的思想）
+class Solution {
+    Random rand = new Random();
+
+    public int[][] kClosest(int[][] points, int k) {
+        int n = points.length;
+        random_select(points, 0, n - 1, k);
+        return Arrays.copyOfRange(points, 0, k);
+    }
+
+    public void random_select(int[][] points, int left, int right, int k) {
+        int pivotId = left + rand.nextInt(right - left + 1);
+        int pivot = points[pivotId][0] * points[pivotId][0] + points[pivotId][1] * points[pivotId][1];
+        swap(points, right, pivotId);
+        int i = left - 1;
+        for (int j = left; j < right; ++j) {
+            int dist = points[j][0] * points[j][0] + points[j][1] * points[j][1];
+            if (dist <= pivot) {
+                ++i;
+                swap(points, i, j);
+            }
+        }
+        ++i;
+        swap(points, i, right);
+        // [left, i-1] 都小于等于 pivot, [i+1, right] 都大于 pivot
+        if (k < i - left + 1) {
+            random_select(points, left, i - 1, k);
+        } else if (k > i - left + 1) {
+            random_select(points, i + 1, right, k - (i - left + 1));
+        }
+    }
+
+    public void swap(int[][] points, int index1, int index2) {
+        int[] temp = points[index1];
+        points[index1] = points[index2];
+        points[index2] = temp;
+    }
+}
+```
+
+
+
+### [1296. 划分数组为连续数字的集合](https://leetcode.cn/problems/divide-array-in-sets-of-k-consecutive-numbers/)
+
+中等
+
+给你一个整数数组 `nums` 和一个正整数 `k`，请你判断是否可以把这个数组划分成一些由 `k` 个连续数字组成的集合。
+如果可以，请返回 `true`；否则，返回 `false`。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,3,4,4,5,6], k = 4
+输出：true
+解释：数组可以分成 [1,2,3,4] 和 [3,4,5,6]。
+```
+
+C++版本
+
+```c++
+// 方法一：贪心
+class Solution {
+public:
+    bool isPossibleDivide(vector<int>& nums, int k) {
+        int n = nums.size();
+        if (n % k != 0) {
+            return false;
+        }
+        sort(nums.begin(), nums.end());
+        unordered_map<int, int> cnt;
+        for (auto & num : nums) {
+            cnt[num]++;
+        }
+        for (auto & x : nums) {
+            if (!cnt.count(x)) {
+                continue;
+            }
+            for (int j = 0; j < k; j++) {
+                int num = x + j;
+                if (!cnt.count(num)) {
+                    return false;
+                }
+                cnt[num]--;
+                if (cnt[num] == 0) {
+                    cnt.erase(num);
+                }
+            }
+        }
+        return true;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：贪心
+class Solution {
+    public boolean isPossibleDivide(int[] nums, int k) {
+        int n = nums.length;
+        if (n % k != 0) {
+            return false;
+        }
+        Arrays.sort(nums);
+        Map<Integer, Integer> cnt = new HashMap<Integer, Integer>();
+        for (int x : nums) {
+            cnt.put(x, cnt.getOrDefault(x, 0) + 1);
+        }
+        for (int x : nums) {
+            if (!cnt.containsKey(x)) {
+                continue;
+            }
+            for (int j = 0; j < k; j++) {
+                int num = x + j;
+                if (!cnt.containsKey(num)) {
+                    return false;
+                }
+                cnt.put(num, cnt.get(num) - 1);
+                if (cnt.get(num) == 0) {
+                    cnt.remove(num);
+                }
+            }
+        }
+        return true;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
