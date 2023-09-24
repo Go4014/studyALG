@@ -21365,13 +21365,278 @@ class Solution {
 
 
 
+### [239. 滑动窗口最大值](https://leetcode.cn/problems/sliding-window-maximum/)
+
+困难
+
+给你一个整数数组 `nums`，有一个大小为 `k` 的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口内的 `k` 个数字。滑动窗口每次只向右移动一位。
+
+返回 *滑动窗口中的最大值* 。
+
+**示例 1：**
+
+```
+输入：nums = [1,3,-1,-3,5,3,6,7], k = 3
+输出：[3,3,5,5,6,7]
+解释：
+滑动窗口的位置                最大值
+---------------               -----
+[1  3  -1] -3  5  3  6  7       3
+ 1 [3  -1  -3] 5  3  6  7       3
+ 1  3 [-1  -3  5] 3  6  7       5
+ 1  3  -1 [-3  5  3] 6  7       5
+ 1  3  -1  -3 [5  3  6] 7       6
+ 1  3  -1  -3  5 [3  6  7]      7
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+        int n = nums.size();
+        priority_queue<pair<int, int>> q;
+        for (int i = 0; i < k; ++i) {
+            q.emplace(nums[i], i);
+        }
+        vector<int> ans = {q.top().first};
+        for (int i = k; i < n; ++i) {
+            q.emplace(nums[i], i);
+            while (q.top().second <= i - k) {
+                q.pop();
+            }
+            ans.push_back(q.top().first);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        int n = nums.length;
+        PriorityQueue<int[]> pq = new PriorityQueue<int[]>(new Comparator<int[]>() {
+            public int compare(int[] pair1, int[] pair2) {
+                return pair1[0] != pair2[0] ? pair2[0] - pair1[0] : pair2[1] - pair1[1];
+            }
+        });
+        for (int i = 0; i < k; ++i) {
+            pq.offer(new int[]{nums[i], i});
+        }
+        int[] ans = new int[n - k + 1];
+        ans[0] = pq.peek()[0];
+        for (int i = k; i < n; ++i) {
+            pq.offer(new int[]{nums[i], i});
+            while (pq.peek()[1] <= i - k) {
+                pq.poll();
+            }
+            ans[i - k + 1] = pq.peek()[0];
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [295. 数据流的中位数](https://leetcode.cn/problems/find-median-from-data-stream/)
 
+困难
 
+**中位数**是有序整数列表中的中间值。如果列表的大小是偶数，则没有中间值，中位数是两个中间值的平均值。
 
+- 例如 `arr = [2,3,4]` 的中位数是 `3` 。
+- 例如 `arr = [2,3]` 的中位数是 `(2 + 3) / 2 = 2.5` 。
 
+实现 MedianFinder 类:
+
+- `MedianFinder() `初始化 `MedianFinder` 对象。
+- `void addNum(int num)` 将数据流中的整数 `num` 添加到数据结构中。
+- `double findMedian()` 返回到目前为止所有元素的中位数。与实际答案相差 `10-5` 以内的答案将被接受。
+
+**示例 1：**
+
+```
+输入
+["MedianFinder", "addNum", "addNum", "findMedian", "addNum", "findMedian"]
+[[], [1], [2], [], [3], []]
+输出
+[null, null, null, 1.5, null, 2.0]
+```
+
+C++版本
+
+```c++
+// 优先队列
+class MedianFinder {
+public:
+    priority_queue<int, vector<int>, less<int>> queMin;
+    priority_queue<int, vector<int>, greater<int>> queMax;
+
+    MedianFinder() {}
+
+    void addNum(int num) {
+        if (queMin.empty() || num <= queMin.top()) {
+            queMin.push(num);
+            if (queMax.size() + 1 < queMin.size()) {
+                queMax.push(queMin.top());
+                queMin.pop();
+            }
+        } else {
+            queMax.push(num);
+            if (queMax.size() > queMin.size()) {
+                queMin.push(queMax.top());
+                queMax.pop();
+            }
+        }
+    }
+
+    double findMedian() {
+        if (queMin.size() > queMax.size()) {
+            return queMin.top();
+        }
+        return (queMin.top() + queMax.top()) / 2.0;
+    }
+};
+
+// 方法二：有序集合 + 双指针
+class MedianFinder {
+    multiset<int> nums;
+    multiset<int>::iterator left, right;
+
+public:
+    MedianFinder() : left(nums.end()), right(nums.end()) {}
+
+    void addNum(int num) {
+        const size_t n = nums.size();
+
+        nums.insert(num);
+        if (!n) {
+            left = right = nums.begin();
+        } else if (n & 1) {
+            if (num < *left) {
+                left--;
+            } else {
+                right++;
+            }
+        } else {
+            if (num > *left && num < *right) {
+                left++;
+                right--;
+            } else if (num >= *right) {
+                left++;
+            } else {
+                right--;
+                left = right;
+            }
+        }
+    }
+
+    double findMedian() {
+        return (*left + *right) / 2.0;
+    }
+};
+```
+
+Java版本
+
+```java
+// 优先队列
+class MedianFinder {
+    PriorityQueue<Integer> queMin;
+    PriorityQueue<Integer> queMax;
+
+    public MedianFinder() {
+        queMin = new PriorityQueue<Integer>((a, b) -> (b - a));
+        queMax = new PriorityQueue<Integer>((a, b) -> (a - b));
+    }
+    
+    public void addNum(int num) {
+        if (queMin.isEmpty() || num <= queMin.peek()) {
+            queMin.offer(num);
+            if (queMax.size() + 1 < queMin.size()) {
+                queMax.offer(queMin.poll());
+            }
+        } else {
+            queMax.offer(num);
+            if (queMax.size() > queMin.size()) {
+                queMin.offer(queMax.poll());
+            }
+        }
+    }
+    
+    public double findMedian() {
+        if (queMin.size() > queMax.size()) {
+            return queMin.peek();
+        }
+        return (queMin.peek() + queMax.peek()) / 2.0;
+    }
+}
+
+// 方法二：有序集合 + 双指针
+class MedianFinder {
+    TreeMap<Integer, Integer> nums;
+    int n;
+    int[] left;
+    int[] right;
+
+    public MedianFinder() {
+        nums = new TreeMap<Integer, Integer>();
+        n = 0;
+        left = new int[2];
+        right = new int[2];
+    }
+    
+    public void addNum(int num) {
+        nums.put(num, nums.getOrDefault(num, 0) + 1);
+        if (n == 0) {
+            left[0] = right[0] = num;
+            left[1] = right[1] = 1;
+        } else if ((n & 1) != 0) {
+            if (num < left[0]) {
+                decrease(left);
+            } else {
+                increase(right);
+            }
+        } else {
+            if (num > left[0] && num < right[0]) {
+                increase(left);
+                decrease(right);
+            } else if (num >= right[0]) {
+                increase(left);
+            } else {
+                decrease(right);
+                System.arraycopy(right, 0, left, 0, 2);
+            }
+        }
+        n++;
+    }
+
+    public double findMedian() {
+        return (left[0] + right[0]) / 2.0;
+    }
+
+    private void increase(int[] iterator) {
+        iterator[1]++;
+        if (iterator[1] > nums.get(iterator[0])) {
+            iterator[0] = nums.ceilingKey(iterator[0] + 1);
+            iterator[1] = 1;
+        }
+    }
+
+    private void decrease(int[] iterator) {
+        iterator[1]--;
+        if (iterator[1] == 0) {
+            iterator[0] = nums.floorKey(iterator[0] - 1);
+            iterator[1] = nums.get(iterator[0]);
+        }
+    }
+}
+```
 
 
 
