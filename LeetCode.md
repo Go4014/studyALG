@@ -10907,6 +10907,63 @@ class Solution {
 
 
 
+### [219. 存在重复元素 II](https://leetcode.cn/problems/contains-duplicate-ii/)
+
+简单
+
+给你一个整数数组 `nums` 和一个整数 `k` ，判断数组中是否存在两个 **不同的索引** `i` 和 `j` ，满足 `nums[i] == nums[j]` 且 `abs(i - j) <= k` 。如果存在，返回 `true` ；否则，返回 `false` 。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,1], k = 3
+输出：true
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool containsNearbyDuplicate(vector<int>& nums, int k) {
+        unordered_set<int> s;
+        int length = nums.size();
+        for (int i = 0; i < length; i++) {
+            if (i > k) {
+                s.erase(nums[i - k - 1]);
+            }
+            if (s.count(nums[i])) {
+                return true;
+            }
+            s.emplace(nums[i]);
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean containsNearbyDuplicate(int[] nums, int k) {
+        Set<Integer> set = new HashSet<Integer>();
+        int length = nums.length;
+        for (int i = 0; i < length; i++) {
+            if (i > k) {
+                set.remove(nums[i - k - 1]);
+            }
+            if (!set.add(nums[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
+
+
+
 ### [220. 存在重复元素 III](https://leetcode.cn/problems/contains-duplicate-iii/)
 
 困难
@@ -10955,37 +11012,6 @@ public:
         return false;
     }
 };
-
-// 方法二：桶
-class Solution {
-public:
-    int getID(int x, long w) {
-        return x < 0 ? (x + 1ll) / w - 1 : x / w;
-    }
-
-    bool containsNearbyAlmostDuplicate(vector<int>& nums, int k, int t) {
-        unordered_map<int, int> mp;
-        int n = nums.size();
-        for (int i = 0; i < n; i++) {
-            long x = nums[i];
-            int id = getID(x, t + 1ll);
-            if (mp.count(id)) {
-                return true;
-            }
-            if (mp.count(id - 1) && abs(x - mp[id - 1]) <= t) {
-                return true;
-            }
-            if (mp.count(id + 1) && abs(x - mp[id + 1]) <= t) {
-                return true;
-            }
-            mp[id] = x;
-            if (i >= k) {
-                mp.erase(getID(nums[i - k], t + 1ll));
-            }
-        }
-        return false;
-    }
-};
 ```
 
 Java版本
@@ -11007,39 +11033,6 @@ class Solution {
             }
         }
         return false;
-    }
-}
-
-// 方法二：桶
-class Solution {
-    public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
-        int n = nums.length;
-        Map<Long, Long> map = new HashMap<Long, Long>();
-        long w = (long) t + 1;
-        for (int i = 0; i < n; i++) {
-            long id = getID(nums[i], w);
-            if (map.containsKey(id)) {
-                return true;
-            }
-            if (map.containsKey(id - 1) && Math.abs(nums[i] - map.get(id - 1)) < w) {
-                return true;
-            }
-            if (map.containsKey(id + 1) && Math.abs(nums[i] - map.get(id + 1)) < w) {
-                return true;
-            }
-            map.put(id, (long) nums[i]);
-            if (i >= k) {
-                map.remove(getID(nums[i - k], w));
-            }
-        }
-        return false;
-    }
-
-    public long getID(long x, long w) {
-        if (x >= 0) {
-            return x / w;
-        }
-        return (x + 1) / w - 1;
     }
 }
 ```
@@ -22155,11 +22148,206 @@ class MyHashMap {
 
 
 
+### [217. 存在重复元素](https://leetcode.cn/problems/contains-duplicate/)
+
+简单
+
+给你一个整数数组 `nums` 。如果任一值在数组中出现 **至少两次** ，返回 `true` ；如果数组中每个元素互不相同，返回 `false` 。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,1]
+输出：true
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool containsDuplicate(vector<int>& nums) {
+        unordered_set<int> s;
+        for (int x: nums) {
+            if (s.find(x) != s.end()) {
+                return true;
+            }
+            s.insert(x);
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean containsDuplicate(int[] nums) {
+        Set<Integer> set = new HashSet<Integer>();
+        for (int x : nums) {
+            if (!set.add(x)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
 
 
 
+### [219. 存在重复元素 II](https://leetcode.cn/problems/contains-duplicate-ii/)
+
+简单
+
+给你一个整数数组 `nums` 和一个整数 `k` ，判断数组中是否存在两个 **不同的索引** `i` 和 `j` ，满足 `nums[i] == nums[j]` 且 `abs(i - j) <= k` 。如果存在，返回 `true` ；否则，返回 `false` 。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,1], k = 3
+输出：true
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool containsNearbyDuplicate(vector<int>& nums, int k) {
+        unordered_map<int, int> dictionary;
+        int length = nums.size();
+        for (int i = 0; i < length; i++) {
+            int num = nums[i];
+            if (dictionary.count(num) && i - dictionary[num] <= k) {
+                return true;
+            }
+            dictionary[num] = i;
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean containsNearbyDuplicate(int[] nums, int k) {
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        int length = nums.length;
+        for (int i = 0; i < length; i++) {
+            int num = nums[i];
+            if (map.containsKey(num) && i - map.get(num) <= k) {
+                return true;
+            }
+            map.put(num, i);
+        }
+        return false;
+    }
+}
+```
 
 
+
+### [220. 存在重复元素 III](https://leetcode.cn/problems/contains-duplicate-iii/)
+
+困难
+
+给你一个整数数组 `nums` 和两个整数 `indexDiff` 和 `valueDiff` 。
+
+找出满足下述条件的下标对 `(i, j)`：
+
+- `i != j`,
+- `abs(i - j) <= indexDiff`
+- `abs(nums[i] - nums[j]) <= valueDiff`
+
+如果存在，返回 `true` *；*否则，返回 `false` 。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,1], indexDiff = 3, valueDiff = 0
+输出：true
+解释：可以找出 (i, j) = (0, 3) 。
+满足下述 3 个条件：
+i != j --> 0 != 3
+abs(i - j) <= indexDiff --> abs(0 - 3) <= 3
+abs(nums[i] - nums[j]) <= valueDiff --> abs(1 - 1) <= 0
+```
+
+C++版本
+
+```c++
+// 桶
+class Solution {
+public:
+    int getID(int x, long w) {
+        return x < 0 ? (x + 1ll) / w - 1 : x / w;
+    }
+
+    bool containsNearbyAlmostDuplicate(vector<int>& nums, int k, int t) {
+        unordered_map<int, int> mp;
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            long x = nums[i];
+            int id = getID(x, t + 1ll);
+            if (mp.count(id)) {
+                return true;
+            }
+            if (mp.count(id - 1) && abs(x - mp[id - 1]) <= t) {
+                return true;
+            }
+            if (mp.count(id + 1) && abs(x - mp[id + 1]) <= t) {
+                return true;
+            }
+            mp[id] = x;
+            if (i >= k) {
+                mp.erase(getID(nums[i - k], t + 1ll));
+            }
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+// 桶
+class Solution {
+    public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
+        int n = nums.length;
+        Map<Long, Long> map = new HashMap<Long, Long>();
+        long w = (long) t + 1;
+        for (int i = 0; i < n; i++) {
+            long id = getID(nums[i], w);
+            if (map.containsKey(id)) {
+                return true;
+            }
+            if (map.containsKey(id - 1) && Math.abs(nums[i] - map.get(id - 1)) < w) {
+                return true;
+            }
+            if (map.containsKey(id + 1) && Math.abs(nums[i] - map.get(id + 1)) < w) {
+                return true;
+            }
+            map.put(id, (long) nums[i]);
+            if (i >= k) {
+                map.remove(getID(nums[i - k], w));
+            }
+        }
+        return false;
+    }
+
+    public long getID(long x, long w) {
+        if (x >= 0) {
+            return x / w;
+        }
+        return (x + 1) / w - 1;
+    }
+}
+```
 
 
 
