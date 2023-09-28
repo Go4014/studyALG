@@ -22351,11 +22351,109 @@ class Solution {
 
 
 
+### [1941. 检查是否所有字符出现次数相同](https://leetcode.cn/problems/check-if-all-characters-have-equal-number-of-occurrences/)
+
+简单
+
+给你一个字符串 `s` ，如果 `s` 是一个 **好** 字符串，请你返回 `true` ，否则请返回 `false` 。
+
+如果 `s` 中出现过的 **所有** 字符的出现次数 **相同** ，那么我们称字符串 `s` 是 **好** 字符串。
+
+**示例 1：**
+
+```
+输入：s = "abacbc"
+输出：true
+解释：s 中出现过的字符为 'a'，'b' 和 'c' 。s 中所有字符均出现 2 次。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool areOccurrencesEqual(string s) {
+        unordered_map<char, int> freq;   // 每个字符的实际频数
+        for (const char ch : s){
+            if (!freq.count(ch)){
+                freq[ch] = 0;
+            }
+            ++freq[ch];
+        }
+        int occ = s.size() / freq.size();   // 每个字符的理论频数
+        for (auto&& [_, v] : freq){
+            if (v != occ){
+                return false;
+            }
+        }
+        return true;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean areOccurrencesEqual(String s) {
+        Map<Character, Integer> freq = new HashMap<>(); // 每个字符的实际频数
+        for (char ch : s.toCharArray()) {
+            freq.put(ch, freq.getOrDefault(ch, 0) + 1);
+        }
+        int occ = s.length() / freq.size(); // 每个字符的理论频数
+        for (int v : freq.values()) {
+            if (v != occ) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
 
 
 
+### [136. 只出现一次的数字](https://leetcode.cn/problems/single-number/)
 
+简单
 
+给你一个 **非空** 整数数组 `nums` ，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
+
+你必须设计并实现线性时间复杂度的算法来解决此问题，且该算法只使用常量额外空间。
+
+**示例 1 ：**
+
+```
+输入：nums = [2,2,1]
+输出：1
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int ret = 0;
+        for (auto e: nums) ret ^= e;
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int singleNumber(int[] nums) {
+        int single = 0;
+        for (int num : nums) {
+            single ^= num;
+        }
+        return single;
+    }
+}
+```
 
 
 
