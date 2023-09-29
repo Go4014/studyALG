@@ -22457,21 +22457,153 @@ class Solution {
 
 
 
+### [383. 赎金信](https://leetcode.cn/problems/ransom-note/)
+
+简单
+
+给你两个字符串：`ransomNote` 和 `magazine` ，判断 `ransomNote` 能不能由 `magazine` 里面的字符构成。
+
+如果可以，返回 `true` ；否则返回 `false` 。
+
+`magazine` 中的每个字符只能在 `ransomNote` 中使用一次。
+
+ 
+
+**示例 1：**
+
+```
+输入：ransomNote = "a", magazine = "b"
+输出：false
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool canConstruct(string ransomNote, string magazine) {
+        if (ransomNote.size() > magazine.size()) {
+            return false;
+        }
+        vector<int> cnt(26);
+        for (auto & c : magazine) {
+            cnt[c - 'a']++;
+        }
+        for (auto & c : ransomNote) {
+            cnt[c - 'a']--;
+            if (cnt[c - 'a'] < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean canConstruct(String ransomNote, String magazine) {
+        if (ransomNote.length() > magazine.length()) {
+            return false;
+        }
+        int[] cnt = new int[26];
+        for (char c : magazine.toCharArray()) {
+            cnt[c - 'a']++;
+        }
+        for (char c : ransomNote.toCharArray()) {
+            cnt[c - 'a']--;
+            if(cnt[c - 'a'] < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
 
 
 
+### [349. 两个数组的交集](https://leetcode.cn/problems/intersection-of-two-arrays/)
 
+简单
 
+给定两个数组 `nums1` 和 `nums2` ，返回 *它们的交集* 。输出结果中的每个元素一定是 **唯一** 的。我们可以 **不考虑输出结果的顺序** 。
 
+**示例 1：**
 
+```
+输入：nums1 = [1,2,2,1], nums2 = [2,2]
+输出：[2]
+```
 
+C++版本
 
+```c++
+class Solution {
+public:
+    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
+        unordered_set<int> set1, set2;
+        for (auto& num : nums1) {
+            set1.insert(num);
+        }
+        for (auto& num : nums2) {
+            set2.insert(num);
+        }
+        return getIntersection(set1, set2);
+    }
 
+    vector<int> getIntersection(unordered_set<int>& set1, unordered_set<int>& set2) {
+        if (set1.size() > set2.size()) {
+            return getIntersection(set2, set1);
+        }
+        vector<int> intersection;
+        for (auto& num : set1) {
+            if (set2.count(num)) {
+                intersection.push_back(num);
+            }
+        }
+        return intersection;
+    }
+};
+```
 
+Java版本
 
+```java
+class Solution {
+    public int[] intersection(int[] nums1, int[] nums2) {
+        Set<Integer> set1 = new HashSet<Integer>();
+        Set<Integer> set2 = new HashSet<Integer>();
+        for (int num : nums1) {
+            set1.add(num);
+        }
+        for (int num : nums2) {
+            set2.add(num);
+        }
+        return getIntersection(set1, set2);
+    }
 
-
-
+    public int[] getIntersection(Set<Integer> set1, Set<Integer> set2) {
+        if (set1.size() > set2.size()) {
+            return getIntersection(set2, set1);
+        }
+        Set<Integer> intersectionSet = new HashSet<Integer>();
+        for (int num : set1) {
+            if (set2.contains(num)) {
+                intersectionSet.add(num);
+            }
+        }
+        int[] intersection = new int[intersectionSet.size()];
+        int index = 0;
+        for (int num : intersectionSet) {
+            intersection[index++] = num;
+        }
+        return intersection;
+    }
+}
+```
 
 
 
