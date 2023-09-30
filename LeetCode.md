@@ -22607,11 +22607,172 @@ class Solution {
 
 
 
+### [350. 两个数组的交集 II](https://leetcode.cn/problems/intersection-of-two-arrays-ii/)
+
+简单
+
+给你两个整数数组 `nums1` 和 `nums2` ，请你以数组形式返回两数组的交集。返回结果中每个元素出现的次数，应与元素在两个数组中都出现的次数一致（如果出现次数不一致，则考虑取较小值）。可以不考虑输出结果的顺序。
+
+**示例 1：**
+
+```
+输入：nums1 = [1,2,2,1], nums2 = [2,2]
+输出：[2,2]
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    vector<int> intersect(vector<int>& nums1, vector<int>& nums2) {
+        if (nums1.size() > nums2.size()) {
+            return intersect(nums2, nums1);
+        }
+        unordered_map <int, int> m;
+        for (int num : nums1) {
+            ++m[num];
+        }
+        vector<int> intersection;
+        for (int num : nums2) {
+            if (m.count(num)) {
+                intersection.push_back(num);
+                --m[num];
+                if (m[num] == 0) {
+                    m.erase(num);
+                }
+            }
+        }
+        return intersection;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int[] intersect(int[] nums1, int[] nums2) {
+        if (nums1.length > nums2.length) {
+            return intersect(nums2, nums1);
+        }
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        for (int num : nums1) {
+            int count = map.getOrDefault(num, 0) + 1;
+            map.put(num, count);
+        }
+        int[] intersection = new int[nums1.length];
+        int index = 0;
+        for (int num : nums2) {
+            int count = map.getOrDefault(num, 0);
+            if (count > 0) {
+                intersection[index++] = num;
+                count--;
+                if (count > 0) {
+                    map.put(num, count);
+                } else {
+                    map.remove(num);
+                }
+            }
+        }
+        return Arrays.copyOfRange(intersection, 0, index);
+    }
+}
+```
 
 
 
+### [36. 有效的数独](https://leetcode.cn/problems/valid-sudoku/)
 
+中等
 
+请你判断一个 `9 x 9` 的数独是否有效。只需要 **根据以下规则** ，验证已经填入的数字是否有效即可。
+
+1. 数字 `1-9` 在每一行只能出现一次。
+2. 数字 `1-9` 在每一列只能出现一次。
+3. 数字 `1-9` 在每一个以粗实线分隔的 `3x3` 宫内只能出现一次。（请参考示例图）
+
+**注意：**
+
+- 一个有效的数独（部分已被填充）不一定是可解的。
+- 只需要根据以上规则，验证已经填入的数字是否有效即可。
+- 空白格用 `'.'` 表示。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2021/04/12/250px-sudoku-by-l2g-20050714svg.png)
+
+```
+输入：board = 
+[["5","3",".",".","7",".",".",".","."]
+,["6",".",".","1","9","5",".",".","."]
+,[".","9","8",".",".",".",".","6","."]
+,["8",".",".",".","6",".",".",".","3"]
+,["4",".",".","8",".","3",".",".","1"]
+,["7",".",".",".","2",".",".",".","6"]
+,[".","6",".",".",".",".","2","8","."]
+,[".",".",".","4","1","9",".",".","5"]
+,[".",".",".",".","8",".",
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool isValidSudoku(vector<vector<char>>& board) {
+        int rows[9][9];
+        int columns[9][9];
+        int subboxes[3][3][9];
+        
+        memset(rows,0,sizeof(rows));
+        memset(columns,0,sizeof(columns));
+        memset(subboxes,0,sizeof(subboxes));
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                char c = board[i][j];
+                if (c != '.') {
+                    int index = c - '0' - 1;
+                    rows[i][index]++;
+                    columns[j][index]++;
+                    subboxes[i / 3][j / 3][index]++;
+                    if (rows[i][index] > 1 || columns[j][index] > 1 || subboxes[i / 3][j / 3][index] > 1) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean isValidSudoku(char[][] board) {
+        int[][] rows = new int[9][9];
+        int[][] columns = new int[9][9];
+        int[][][] subboxes = new int[3][3][9];
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                char c = board[i][j];
+                if (c != '.') {
+                    int index = c - '0' - 1;
+                    rows[i][index]++;
+                    columns[j][index]++;
+                    subboxes[i / 3][j / 3][index]++;
+                    if (rows[i][index] > 1 || columns[j][index] > 1 || subboxes[i / 3][j / 3][index] > 1) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+}
+```
 
 
 
