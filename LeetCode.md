@@ -22946,6 +22946,267 @@ class Solution {
 
 
 
+### [18. 四数之和](https://leetcode.cn/problems/4sum/)
+
+中等
+
+给你一个由 `n` 个整数组成的数组 `nums` ，和一个目标值 `target` 。请你找出并返回满足下述全部条件且**不重复**的四元组 `[nums[a], nums[b], nums[c], nums[d]]` （若两个四元组元素一一对应，则认为两个四元组重复）：
+
+- `0 <= a, b, c, d < n`
+- `a`、`b`、`c` 和 `d` **互不相同**
+- `nums[a] + nums[b] + nums[c] + nums[d] == target`
+
+你可以按 **任意顺序** 返回答案 。
+
+**示例 1：**
+
+```
+输入：nums = [1,0,-1,0,-2,2], target = 0
+输出：[[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> fourSum(vector<int>& nums, int target) {
+        vector<vector<int>> quadruplets;
+        if (nums.size() < 4) {
+            return quadruplets;
+        }
+        sort(nums.begin(), nums.end());
+        int length = nums.size();
+        for (int i = 0; i < length - 3; i++) {
+            if (i > 0 && nums[i] == nums[i - 1]) {
+                continue;
+            }
+            if ((long) nums[i] + nums[i + 1] + nums[i + 2] + nums[i + 3] > target) {
+                break;
+            }
+            if ((long) nums[i] + nums[length - 3] + nums[length - 2] + nums[length - 1] < target) {
+                continue;
+            }
+            for (int j = i + 1; j < length - 2; j++) {
+                if (j > i + 1 && nums[j] == nums[j - 1]) {
+                    continue;
+                }
+                if ((long) nums[i] + nums[j] + nums[j + 1] + nums[j + 2] > target) {
+                    break;
+                }
+                if ((long) nums[i] + nums[j] + nums[length - 2] + nums[length - 1] < target) {
+                    continue;
+                }
+                int left = j + 1, right = length - 1;
+                while (left < right) {
+                    long sum = (long) nums[i] + nums[j] + nums[left] + nums[right];
+                    if (sum == target) {
+                        quadruplets.push_back({nums[i], nums[j], nums[left], nums[right]});
+                        while (left < right && nums[left] == nums[left + 1]) {
+                            left++;
+                        }
+                        left++;
+                        while (left < right && nums[right] == nums[right - 1]) {
+                            right--;
+                        }
+                        right--;
+                    } else if (sum < target) {
+                        left++;
+                    } else {
+                        right--;
+                    }
+                }
+            }
+        }
+        return quadruplets;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public List<List<Integer>> fourSum(int[] nums, int target) {
+        List<List<Integer>> quadruplets = new ArrayList<List<Integer>>();
+        if (nums == null || nums.length < 4) {
+            return quadruplets;
+        }
+        Arrays.sort(nums);
+        int length = nums.length;
+        for (int i = 0; i < length - 3; i++) {
+            if (i > 0 && nums[i] == nums[i - 1]) {
+                continue;
+            }
+            if ((long) nums[i] + nums[i + 1] + nums[i + 2] + nums[i + 3] > target) {
+                break;
+            }
+            if ((long) nums[i] + nums[length - 3] + nums[length - 2] + nums[length - 1] < target) {
+                continue;
+            }
+            for (int j = i + 1; j < length - 2; j++) {
+                if (j > i + 1 && nums[j] == nums[j - 1]) {
+                    continue;
+                }
+                if ((long) nums[i] + nums[j] + nums[j + 1] + nums[j + 2] > target) {
+                    break;
+                }
+                if ((long) nums[i] + nums[j] + nums[length - 2] + nums[length - 1] < target) {
+                    continue;
+                }
+                int left = j + 1, right = length - 1;
+                while (left < right) {
+                    long sum = (long) nums[i] + nums[j] + nums[left] + nums[right];
+                    if (sum == target) {
+                        quadruplets.add(Arrays.asList(nums[i], nums[j], nums[left], nums[right]));
+                        while (left < right && nums[left] == nums[left + 1]) {
+                            left++;
+                        }
+                        left++;
+                        while (left < right && nums[right] == nums[right - 1]) {
+                            right--;
+                        }
+                        right--;
+                    } else if (sum < target) {
+                        left++;
+                    } else {
+                        right--;
+                    }
+                }
+            }
+        }
+        return quadruplets;
+    }
+}
+```
+
+
+
+### [454. 四数相加 II](https://leetcode.cn/problems/4sum-ii/)
+
+中等
+
+给你四个整数数组 `nums1`、`nums2`、`nums3` 和 `nums4` ，数组长度都是 `n` ，请你计算有多少个元组 `(i, j, k, l)` 能满足：
+
+- `0 <= i, j, k, l < n`
+- `nums1[i] + nums2[j] + nums3[k] + nums4[l] == 0`
+
+**示例 1：**
+
+```
+输入：nums1 = [1,2], nums2 = [-2,-1], nums3 = [-1,2], nums4 = [0,2]
+输出：2
+解释：
+两个元组如下：
+1. (0, 0, 0, 1) -> nums1[0] + nums2[0] + nums3[0] + nums4[1] = 1 + (-2) + (-1) + 2 = 0
+2. (1, 1, 0, 0) -> nums1[1] + nums2[1] + nums3[0] + nums4[0] = 2 + (-1) + (-1) + 0 = 0
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    int fourSumCount(vector<int>& A, vector<int>& B, vector<int>& C, vector<int>& D) {
+        unordered_map<int, int> countAB;
+        for (int u: A) {
+            for (int v: B) {
+                ++countAB[u + v];
+            }
+        }
+        int ans = 0;
+        for (int u: C) {
+            for (int v: D) {
+                if (countAB.count(-u - v)) {
+                    ans += countAB[-u - v];
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public int fourSumCount(int[] A, int[] B, int[] C, int[] D) {
+        Map<Integer, Integer> countAB = new HashMap<Integer, Integer>();
+        for (int u : A) {
+            for (int v : B) {
+                countAB.put(u + v, countAB.getOrDefault(u + v, 0) + 1);
+            }
+        }
+        int ans = 0;
+        for (int u : C) {
+            for (int v : D) {
+                if (countAB.containsKey(-u - v)) {
+                    ans += countAB.get(-u - v);
+                }
+            }
+        }
+        return ans;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
