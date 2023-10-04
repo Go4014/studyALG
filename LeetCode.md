@@ -23345,7 +23345,225 @@ class Solution {
 
 
 
+### [202. 快乐数](https://leetcode.cn/problems/happy-number/)
 
+编写一个来判断一个数 `n` 是不是快乐数。
+
+**「快乐数」** 定义为：
+
+- 对于一个正整数，每一次将该数替换为它每个位置上的数字的平方和。
+- 然后重复这个过程直到这个数变为 1，也可能是 **无限循环** 但始终变不到 1。
+- 如果这个过程 **结果为** 1，那么这个数就是快乐数。
+
+如果 `n` 是 *快乐数* 就返回 `true` ；不是，则返回 `false` 。
+
+**示例 1：**
+
+```
+输入：n = 19
+输出：true
+解释：
+12 + 92 = 82
+82 + 22 = 68
+62 + 82 = 100
+12 + 02 + 02 = 1
+```
+
+C++版本
+
+```c++
+
+```
+
+Java版本
+
+```java
+// 方法一：用哈希集合检测循环
+class Solution {
+    private int getNext(int n) {
+        int totalSum = 0;
+        while (n > 0) {
+            int d = n % 10;
+            n = n / 10;
+            totalSum += d * d;
+        }
+        return totalSum;
+    }
+
+    public boolean isHappy(int n) {
+        Set<Integer> seen = new HashSet<>();
+        while (n != 1 && !seen.contains(n)) {
+            seen.add(n);
+            n = getNext(n);
+        }
+        return n == 1;
+    }
+}
+
+// 方法二：快慢指针法
+class Solution {
+
+     public int getNext(int n) {
+        int totalSum = 0;
+        while (n > 0) {
+            int d = n % 10;
+            n = n / 10;
+            totalSum += d * d;
+        }
+        return totalSum;
+    }
+
+    public boolean isHappy(int n) {
+        int slowRunner = n;
+        int fastRunner = getNext(n);
+        while (fastRunner != 1 && slowRunner != fastRunner) {
+            slowRunner = getNext(slowRunner);
+            fastRunner = getNext(getNext(fastRunner));
+        }
+        return fastRunner == 1;
+    }
+}
+
+// 方法三：数学
+class Solution {
+
+    private static Set<Integer> cycleMembers =
+        new HashSet<>(Arrays.asList(4, 16, 37, 58, 89, 145, 42, 20));
+
+    public int getNext(int n) {
+        int totalSum = 0;
+        while (n > 0) {
+            int d = n % 10;
+            n = n / 10;
+            totalSum += d * d;
+        }
+        return totalSum;
+    }
+
+
+    public boolean isHappy(int n) {
+        while (n != 1 && !cycleMembers.contains(n)) {
+            n = getNext(n);
+        }
+        return n == 1;
+    }
+}
+```
+
+
+
+### [242. 有效的字母异位词](https://leetcode.cn/problems/valid-anagram/)
+
+简单
+
+给定两个字符串 `*s*` 和 `*t*` ，编写一个函数来判断 `*t*` 是否是 `*s*` 的字母异位词。
+
+**注意：**若 `*s*` 和 `*t*` 中每个字符出现的次数都相同，则称 `*s*` 和 `*t*` 互为字母异位词。
+
+**示例 1:**
+
+```
+输入: s = "anagram", t = "nagaram"
+输出: true
+```
+
+C++版本
+
+```c++
+// 方法一：排序
+class Solution {
+public:
+    bool isAnagram(string s, string t) {
+        if (s.length() != t.length()) {
+            return false;
+        }
+        sort(s.begin(), s.end());
+        sort(t.begin(), t.end());
+        return s == t;
+    }
+};
+
+// 方法二：哈希表
+class Solution {
+public:
+    bool isAnagram(string s, string t) {
+        if (s.length() != t.length()) {
+            return false;
+        }
+        vector<int> table(26, 0);
+        for (auto& ch: s) {
+            table[ch - 'a']++;
+        }
+        for (auto& ch: t) {
+            table[ch - 'a']--;
+            if (table[ch - 'a'] < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：排序
+class Solution {
+    public boolean isAnagram(String s, String t) {
+        if (s.length() != t.length()) {
+            return false;
+        }
+        char[] str1 = s.toCharArray();
+        char[] str2 = t.toCharArray();
+        Arrays.sort(str1);
+        Arrays.sort(str2);
+        return Arrays.equals(str1, str2);
+    }
+}
+
+// 方法二：哈希表
+class Solution {
+    public boolean isAnagram(String s, String t) {
+        if (s.length() != t.length()) {
+            return false;
+        }
+        int[] table = new int[26];
+        for (int i = 0; i < s.length(); i++) {
+            table[s.charAt(i) - 'a']++;
+        }
+        for (int i = 0; i < t.length(); i++) {
+            table[t.charAt(i) - 'a']--;
+            if (table[t.charAt(i) - 'a'] < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+// 方法二：哈希表(进阶)
+class Solution {
+    public boolean isAnagram(String s, String t) {
+        if (s.length() != t.length()) {
+            return false;
+        }
+        Map<Character, Integer> table = new HashMap<Character, Integer>();
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            table.put(ch, table.getOrDefault(ch, 0) + 1);
+        }
+        for (int i = 0; i < t.length(); i++) {
+            char ch = t.charAt(i);
+            table.put(ch, table.getOrDefault(ch, 0) - 1);
+            if (table.get(ch) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
 
 
 
