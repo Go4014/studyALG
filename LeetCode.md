@@ -23567,9 +23567,171 @@ class Solution {
 
 
 
+### [205. 同构字符串](https://leetcode.cn/problems/isomorphic-strings/)
+
+简单
+
+给定两个字符串 `s` 和 `t` ，判断它们是否是同构的。
+
+如果 `s` 中的字符可以按某种映射关系替换得到 `t` ，那么这两个字符串是同构的。
+
+每个出现的字符都应当映射到另一个字符，同时不改变字符的顺序。不同字符不能映射到同一个字符上，相同字符只能映射到同一个字符上，字符可以映射到自己本身。
+
+**示例 1:**
+
+```
+输入：s = "egg", t = "add"
+输出：true
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool isIsomorphic(string s, string t) {
+        unordered_map<char, char> s2t;
+        unordered_map<char, char> t2s;
+        int len = s.length();
+        for (int i = 0; i < len; ++i) {
+            char x = s[i], y = t[i];
+            if ((s2t.count(x) && s2t[x] != y) || (t2s.count(y) && t2s[y] != x)) {
+                return false;
+            }
+            s2t[x] = y;
+            t2s[y] = x;
+        }
+        return true;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public boolean isIsomorphic(String s, String t) {
+        Map<Character, Character> s2t = new HashMap<Character, Character>();
+        Map<Character, Character> t2s = new HashMap<Character, Character>();
+        int len = s.length();
+        for (int i = 0; i < len; ++i) {
+            char x = s.charAt(i), y = t.charAt(i);
+            if ((s2t.containsKey(x) && s2t.get(x) != y) || (t2s.containsKey(y) && t2s.get(y) != x)) {
+                return false;
+            }
+            s2t.put(x, y);
+            t2s.put(y, x);
+        }
+        return true;
+    }
+}
+```
 
 
 
+### [442. 数组中重复的数据](https://leetcode.cn/problems/find-all-duplicates-in-an-array/)
+
+中等
+
+给你一个长度为 `n` 的整数数组 `nums` ，其中 `nums` 的所有整数都在范围 `[1, n]` 内，且每个整数出现 **一次** 或 **两次** 。请你找出所有出现 **两次** 的整数，并以数组形式返回。
+
+你必须设计并实现一个时间复杂度为 `O(n)` 且仅使用常量额外空间的算法解决此问题。
+
+**示例 1：**
+
+```
+输入：nums = [4,3,2,7,8,2,3,1]
+输出：[2,3]
+```
+
+C++版本
+
+```c++
+// 方法一：将元素交换到对应的位置
+class Solution {
+public:
+    vector<int> findDuplicates(vector<int>& nums) {
+        int n = nums.size();
+        for (int i = 0; i < n; ++i) {
+            while (nums[i] != nums[nums[i] - 1]) {
+                swap(nums[i], nums[nums[i] - 1]);
+            }
+        }
+        vector<int> ans;
+        for (int i = 0; i < n; ++i) {
+            if (nums[i] - 1 != i) {
+                ans.push_back(nums[i]);
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：使用正负号作为标记
+class Solution {
+public:
+    vector<int> findDuplicates(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> ans;
+        for (int i = 0; i < n; ++i) {
+            int x = abs(nums[i]);
+            if (nums[x - 1] > 0) {
+                nums[x - 1] = -nums[x - 1];
+            }
+            else {
+                ans.push_back(x);
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：将元素交换到对应的位置
+class Solution {
+    public List<Integer> findDuplicates(int[] nums) {
+        int n = nums.length;
+        for (int i = 0; i < n; ++i) {
+            while (nums[i] != nums[nums[i] - 1]) {
+                swap(nums, i, nums[i] - 1);
+            }
+        }
+        List<Integer> ans = new ArrayList<Integer>();
+        for (int i = 0; i < n; ++i) {
+            if (nums[i] - 1 != i) {
+                ans.add(nums[i]);
+            }
+        }
+        return ans;
+    }
+
+    public void swap(int[] nums, int index1, int index2) {
+        int temp = nums[index1];
+        nums[index1] = nums[index2];
+        nums[index2] = temp;
+    }
+}
+
+// 方法二：使用正负号作为标记
+class Solution {
+    public List<Integer> findDuplicates(int[] nums) {
+        int n = nums.length;
+        List<Integer> ans = new ArrayList<Integer>();
+        for (int i = 0; i < n; ++i) {
+            int x = Math.abs(nums[i]);
+            if (nums[x - 1] > 0) {
+                nums[x - 1] = -nums[x - 1];
+            } else {
+                ans.add(x);
+            }
+        }
+        return ans;
+    }
+}
+```
 
 
 
