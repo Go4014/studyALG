@@ -23735,7 +23735,234 @@ class Solution {
 
 
 
+### [LCR 186. 文物朝代判断](https://leetcode.cn/problems/bu-ke-pai-zhong-de-shun-zi-lcof/)
 
+简单
+
+展览馆展出来自 13 个朝代的文物，每排展柜展出 5 个文物。某排文物的摆放情况记录于数组 `places`，其中 `places[i]` 表示处于第 `i` 位文物的所属朝代编号。其中，编号为 0 的朝代表示未知朝代。请判断并返回这排文物的所属朝代编号是否连续（如遇未知朝代可算作连续情况）。
+
+**示例 1：**
+
+```
+输入: places = [0, 6, 9, 0, 7]
+输出: True
+```
+
+C++版本
+
+```c++
+// 方法一： 辅助哈希表
+class Solution {
+public:
+    bool checkDynasty(vector<int>& places) {
+        unordered_set<int> repeat;
+        int ma = 0, mi = 14;
+        for(int place : places) {
+            if(place == 0) continue; // 跳过未知朝代
+            ma = max(ma, place); // 最大编号朝代
+            mi = min(mi, place); // 最小编号朝代
+            if(repeat.find(place) != repeat.end()) return false; // 若有重复，提前返回 false
+            repeat.insert(place); // 添加此朝代至 Set
+        }
+        return ma - mi < 5; // 最大编号朝代 - 最小编号朝代 < 5 则连续
+    }
+};
+// 方法二：排序 + 遍历
+class Solution {
+public:
+    bool checkDynasty(vector<int>& places) {
+        int unknown = 0;
+        sort(places.begin(), places.end()); // 数组排序
+        for(int i = 0; i < 4; i++) {
+            if(places[i] == 0) unknown++; // 统计未知朝代数量
+            else if(places[i] == places[i + 1]) return false; // 若有重复，提前返回 false
+        }
+        return places[4] - places[unknown] < 5; // 最大编号朝代 - 最小编号朝代 < 5 则连续
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一： 辅助哈希表
+class Solution {
+    public boolean checkDynasty(int[] places) {
+        Set<Integer> repeat = new HashSet<>();
+        int max = 0, min = 14;
+        for(int place : places) {
+            if(place == 0) continue; // 跳过未知朝代
+            max = Math.max(max, place); // 最大编号朝代
+            min = Math.min(min, place); // 最小编号朝代
+            if(repeat.contains(place)) return false; // 若有重复，提前返回 false
+            repeat.add(place); // 添加此朝代至 Set
+        }
+        return max - min < 5; // 最大编号朝代 - 最小编号朝代 < 5 则连续
+    }
+}
+// 方法二：排序 + 遍历
+class Solution {
+    public boolean checkDynasty(int[] places) {
+        int unknown = 0;
+        Arrays.sort(places); // 数组排序
+        for(int i = 0; i < 4; i++) {
+            if(places[i] == 0) unknown++; // 统计未知朝代数量
+            else if(places[i] == places[i + 1]) return false; // 若有重复，提前返回 false
+        }
+        return places[4] - places[unknown] < 5; // 最大编号朝代 - 最小编号朝代 < 5 则连续
+    }
+}
+```
+
+
+
+### [268. 丢失的数字](https://leetcode.cn/problems/missing-number/)
+
+简单
+
+给定一个包含 `[0, n]` 中 `n` 个数的数组 `nums` ，找出 `[0, n]` 这个范围内没有出现在数组中的那个数。
+
+**示例 1：**
+
+```
+输入：nums = [3,0,1]
+输出：2
+解释：n = 3，因为有 3 个数字，所以所有的数字都在范围 [0,3] 内。2 是丢失的数字，因为它没有出现在 nums 中。
+```
+
+C++版本
+
+```c++
+// 方法一：排序
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        sort(nums.begin(),nums.end());
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            if (nums[i] != i) {
+                return i;
+            }
+        }
+        return n;
+    }
+};
+
+// 方法二：哈希集合
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        unordered_set<int> set;
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            set.insert(nums[i]);
+        }
+        int missing = -1;
+        for (int i = 0; i <= n; i++) {
+            if (!set.count(i)) {
+                missing = i;
+                break;
+            }
+        }
+        return missing;
+    }
+};
+
+// 方法三：位运算
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        int res = 0;
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            res ^= nums[i];
+        }
+        for (int i = 0; i <= n; i++) {
+            res ^= i;
+        }
+        return res;
+    }
+};
+
+// 方法四：数学
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        int n = nums.size();
+        int total = n * (n + 1) / 2;
+        int arrSum = 0;
+        for (int i = 0; i < n; i++) {
+            arrSum += nums[i];
+        }
+        return total - arrSum;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：排序
+class Solution {
+    public int missingNumber(int[] nums) {
+        Arrays.sort(nums);
+        int n = nums.length;
+        for (int i = 0; i < n; i++) {
+            if (nums[i] != i) {
+                return i;
+            }
+        }
+        return n;
+    }
+}
+
+// 方法二：哈希集合
+class Solution {
+    public int missingNumber(int[] nums) {
+        Set<Integer> set = new HashSet<Integer>();
+        int n = nums.length;
+        for (int i = 0; i < n; i++) {
+            set.add(nums[i]);
+        }
+        int missing = -1;
+        for (int i = 0; i <= n; i++) {
+            if (!set.contains(i)) {
+                missing = i;
+                break;
+            }
+        }
+        return missing;
+    }
+}
+
+// 方法三：位运算
+class Solution {
+    public int missingNumber(int[] nums) {
+        int xor = 0;
+        int n = nums.length;
+        for (int i = 0; i < n; i++) {
+            xor ^= nums[i];
+        }
+        for (int i = 0; i <= n; i++) {
+            xor ^= i;
+        }
+        return xor;
+    }
+}
+
+// 方法四：数学
+class Solution {
+    public int missingNumber(int[] nums) {
+        int n = nums.length;
+        int total = n * (n + 1) / 2;
+        int arrSum = 0;
+        for (int i = 0; i < n; i++) {
+            arrSum += nums[i];
+        }
+        return total - arrSum;
+    }
+}
+```
 
 
 
