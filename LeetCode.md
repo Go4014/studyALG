@@ -23966,11 +23966,229 @@ class Solution {
 
 
 
+### [LCR 120. 寻找文件副本](https://leetcode.cn/problems/shu-zu-zhong-zhong-fu-de-shu-zi-lcof/)
+
+简单
+
+设备中存有 `n` 个文件，文件 `id` 记于数组 `documents`。若文件 `id` 相同，则定义为该文件存在副本。请返回任一存在副本的文件 `id`。
+
+**示例 1：**
+
+```
+输入：documents = [2, 5, 3, 0, 5, 0]
+输出：0 或 5
+```
+
+C++版本
+
+```c++
+// 方法一：哈希表
+class Solution {
+public:
+    int findRepeatDocument(vector<int>& documents) {
+        unordered_map<int, bool> map;
+        for(int doc : documents) {
+            if(map[doc]) return doc;
+            map[doc] = true;
+        }
+        return -1;
+    }
+};
+
+// 方法二：原地交换
+class Solution {
+public:
+    int findRepeatDocument(vector<int>& documents) {
+        int i = 0;
+        while(i < documents.size()) {
+            if(documents[i] == i) {
+                i++;
+                continue;
+            }
+            if(documents[documents[i]] == documents[i])
+                return documents[i];
+            swap(documents[i],documents[documents[i]]);
+        }
+        return -1;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：哈希表
+class Solution {
+    public int findRepeatDocument(int[] documents) {
+        Set<Integer> hmap = new HashSet<>();
+        for(int doc : documents) {
+            if(hmap.contains(doc)) return doc;
+            hmap.add(doc);
+        }
+        return -1;
+    }
+}
+
+// 方法二：原地交换
+class Solution {
+    public int findRepeatDocument(int[] documents) {
+        int i = 0;
+        while(i < documents.length) {
+            if(documents[i] == i) {
+                i++;
+                continue;
+            }
+            if(documents[documents[i]] == documents[i]) {
+                return documents[i];
+            }
+            int tmp = documents[i];
+            documents[i] = documents[tmp];
+            documents[tmp] = tmp;
+        }
+        return -1;
+    }
+}
+```
 
 
 
+[451. 根据字符出现频率排序](https://leetcode.cn/problems/sort-characters-by-frequency/)
 
+中等
 
+给定一个字符串 `s` ，根据字符出现的 **频率** 对其进行 **降序排序** 。一个字符出现的 **频率** 是它出现在字符串中的次数。
+
+返回 *已排序的字符串* 。如果有多个答案，返回其中任何一个。
+
+**示例 1:**
+
+```
+输入: s = "tree"
+输出: "eert"
+解释: 'e'出现两次，'r'和't'都只出现一次。
+因此'e'必须出现在'r'和't'之前。此外，"eetr"也是一个有效的答案。
+```
+
+C++版本
+
+```c++
+// 方法一：按照出现频率排序
+class Solution {
+public:
+    string frequencySort(string s) {
+        unordered_map<char, int> mp;
+        int length = s.length();
+        for (auto &ch : s) {
+            mp[ch]++;
+        }
+        vector<pair<char, int>> vec;
+        for (auto &it : mp) {
+            vec.emplace_back(it);
+        }
+        sort(vec.begin(), vec.end(), [](const pair<char, int> &a, const pair<char, int> &b) {
+            return a.second > b.second;
+        });
+        string ret;
+        for (auto &[ch, num] : vec) {
+            for (int i = 0; i < num; i++) {
+                ret.push_back(ch);
+            }
+        }
+        return ret;
+    }
+};
+
+// 方法二：桶排序
+class Solution {
+public:
+    string frequencySort(string s) {
+        unordered_map<char, int> mp;
+        int maxFreq = 0;
+        int length = s.size();
+        for (auto &ch : s) {
+            maxFreq = max(maxFreq, ++mp[ch]);
+        }
+        vector<string> buckets(maxFreq + 1);
+        for (auto &[ch, num] : mp) {
+            buckets[num].push_back(ch);
+        }
+        string ret;
+        for (int i = maxFreq; i > 0; i--) {
+            string &bucket = buckets[i];
+            for (auto &ch : bucket) {
+                for (int k = 0; k < i; k++) {
+                    ret.push_back(ch);
+                }
+            }
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：按照出现频率排序
+class Solution {
+    public String frequencySort(String s) {
+        Map<Character, Integer> map = new HashMap<Character, Integer>();
+        int length = s.length();
+        for (int i = 0; i < length; i++) {
+            char c = s.charAt(i);
+            int frequency = map.getOrDefault(c, 0) + 1;
+            map.put(c, frequency);
+        }
+        List<Character> list = new ArrayList<Character>(map.keySet());
+        Collections.sort(list, (a, b) -> map.get(b) - map.get(a));
+        StringBuffer sb = new StringBuffer();
+        int size = list.size();
+        for (int i = 0; i < size; i++) {
+            char c = list.get(i);
+            int frequency = map.get(c);
+            for (int j = 0; j < frequency; j++) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+}
+
+// 方法二：桶排序
+class Solution {
+    public String frequencySort(String s) {
+        Map<Character, Integer> map = new HashMap<Character, Integer>();
+        int maxFreq = 0;
+        int length = s.length();
+        for (int i = 0; i < length; i++) {
+            char c = s.charAt(i);
+            int frequency = map.getOrDefault(c, 0) + 1;
+            map.put(c, frequency);
+            maxFreq = Math.max(maxFreq, frequency);
+        }
+        StringBuffer[] buckets = new StringBuffer[maxFreq + 1];
+        for (int i = 0; i <= maxFreq; i++) {
+            buckets[i] = new StringBuffer();
+        }
+        for (Map.Entry<Character, Integer> entry : map.entrySet()) {
+            char c = entry.getKey();
+            int frequency = entry.getValue();
+            buckets[frequency].append(c);
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = maxFreq; i > 0; i--) {
+            StringBuffer bucket = buckets[i];
+            int size = bucket.length();
+            for (int j = 0; j < size; j++) {
+                for (int k = 0; k < i; k++) {
+                    sb.append(bucket.charAt(j));
+                }
+            }
+        }
+        return sb.toString();
+    }
+}
+```
 
 
 
