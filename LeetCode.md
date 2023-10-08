@@ -24192,11 +24192,196 @@ class Solution {
 
 
 
+[49. 字母#异位词分组](https://leetcode.cn/problems/group-anagrams/)
+
+中等
+
+给你一个字符串数组，请你将 **字母异位词** 组合在一起。可以按任意顺序返回结果列表。
+
+**字母异位词** 是由重新排列源单词的所有字母得到的一个新单词。
+
+**示例 1:**
+
+```
+输入: strs = ["eat", "tea", "tan", "ate", "nat", "bat"]
+输出: [["bat"],["nat","tan"],["ate","eat","tea"]]
+```
+
+C++版本
+
+```c++
+// 方法一：排序
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        unordered_map<string, vector<string>> mp;
+        for (string& str: strs) {
+            string key = str;
+            sort(key.begin(), key.end());
+            mp[key].emplace_back(str);
+        }
+        vector<vector<string>> ans;
+        for (auto it = mp.begin(); it != mp.end(); ++it) {
+            ans.emplace_back(it->second);
+        }
+        return ans;
+    }
+};
+
+// 方法二：计数
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        // 自定义对 array<int, 26> 类型的哈希函数
+        auto arrayHash = [fn = hash<int>{}] (const array<int, 26>& arr) -> size_t {
+            return accumulate(arr.begin(), arr.end(), 0u, [&](size_t acc, int num) {
+                return (acc << 1) ^ fn(num);
+            });
+        };
+
+        unordered_map<array<int, 26>, vector<string>, decltype(arrayHash)> mp(0, arrayHash);
+        for (string& str: strs) {
+            array<int, 26> counts{};
+            int length = str.length();
+            for (int i = 0; i < length; ++i) {
+                counts[str[i] - 'a'] ++;
+            }
+            mp[counts].emplace_back(str);
+        }
+        vector<vector<string>> ans;
+        for (auto it = mp.begin(); it != mp.end(); ++it) {
+            ans.emplace_back(it->second);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：排序
+class Solution {
+    public List<List<String>> groupAnagrams(String[] strs) {
+        Map<String, List<String>> map = new HashMap<String, List<String>>();
+        for (String str : strs) {
+            char[] array = str.toCharArray();
+            Arrays.sort(array);
+            String key = new String(array);
+            List<String> list = map.getOrDefault(key, new ArrayList<String>());
+            list.add(str);
+            map.put(key, list);
+        }
+        return new ArrayList<List<String>>(map.values());
+    }
+}
+
+// 方法二：计数
+class Solution {
+    public List<List<String>> groupAnagrams(String[] strs) {
+        Map<String, List<String>> map = new HashMap<String, List<String>>();
+        for (String str : strs) {
+            int[] counts = new int[26];
+            int length = str.length();
+            for (int i = 0; i < length; i++) {
+                counts[str.charAt(i) - 'a']++;
+            }
+            // 将每个出现次数大于 0 的字母和出现次数按顺序拼接成字符串，作为哈希表的键
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < 26; i++) {
+                if (counts[i] != 0) {
+                    sb.append((char) ('a' + i));
+                    sb.append(counts[i]);
+                }
+            }
+            String key = sb.toString();
+            List<String> list = map.getOrDefault(key, new ArrayList<String>());
+            list.add(str);
+            map.put(key, list);
+        }
+        return new ArrayList<List<String>>(map.values());
+    }
+}
+```
 
 
 
+### [599. 两个列表的最小索引总和](https://leetcode.cn/problems/minimum-index-sum-of-two-lists/)
 
+简单
 
+假设 Andy 和 Doris 想在晚餐时选择一家餐厅，并且他们都有一个表示最喜爱餐厅的列表，每个餐厅的名字用字符串表示。
+
+你需要帮助他们用**最少的索引和**找出他们**共同喜爱的餐厅**。 如果答案不止一个，则输出所有答案并且不考虑顺序。 你可以假设答案总是存在。
+
+**示例 1:**
+
+```
+输入: list1 = ["Shogun", "Tapioca Express", "Burger King", "KFC"]，list2 = ["Piatti", "The Grill at Torrey Pines", "Hungry Hunter Steakhouse", "Shogun"]
+输出: ["Shogun"]
+解释: 他们唯一共同喜爱的餐厅是“Shogun”。
+```
+
+C++版本
+
+```c++
+// 方法一：哈希表
+class Solution {
+public:
+    vector<string> findRestaurant(vector<string>& list1, vector<string>& list2) {
+        unordered_map<string, int> index;
+        for (int i = 0; i < list1.size(); i++) {
+            index[list1[i]] = i;
+        }
+
+        vector<string> ret;
+        int indexSum = INT_MAX;
+        for (int i = 0; i < list2.size(); i++) {
+            if (index.count(list2[i]) > 0) {
+                int j = index[list2[i]];
+                if (i + j < indexSum) {
+                    ret.clear();
+                    ret.push_back(list2[i]);
+                    indexSum = i + j;
+                } else if (i + j == indexSum) {
+                    ret.push_back(list2[i]);
+                }
+            }
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：哈希表
+class Solution {
+    public String[] findRestaurant(String[] list1, String[] list2) {
+        Map<String, Integer> index = new HashMap<String, Integer>();
+        for (int i = 0; i < list1.length; i++) {
+            index.put(list1[i], i);
+        }
+
+        List<String> ret = new ArrayList<String>();
+        int indexSum = Integer.MAX_VALUE;
+        for (int i = 0; i < list2.length; i++) {
+            if (index.containsKey(list2[i])) {
+                int j = index.get(list2[i]);
+                if (i + j < indexSum) {
+                    ret.clear();
+                    ret.add(list2[i]);
+                    indexSum = i + j;
+                } else if (i + j == indexSum) {
+                    ret.add(list2[i]);
+                }
+            }
+        }
+        return ret.toArray(new String[ret.size()]);
+    }
+}
+```
 
 
 
