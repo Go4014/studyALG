@@ -24385,17 +24385,233 @@ class Solution {
 
 
 
+### [387. 字符串中的第一个唯一字符](https://leetcode.cn/problems/first-unique-character-in-a-string/)
+
+简单
+
+给定一个字符串 `s` ，找到 *它的第一个不重复的字符，并返回它的索引* 。如果不存在，则返回 `-1` 。
+
+**示例 1：**
+
+```
+输入: s = "leetcode"
+输出: 0
+```
+
+C++版本
+
+```c++
+// 方法一：使用哈希表存储频数
+class Solution {
+public:
+    int firstUniqChar(string s) {
+        unordered_map<int, int> frequency;
+        for (char ch: s) {
+            ++frequency[ch];
+        }
+        for (int i = 0; i < s.size(); ++i) {
+            if (frequency[s[i]] == 1) {
+                return i;
+            }
+        }
+        return -1;
+    }
+};
+
+// 方法二：使用哈希表存储索引
+class Solution {
+public:
+    int firstUniqChar(string s) {
+        unordered_map<int, int> position;
+        int n = s.size();
+        for (int i = 0; i < n; ++i) {
+            if (position.count(s[i])) {
+                position[s[i]] = -1;
+            }
+            else {
+                position[s[i]] = i;
+            }
+        }
+        int first = n;
+        for (auto [_, pos]: position) {
+            if (pos != -1 && pos < first) {
+                first = pos;
+            }
+        }
+        if (first == n) {
+            first = -1;
+        }
+        return first;
+    }
+};
+
+// 方法三：队列
+class Solution {
+public:
+    int firstUniqChar(string s) {
+        unordered_map<char, int> position;
+        queue<pair<char, int>> q;
+        int n = s.size();
+        for (int i = 0; i < n; ++i) {
+            if (!position.count(s[i])) {
+                position[s[i]] = i;
+                q.emplace(s[i], i);
+            }
+            else {
+                position[s[i]] = -1;
+                while (!q.empty() && position[q.front().first] == -1) {
+                    q.pop();
+                }
+            }
+        }
+        return q.empty() ? -1 : q.front().second;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：使用哈希表存储频数
+class Solution {
+    public int firstUniqChar(String s) {
+        Map<Character, Integer> frequency = new HashMap<Character, Integer>();
+        for (int i = 0; i < s.length(); ++i) {
+            char ch = s.charAt(i);
+            frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
+        }
+        for (int i = 0; i < s.length(); ++i) {
+            if (frequency.get(s.charAt(i)) == 1) {
+                return i;
+            }
+        }
+        return -1;
+    }
+}
+
+// 方法二：使用哈希表存储索引
+class Solution {
+    public int firstUniqChar(String s) {
+        Map<Character, Integer> position = new HashMap<Character, Integer>();
+        int n = s.length();
+        for (int i = 0; i < n; ++i) {
+            char ch = s.charAt(i);
+            if (position.containsKey(ch)) {
+                position.put(ch, -1);
+            } else {
+                position.put(ch, i);
+            }
+        }
+        int first = n;
+        for (Map.Entry<Character, Integer> entry : position.entrySet()) {
+            int pos = entry.getValue();
+            if (pos != -1 && pos < first) {
+                first = pos;
+            }
+        }
+        if (first == n) {
+            first = -1;
+        }
+        return first;
+    }
+}
+
+// 方法三：队列
+class Solution {
+    public int firstUniqChar(String s) {
+        Map<Character, Integer> position = new HashMap<Character, Integer>();
+        Queue<Pair> queue = new LinkedList<Pair>();
+        int n = s.length();
+        for (int i = 0; i < n; ++i) {
+            char ch = s.charAt(i);
+            if (!position.containsKey(ch)) {
+                position.put(ch, i);
+                queue.offer(new Pair(ch, i));
+            } else {
+                position.put(ch, -1);
+                while (!queue.isEmpty() && position.get(queue.peek().ch) == -1) {
+                    queue.poll();
+                }
+            }
+        }
+        return queue.isEmpty() ? -1 : queue.poll().pos;
+    }
+
+    class Pair {
+        char ch;
+        int pos;
+
+        Pair(char ch, int pos) {
+            this.ch = ch;
+            this.pos = pos;
+        }
+    }
+}
+```
 
 
 
+### [447. 回旋镖的数量](https://leetcode.cn/problems/number-of-boomerangs/)
 
+中等
 
+给定平面上 `n` 对 **互不相同** 的点 `points` ，其中 `points[i] = [xi, yi]` 。**回旋镖** 是由点 `(i, j, k)` 表示的元组 ，其中 `i` 和 `j` 之间的距离和 `i` 和 `k` 之间的欧式距离相等（**需要考虑元组的顺序**）。
 
+返回平面上所有回旋镖的数量。
 
+**示例 1：**
 
+```
+输入：points = [[0,0],[1,0],[2,0]]
+输出：2
+解释：两个回旋镖为 [[1,0],[0,0],[2,0]] 和 [[1,0],[2,0],[0,0]]
+```
 
+C++版本
 
+```c++
+// 方法一：枚举 + 哈希表
+class Solution {
+public:
+    int numberOfBoomerangs(vector<vector<int>> &points) {
+        int ans = 0;
+        for (auto &p : points) {
+            unordered_map<int, int> cnt;
+            for (auto &q : points) {
+                int dis = (p[0] - q[0]) * (p[0] - q[0]) + (p[1] - q[1]) * (p[1] - q[1]);
+                ++cnt[dis];
+            }
+            for (auto &[_, m] : cnt) {
+                ans += m * (m - 1);
+            }
+        }
+        return ans;
+    }
+};
+```
 
+Java版本
+
+```java
+// 方法一：枚举 + 哈希表
+class Solution {
+    public int numberOfBoomerangs(int[][] points) {
+        int ans = 0;
+        for (int[] p : points) {
+            Map<Integer, Integer> cnt = new HashMap<Integer, Integer>();
+            for (int[] q : points) {
+                int dis = (p[0] - q[0]) * (p[0] - q[0]) + (p[1] - q[1]) * (p[1] - q[1]);
+                cnt.put(dis, cnt.getOrDefault(dis, 0) + 1);
+            }
+            for (Map.Entry<Integer, Integer> entry : cnt.entrySet()) {
+                int m = entry.getValue();
+                ans += m * (m - 1);
+            }
+        }
+        return ans;
+    }
+}
+```
 
 
 
