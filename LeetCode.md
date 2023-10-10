@@ -24615,13 +24615,202 @@ class Solution {
 
 
 
+### [149. 直线上最多的点数](https://leetcode.cn/problems/max-points-on-a-line/)
+
+困难
+
+给你一个数组 `points` ，其中 `points[i] = [xi, yi]` 表示 **X-Y** 平面上的一个点。求最多有多少个点在同一条直线上。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/25/plane1.jpg)
+
+```
+输入：points = [[1,1],[2,2],[3,3]]
+输出：3
+```
+
+C++版本
+
+```c++
+// 方法一：哈希表
+class Solution {
+public:
+    int gcd(int a, int b) {
+        return b ? gcd(b, a % b) : a;
+    }
+
+    int maxPoints(vector<vector<int>>& points) {
+        int n = points.size();
+        if (n <= 2) {
+            return n;
+        }
+        int ret = 0;
+        for (int i = 0; i < n; i++) {
+            if (ret >= n - i || ret > n / 2) {
+                break;
+            }
+            unordered_map<int, int> mp;
+            for (int j = i + 1; j < n; j++) {
+                int x = points[i][0] - points[j][0];
+                int y = points[i][1] - points[j][1];
+                if (x == 0) {
+                    y = 1;
+                } else if (y == 0) {
+                    x = 1;
+                } else {
+                    if (y < 0) {
+                        x = -x;
+                        y = -y;
+                    }
+                    int gcdXY = gcd(abs(x), abs(y));
+                    x /= gcdXY, y /= gcdXY;
+                }
+                mp[y + x * 20001]++;
+            }
+            int maxn = 0;
+            for (auto& [_, num] : mp) {
+                maxn = max(maxn, num + 1);
+            }
+            ret = max(ret, maxn);
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：哈希表
+class Solution {
+    public int maxPoints(int[][] points) {
+        int n = points.length;
+        if (n <= 2) {
+            return n;
+        }
+        int ret = 0;
+        for (int i = 0; i < n; i++) {
+            if (ret >= n - i || ret > n / 2) {
+                break;
+            }
+            Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+            for (int j = i + 1; j < n; j++) {
+                int x = points[i][0] - points[j][0];
+                int y = points[i][1] - points[j][1];
+                if (x == 0) {
+                    y = 1;
+                } else if (y == 0) {
+                    x = 1;
+                } else {
+                    if (y < 0) {
+                        x = -x;
+                        y = -y;
+                    }
+                    int gcdXY = gcd(Math.abs(x), Math.abs(y));
+                    x /= gcdXY;
+                    y /= gcdXY;
+                }
+                int key = y + x * 20001;
+                map.put(key, map.getOrDefault(key, 0) + 1);
+            }
+            int maxn = 0;
+            for (Map.Entry<Integer, Integer> entry: map.entrySet()) {
+                int num = entry.getValue();
+                maxn = Math.max(maxn, num + 1);
+            }
+            ret = Math.max(ret, maxn);
+        }
+        return ret;
+    }
+
+    public int gcd(int a, int b) {
+        return b != 0 ? gcd(b, a % b) : a;
+    }
+}
+```
 
 
 
+### [811. 子域名访问计数](https://leetcode.cn/problems/subdomain-visit-count/)
 
+中等
 
+网站域名 `"discuss.leetcode.com"` 由多个子域名组成。顶级域名为 `"com"` ，二级域名为 `"leetcode.com"` ，最低一级为 `"discuss.leetcode.com"` 。当访问域名 `"discuss.leetcode.com"` 时，同时也会隐式访问其父域名 `"leetcode.com" `以及 `"com"` 。
 
+**计数配对域名** 是遵循 `"rep d1.d2.d3"` 或 `"rep d1.d2"` 格式的一个域名表示，其中 `rep` 表示访问域名的次数，`d1.d2.d3` 为域名本身。
 
+- 例如，`"9001 discuss.leetcode.com"` 就是一个 **计数配对域名** ，表示 `discuss.leetcode.com` 被访问了 `9001` 次。
+
+给你一个 **计数配对域名** 组成的数组 `cpdomains` ，解析得到输入中每个子域名对应的 **计数配对域名** ，并以数组形式返回。可以按 **任意顺序** 返回答案。
+
+**示例 1：**
+
+```
+输入：cpdomains = ["9001 discuss.leetcode.com"]
+输出：["9001 leetcode.com","9001 discuss.leetcode.com","9001 com"]
+解释：例子中仅包含一个网站域名："discuss.leetcode.com"。
+按照前文描述，子域名 "leetcode.com" 和 "com" 都会被访问，所以它们都被访问了 9001 次。
+```
+
+C++版本
+
+```c++
+// 方法一：哈希表
+class Solution {
+public:
+    vector<string> subdomainVisits(vector<string>& cpdomains) {
+        vector<string> ans;
+        unordered_map<string, int> counts;
+        for (auto &&cpdomain : cpdomains) {
+            int space = cpdomain.find(' ');
+            int count = stoi(cpdomain.substr(0, space));
+            string domain = cpdomain.substr(space + 1);
+            counts[domain] += count;
+            for (int i = 0; i < domain.size(); i++) {
+                if (domain[i] == '.') {
+                    string subdomain = domain.substr(i + 1);
+                    counts[subdomain] += count;
+                }
+            }
+        }
+        for (auto &&[subdomain, count] : counts) {
+            ans.emplace_back(to_string(count) + " " + subdomain);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：哈希表
+class Solution {
+    public List<String> subdomainVisits(String[] cpdomains) {
+        List<String> ans = new ArrayList<String>();
+        Map<String, Integer> counts = new HashMap<String, Integer>();
+        for (String cpdomain : cpdomains) {
+            int space = cpdomain.indexOf(' ');
+            int count = Integer.parseInt(cpdomain.substring(0, space));
+            String domain = cpdomain.substring(space + 1);
+            counts.put(domain, counts.getOrDefault(domain, 0) + count);
+            for (int i = 0; i < domain.length(); i++) {
+                if (domain.charAt(i) == '.') {
+                    String subdomain = domain.substring(i + 1);
+                    counts.put(subdomain, counts.getOrDefault(subdomain, 0) + count);
+                }
+            }
+        }
+        for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+            String subdomain = entry.getKey();
+            int count = entry.getValue();
+            ans.add(count + " " + subdomain);
+        }
+        return ans;
+    }
+}
+```
 
 
 
