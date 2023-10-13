@@ -569,6 +569,218 @@ class Solution {
 
 
 
+### [49. 字母异位词分组](https://leetcode.cn/problems/group-anagrams/)
+
+中等
+
+给你一个字符串数组，请你将 **字母异位词** 组合在一起。可以按任意顺序返回结果列表。
+
+**字母异位词** 是由重新排列源单词的所有字母得到的一个新单词。
+
+**示例 1:**
+
+```
+输入: strs = ["eat", "tea", "tan", "ate", "nat", "bat"]
+输出: [["bat"],["nat","tan"],["ate","eat","tea"]]
+```
+
+C++版本
+
+```c++
+// 方法一：排序
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        unordered_map<string, vector<string>> mp;
+        for (string& str: strs) {
+            string key = str;
+            sort(key.begin(), key.end());
+            mp[key].emplace_back(str);
+        }
+        vector<vector<string>> ans;
+        for (auto it = mp.begin(); it != mp.end(); ++it) {
+            ans.emplace_back(it->second);
+        }
+        return ans;
+    }
+};
+
+// 方法二：计数
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        // 自定义对 array<int, 26> 类型的哈希函数
+        auto arrayHash = [fn = hash<int>{}] (const array<int, 26>& arr) -> size_t {
+            return accumulate(arr.begin(), arr.end(), 0u, [&](size_t acc, int num) {
+                return (acc << 1) ^ fn(num);
+            });
+        };
+
+        unordered_map<array<int, 26>, vector<string>, decltype(arrayHash)> mp(0, arrayHash);
+        for (string& str: strs) {
+            array<int, 26> counts{};
+            int length = str.length();
+            for (int i = 0; i < length; ++i) {
+                counts[str[i] - 'a'] ++;
+            }
+            mp[counts].emplace_back(str);
+        }
+        vector<vector<string>> ans;
+        for (auto it = mp.begin(); it != mp.end(); ++it) {
+            ans.emplace_back(it->second);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：排序
+class Solution {
+    public List<List<String>> groupAnagrams(String[] strs) {
+        Map<String, List<String>> map = new HashMap<String, List<String>>();
+        for (String str : strs) {
+            char[] array = str.toCharArray();
+            Arrays.sort(array);
+            String key = new String(array);
+            List<String> list = map.getOrDefault(key, new ArrayList<String>());
+            list.add(str);
+            map.put(key, list);
+        }
+        return new ArrayList<List<String>>(map.values());
+    }
+}
+
+// 方法二：计数
+class Solution {
+    public List<List<String>> groupAnagrams(String[] strs) {
+        Map<String, List<String>> map = new HashMap<String, List<String>>();
+        for (String str : strs) {
+            int[] counts = new int[26];
+            int length = str.length();
+            for (int i = 0; i < length; i++) {
+                counts[str.charAt(i) - 'a']++;
+            }
+            // 将每个出现次数大于 0 的字母和出现次数按顺序拼接成字符串，作为哈希表的键
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < 26; i++) {
+                if (counts[i] != 0) {
+                    sb.append((char) ('a' + i));
+                    sb.append(counts[i]);
+                }
+            }
+            String key = sb.toString();
+            List<String> list = map.getOrDefault(key, new ArrayList<String>());
+            list.add(str);
+            map.put(key, list);
+        }
+        return new ArrayList<List<String>>(map.values());
+    }
+}
+```
+
+
+
+### [557. 反转字符串中的单词 III](https://leetcode.cn/problems/reverse-words-in-a-string-iii/)
+
+简单
+
+给定一个字符串 `s` ，你需要反转字符串中每个单词的字符顺序，同时仍保留空格和单词的初始顺序。
+
+**示例 1：**
+
+```
+输入：s = "Let's take LeetCode contest"
+输出："s'teL ekat edoCteeL tsetnoc"
+```
+
+C++版本
+
+```c++
+// 方法一：使用额外空间
+class Solution {
+public:
+    string reverseWords(string s) {
+        string ret;
+        int length = s.length();
+        int i = 0;
+        while (i < length) {
+            int start = i;
+            while (i < length && s[i] != ' ') {
+                i++;
+            }
+            for (int p = start; p < i; p++) {
+                ret.push_back(s[start + i - 1 - p]);
+            }
+            while (i < length && s[i] == ' ') {
+                i++;
+                ret.push_back(' ');
+            }
+        }
+        return ret;
+    }
+};
+
+// 方法二：原地解法
+class Solution {
+public: 
+    string reverseWords(string s) {
+        int length = s.length();
+        int i = 0;
+        while (i < length) {
+            int start = i;
+            while (i < length && s[i] != ' ') {
+                i++;
+            }
+
+            int left = start, right = i - 1;
+            while (left < right) {
+                swap(s[left], s[right]);
+                left++;
+                right--;
+            }
+            while (i < length && s[i] == ' ') {
+                i++;
+            }
+        }
+        return s;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：使用额外空间
+class Solution {
+    public String reverseWords(String s) {
+        StringBuffer ret = new StringBuffer();
+        int length = s.length();
+        int i = 0;
+        while (i < length) {
+            int start = i;
+            while (i < length && s.charAt(i) != ' ') {
+                i++;
+            }
+            for (int p = start; p < i; p++) {
+                ret.append(s.charAt(start + i - 1 - p));
+            }
+            while (i < length && s.charAt(i) == ' ') {
+                i++;
+                ret.append(' ');
+            }
+        }
+        return ret.toString();
+    }
+}
+```
+
+
+
+
+
 
 
 
