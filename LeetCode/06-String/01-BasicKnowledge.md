@@ -779,9 +779,267 @@ class Solution {
 
 
 
+### [415. 字符串相加](https://leetcode.cn/problems/add-strings/)
+
+简单
+
+给定两个字符串形式的非负整数 `num1` 和`num2` ，计算它们的和并同样以字符串形式返回。
+
+你不能使用任何內建的用于处理大整数的库（比如 `BigInteger`）， 也不能直接将输入的字符串转换为整数形式。
+
+**示例 1：**
+
+```
+输入：num1 = "11", num2 = "123"
+输出："134"
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    string addStrings(string num1, string num2) {
+        int i = num1.length() - 1, j = num2.length() - 1, add = 0;
+        string ans = "";
+        while (i >= 0 || j >= 0 || add != 0) {
+            int x = i >= 0 ? num1[i] - '0' : 0;
+            int y = j >= 0 ? num2[j] - '0' : 0;
+            int result = x + y + add;
+            ans.push_back('0' + result % 10);
+            add = result / 10;
+            i -= 1;
+            j -= 1;
+        }
+        // 计算完以后的答案需要翻转过来
+        reverse(ans.begin(), ans.end());
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    public String addStrings(String num1, String num2) {
+        int i = num1.length() - 1, j = num2.length() - 1, add = 0;
+        StringBuffer ans = new StringBuffer();
+        while (i >= 0 || j >= 0 || add != 0) {
+            int x = i >= 0 ? num1.charAt(i) - '0' : 0;
+            int y = j >= 0 ? num2.charAt(j) - '0' : 0;
+            int result = x + y + add;
+            ans.append(result % 10);
+            add = result / 10;
+            i--;
+            j--;
+        }
+        // 计算完以后的答案需要翻转过来
+        ans.reverse();
+        return ans.toString();
+    }
+}
+
+```
 
 
 
+### [151. 反转字符串中的单词](https://leetcode.cn/problems/reverse-words-in-a-string/)
+
+中等
+
+给你一个字符串 `s` ，请你反转字符串中 **单词** 的顺序。
+
+**单词** 是由非空格字符组成的字符串。`s` 中使用至少一个空格将字符串中的 **单词** 分隔开。
+
+返回 **单词** 顺序颠倒且 **单词** 之间用单个空格连接的结果字符串。
+
+**注意：**输入字符串 `s`中可能会存在前导空格、尾随空格或者单词间的多个空格。返回的结果字符串中，单词间应当仅用单个空格分隔，且不包含任何额外的空格。
+
+**示例 1：**
+
+```
+输入：s = "the sky is blue"
+输出："blue is sky the"
+```
+
+C++版本
+
+```c++
+// 自行编写对应的函数
+class Solution {
+public:
+    string reverseWords(string s) {
+        // 反转整个字符串
+        reverse(s.begin(), s.end());
+
+        int n = s.size();
+        int idx = 0;
+        for (int start = 0; start < n; ++start) {
+            if (s[start] != ' ') {
+                // 填一个空白字符然后将idx移动到下一个单词的开头位置
+                if (idx != 0) s[idx++] = ' ';
+
+                // 循环遍历至单词的末尾
+                int end = start;
+                while (end < n && s[end] != ' ') s[idx++] = s[end++];
+
+                // 反转整个单词
+                reverse(s.begin() + idx - (end - start), s.begin() + idx);
+
+                // 更新start，去找下一个单词
+                start = end;
+            }
+        }
+        s.erase(s.begin() + idx, s.end());
+        return s;
+    }
+};
+
+// 双端队列
+class Solution {
+public:
+    string reverseWords(string s) {
+        int left = 0, right = s.size() - 1;
+        // 去掉字符串开头的空白字符
+        while (left <= right && s[left] == ' ') ++left;
+
+        // 去掉字符串末尾的空白字符
+        while (left <= right && s[right] == ' ') --right;
+
+        deque<string> d;
+        string word;
+
+        while (left <= right) {
+            char c = s[left];
+            if (word.size() && c == ' ') {
+                // 将单词 push 到队列的头部
+                d.push_front(move(word));
+                word = "";
+            }
+            else if (c != ' ') {
+                word += c;
+            }
+            ++left;
+        }
+        d.push_front(move(word));
+        
+        string ans;
+        while (!d.empty()) {
+            ans += d.front();
+            d.pop_front();
+            if (!d.empty()) ans += ' ';
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 自行编写对应的函数
+class Solution {
+    public String reverseWords(String s) {
+        StringBuilder sb = trimSpaces(s);
+
+        // 翻转字符串
+        reverse(sb, 0, sb.length() - 1);
+
+        // 翻转每个单词
+        reverseEachWord(sb);
+
+        return sb.toString();
+    }
+
+    public StringBuilder trimSpaces(String s) {
+        int left = 0, right = s.length() - 1;
+        // 去掉字符串开头的空白字符
+        while (left <= right && s.charAt(left) == ' ') {
+            ++left;
+        }
+
+        // 去掉字符串末尾的空白字符
+        while (left <= right && s.charAt(right) == ' ') {
+            --right;
+        }
+
+        // 将字符串间多余的空白字符去除
+        StringBuilder sb = new StringBuilder();
+        while (left <= right) {
+            char c = s.charAt(left);
+
+            if (c != ' ') {
+                sb.append(c);
+            } else if (sb.charAt(sb.length() - 1) != ' ') {
+                sb.append(c);
+            }
+
+            ++left;
+        }
+        return sb;
+    }
+
+    public void reverse(StringBuilder sb, int left, int right) {
+        while (left < right) {
+            char tmp = sb.charAt(left);
+            sb.setCharAt(left++, sb.charAt(right));
+            sb.setCharAt(right--, tmp);
+        }
+    }
+
+    public void reverseEachWord(StringBuilder sb) {
+        int n = sb.length();
+        int start = 0, end = 0;
+
+        while (start < n) {
+            // 循环至单词的末尾
+            while (end < n && sb.charAt(end) != ' ') {
+                ++end;
+            }
+            // 翻转单词
+            reverse(sb, start, end - 1);
+            // 更新start，去找下一个单词
+            start = end + 1;
+            ++end;
+        }
+    }
+}
+
+// 双端队列
+class Solution {
+    public String reverseWords(String s) {
+        int left = 0, right = s.length() - 1;
+        // 去掉字符串开头的空白字符
+        while (left <= right && s.charAt(left) == ' ') {
+            ++left;
+        }
+
+        // 去掉字符串末尾的空白字符
+        while (left <= right && s.charAt(right) == ' ') {
+            --right;
+        }
+
+        Deque<String> d = new ArrayDeque<String>();
+        StringBuilder word = new StringBuilder();
+        
+        while (left <= right) {
+            char c = s.charAt(left);
+            if ((word.length() != 0) && (c == ' ')) {
+                // 将单词 push 到队列的头部
+                d.offerFirst(word.toString());
+                word.setLength(0);
+            } else if (c != ' ') {
+                word.append(c);
+            }
+            ++left;
+        }
+        d.offerFirst(word.toString());
+
+        return String.join(" ", d);
+    }
+}
+```
 
 
 
