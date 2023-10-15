@@ -1043,3 +1043,462 @@ class Solution {
 
 
 
+### [43. 字符串相乘](https://leetcode.cn/problems/multiply-strings/)
+
+中等
+
+给定两个以字符串形式表示的非负整数 `num1` 和 `num2`，返回 `num1` 和 `num2` 的乘积，它们的乘积也表示为字符串形式。
+
+**注意：**不能使用任何内置的 BigInteger 库或直接将输入转换为整数。
+
+**示例 1:**
+
+```
+输入: num1 = "2", num2 = "3"
+输出: "6"
+```
+
+C++版本
+
+```c++
+// 方法一：做加法
+class Solution {
+    public String multiply(String num1, String num2) {
+        if (num1.equals("0") || num2.equals("0")) {
+            return "0";
+        }
+        String ans = "0";
+        int m = num1.length(), n = num2.length();
+        for (int i = n - 1; i >= 0; i--) {
+            StringBuffer curr = new StringBuffer();
+            int add = 0;
+            for (int j = n - 1; j > i; j--) {
+                curr.append(0);
+            }
+            int y = num2.charAt(i) - '0';
+            for (int j = m - 1; j >= 0; j--) {
+                int x = num1.charAt(j) - '0';
+                int product = x * y + add;
+                curr.append(product % 10);
+                add = product / 10;
+            }
+            if (add != 0) {
+                curr.append(add % 10);
+            }
+            ans = addStrings(ans, curr.reverse().toString());
+        }
+        return ans;
+    }
+
+    public String addStrings(String num1, String num2) {
+        int i = num1.length() - 1, j = num2.length() - 1, add = 0;
+        StringBuffer ans = new StringBuffer();
+        while (i >= 0 || j >= 0 || add != 0) {
+            int x = i >= 0 ? num1.charAt(i) - '0' : 0;
+            int y = j >= 0 ? num2.charAt(j) - '0' : 0;
+            int result = x + y + add;
+            ans.append(result % 10);
+            add = result / 10;
+            i--;
+            j--;
+        }
+        ans.reverse();
+        return ans.toString();
+    }
+}
+
+// 方法二：做乘法
+class Solution {
+public:
+    string multiply(string num1, string num2) {
+        if (num1 == "0" || num2 == "0") {
+            return "0";
+        }
+        int m = num1.size(), n = num2.size();
+        auto ansArr = vector<int>(m + n);
+        for (int i = m - 1; i >= 0; i--) {
+            int x = num1.at(i) - '0';
+            for (int j = n - 1; j >= 0; j--) {
+                int y = num2.at(j) - '0';
+                ansArr[i + j + 1] += x * y;
+            }
+        }
+        for (int i = m + n - 1; i > 0; i--) {
+            ansArr[i - 1] += ansArr[i] / 10;
+            ansArr[i] %= 10;
+        }
+        int index = ansArr[0] == 0 ? 1 : 0;
+        string ans;
+        while (index < m + n) {
+            ans.push_back(ansArr[index]);
+            index++;
+        }
+        for (auto &c: ans) {
+            c += '0';
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：做加法
+class Solution {
+public:
+    string multiply(string num1, string num2) {
+        if (num1 == "0" || num2 == "0") {
+            return "0";
+        }
+        string ans = "0";
+        int m = num1.size(), n = num2.size();
+        for (int i = n - 1; i >= 0; i--) {
+            string curr;
+            int add = 0;
+            for (int j = n - 1; j > i; j--) {
+                curr.push_back(0);
+            }
+            int y = num2.at(i) - '0';
+            for (int j = m - 1; j >= 0; j--) {
+                int x = num1.at(j) - '0';
+                int product = x * y + add;
+                curr.push_back(product % 10);
+                add = product / 10;
+            }
+            while (add != 0) {
+                curr.push_back(add % 10);
+                add /= 10;
+            }
+            reverse(curr.begin(), curr.end());
+            for (auto &c : curr) {
+                c += '0';
+            }
+            ans = addStrings(ans, curr);
+        }
+        return ans;
+    }
+
+    string addStrings(string &num1, string &num2) {
+        int i = num1.size() - 1, j = num2.size() - 1, add = 0;
+        string ans;
+        while (i >= 0 || j >= 0 || add != 0) {
+            int x = i >= 0 ? num1.at(i) - '0' : 0;
+            int y = j >= 0 ? num2.at(j) - '0' : 0;
+            int result = x + y + add;
+            ans.push_back(result % 10);
+            add = result / 10;
+            i--;
+            j--;
+        }
+        reverse(ans.begin(), ans.end());
+        for (auto &c: ans) {
+            c += '0';
+        }
+        return ans;
+    }
+};
+
+// 方法二：做乘法
+class Solution {
+    public String multiply(String num1, String num2) {
+        if (num1.equals("0") || num2.equals("0")) {
+            return "0";
+        }
+        int m = num1.length(), n = num2.length();
+        int[] ansArr = new int[m + n];
+        for (int i = m - 1; i >= 0; i--) {
+            int x = num1.charAt(i) - '0';
+            for (int j = n - 1; j >= 0; j--) {
+                int y = num2.charAt(j) - '0';
+                ansArr[i + j + 1] += x * y;
+            }
+        }
+        for (int i = m + n - 1; i > 0; i--) {
+            ansArr[i - 1] += ansArr[i] / 10;
+            ansArr[i] %= 10;
+        }
+        int index = ansArr[0] == 0 ? 1 : 0;
+        StringBuffer ans = new StringBuffer();
+        while (index < m + n) {
+            ans.append(ansArr[index]);
+            index++;
+        }
+        return ans.toString();
+    }
+}
+```
+
+
+
+### [14. 最长公共前缀](https://leetcode.cn/problems/longest-common-prefix/)
+
+简单
+
+编写一个函数来查找字符串数组中的最长公共前缀。
+
+如果不存在公共前缀，返回空字符串 `""`。
+
+**示例 1：**
+
+```
+输入：strs = ["flower","flow","flight"]
+输出："fl"
+```
+
+C++版本
+
+```c++
+// 方法一：横向扫描
+class Solution {
+public:
+    string longestCommonPrefix(vector<string>& strs) {
+        if (!strs.size()) {
+            return "";
+        }
+        string prefix = strs[0];
+        int count = strs.size();
+        for (int i = 1; i < count; ++i) {
+            prefix = longestCommonPrefix(prefix, strs[i]);
+            if (!prefix.size()) {
+                break;
+            }
+        }
+        return prefix;
+    }
+
+    string longestCommonPrefix(const string& str1, const string& str2) {
+        int length = min(str1.size(), str2.size());
+        int index = 0;
+        while (index < length && str1[index] == str2[index]) {
+            ++index;
+        }
+        return str1.substr(0, index);
+    }
+};
+
+// 方法二：纵向扫描
+class Solution {
+public:
+    string longestCommonPrefix(vector<string>& strs) {
+        if (!strs.size()) {
+            return "";
+        }
+        int length = strs[0].size();
+        int count = strs.size();
+        for (int i = 0; i < length; ++i) {
+            char c = strs[0][i];
+            for (int j = 1; j < count; ++j) {
+                if (i == strs[j].size() || strs[j][i] != c) {
+                    return strs[0].substr(0, i);
+                }
+            }
+        }
+        return strs[0];
+    }
+};
+// 方法三：分治
+class Solution {
+public:
+    string longestCommonPrefix(vector<string>& strs) {
+        if (!strs.size()) {
+            return "";
+        }
+        else {
+            return longestCommonPrefix(strs, 0, strs.size() - 1);
+        }
+    }
+
+    string longestCommonPrefix(const vector<string>& strs, int start, int end) {
+        if (start == end) {
+            return strs[start];
+        }
+        else {
+            int mid = (start + end) / 2;
+            string lcpLeft = longestCommonPrefix(strs, start, mid);
+            string lcpRight = longestCommonPrefix(strs, mid + 1, end);
+            return commonPrefix(lcpLeft, lcpRight);
+        }
+    }
+
+    string commonPrefix(const string& lcpLeft, const string& lcpRight) {
+        int minLength = min(lcpLeft.size(), lcpRight.size());
+        for (int i = 0; i < minLength; ++i) {
+            if (lcpLeft[i] != lcpRight[i]) {
+                return lcpLeft.substr(0, i);
+            }
+        }
+        return lcpLeft.substr(0, minLength);
+    }
+};
+
+// 方法四：二分查找
+class Solution {
+public:
+    string longestCommonPrefix(vector<string>& strs) {
+        if (!strs.size()) {
+            return "";
+        }
+        int minLength = min_element(strs.begin(), strs.end(), [](const string& s, const string& t) {return s.size() < t.size();})->size();
+        int low = 0, high = minLength;
+        while (low < high) {
+            int mid = (high - low + 1) / 2 + low;
+            if (isCommonPrefix(strs, mid)) {
+                low = mid;
+            }
+            else {
+                high = mid - 1;
+            }
+        }
+        return strs[0].substr(0, low);
+    }
+
+    bool isCommonPrefix(const vector<string>& strs, int length) {
+        string str0 = strs[0].substr(0, length);
+        int count = strs.size();
+        for (int i = 1; i < count; ++i) {
+            string str = strs[i];
+            for (int j = 0; j < length; ++j) {
+                if (str0[j] != str[j]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+};
+
+作者：力扣官方题解
+链接：https://leetcode.cn/problems/longest-common-prefix/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+```
+
+Java版本
+
+```java
+// 方法一：横向扫描
+class Solution {
+    public String longestCommonPrefix(String[] strs) {
+        if (strs == null || strs.length == 0) {
+            return "";
+        }
+        String prefix = strs[0];
+        int count = strs.length;
+        for (int i = 1; i < count; i++) {
+            prefix = longestCommonPrefix(prefix, strs[i]);
+            if (prefix.length() == 0) {
+                break;
+            }
+        }
+        return prefix;
+    }
+
+    public String longestCommonPrefix(String str1, String str2) {
+        int length = Math.min(str1.length(), str2.length());
+        int index = 0;
+        while (index < length && str1.charAt(index) == str2.charAt(index)) {
+            index++;
+        }
+        return str1.substring(0, index);
+    }
+}
+
+// 方法二：纵向扫描
+class Solution {
+    public String longestCommonPrefix(String[] strs) {
+        if (strs == null || strs.length == 0) {
+            return "";
+        }
+        int length = strs[0].length();
+        int count = strs.length;
+        for (int i = 0; i < length; i++) {
+            char c = strs[0].charAt(i);
+            for (int j = 1; j < count; j++) {
+                if (i == strs[j].length() || strs[j].charAt(i) != c) {
+                    return strs[0].substring(0, i);
+                }
+            }
+        }
+        return strs[0];
+    }
+}
+
+// 方法三：分治
+class Solution {
+    public String longestCommonPrefix(String[] strs) {
+        if (strs == null || strs.length == 0) {
+            return "";
+        } else {
+            return longestCommonPrefix(strs, 0, strs.length - 1);
+        }
+    }
+
+    public String longestCommonPrefix(String[] strs, int start, int end) {
+        if (start == end) {
+            return strs[start];
+        } else {
+            int mid = (end - start) / 2 + start;
+            String lcpLeft = longestCommonPrefix(strs, start, mid);
+            String lcpRight = longestCommonPrefix(strs, mid + 1, end);
+            return commonPrefix(lcpLeft, lcpRight);
+        }
+    }
+
+    public String commonPrefix(String lcpLeft, String lcpRight) {
+        int minLength = Math.min(lcpLeft.length(), lcpRight.length());       
+        for (int i = 0; i < minLength; i++) {
+            if (lcpLeft.charAt(i) != lcpRight.charAt(i)) {
+                return lcpLeft.substring(0, i);
+            }
+        }
+        return lcpLeft.substring(0, minLength);
+    }
+}
+
+// 方法四：二分查找
+class Solution {
+    public String longestCommonPrefix(String[] strs) {
+        if (strs == null || strs.length == 0) {
+            return "";
+        }
+        int minLength = Integer.MAX_VALUE;
+        for (String str : strs) {
+            minLength = Math.min(minLength, str.length());
+        }
+        int low = 0, high = minLength;
+        while (low < high) {
+            int mid = (high - low + 1) / 2 + low;
+            if (isCommonPrefix(strs, mid)) {
+                low = mid;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return strs[0].substring(0, low);
+    }
+
+    public boolean isCommonPrefix(String[] strs, int length) {
+        String str0 = strs[0].substring(0, length);
+        int count = strs.length;
+        for (int i = 1; i < count; i++) {
+            String str = strs[i];
+            for (int j = 0; j < length; j++) {
+                if (str0.charAt(j) != str.charAt(j)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
