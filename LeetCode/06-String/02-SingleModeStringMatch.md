@@ -404,5 +404,200 @@ class Solution {
 
 
 
+### [28. 找出字符串中第一个匹配项的下标](https://leetcode.cn/problems/find-the-index-of-the-first-occurrence-in-a-string/)
+
+简单
+
+给你两个字符串 `haystack` 和 `needle` ，请你在 `haystack` 字符串中找出 `needle` 字符串的第一个匹配项的下标（下标从 0 开始）。如果 `needle` 不是 `haystack` 的一部分，则返回 `-1` 。
+
+**示例 1：**
+
+```
+输入：haystack = "sadbutsad", needle = "sad"
+输出：0
+解释："sad" 在下标 0 和 6 处匹配。
+第一个匹配项的下标是 0 ，所以返回 0 。
+```
+
+C++版本
+
+```c++
+// 方法一：暴力匹配
+class Solution {
+public:
+    int strStr(string haystack, string needle) {
+        int n = haystack.size(), m = needle.size();
+        for (int i = 0; i + m <= n; i++) {
+            bool flag = true;
+            for (int j = 0; j < m; j++) {
+                if (haystack[i + j] != needle[j]) {
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag) {
+                return i;
+            }
+        }
+        return -1;
+    }
+};
+
+// 方法二：Knuth-Morris-Pratt 算法
+class Solution {
+public:
+    int strStr(string haystack, string needle) {
+        int n = haystack.size(), m = needle.size();
+        if (m == 0) {
+            return 0;
+        }
+        vector<int> pi(m);
+        for (int i = 1, j = 0; i < m; i++) {
+            while (j > 0 && needle[i] != needle[j]) {
+                j = pi[j - 1];
+            }
+            if (needle[i] == needle[j]) {
+                j++;
+            }
+            pi[i] = j;
+        }
+        for (int i = 0, j = 0; i < n; i++) {
+            while (j > 0 && haystack[i] != needle[j]) {
+                j = pi[j - 1];
+            }
+            if (haystack[i] == needle[j]) {
+                j++;
+            }
+            if (j == m) {
+                return i - m + 1;
+            }
+        }
+        return -1;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：暴力匹配
+class Solution {
+    public int strStr(String haystack, String needle) {
+        int n = haystack.length(), m = needle.length();
+        for (int i = 0; i + m <= n; i++) {
+            boolean flag = true;
+            for (int j = 0; j < m; j++) {
+                if (haystack.charAt(i + j) != needle.charAt(j)) {
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag) {
+                return i;
+            }
+        }
+        return -1;
+    }
+}
+
+// 方法二：Knuth-Morris-Pratt 算法
+class Solution {
+    public int strStr(String haystack, String needle) {
+        int n = haystack.length(), m = needle.length();
+        if (m == 0) {
+            return 0;
+        }
+        int[] pi = new int[m];
+        for (int i = 1, j = 0; i < m; i++) {
+            while (j > 0 && needle.charAt(i) != needle.charAt(j)) {
+                j = pi[j - 1];
+            }
+            if (needle.charAt(i) == needle.charAt(j)) {
+                j++;
+            }
+            pi[i] = j;
+        }
+        for (int i = 0, j = 0; i < n; i++) {
+            while (j > 0 && haystack.charAt(i) != needle.charAt(j)) {
+                j = pi[j - 1];
+            }
+            if (haystack.charAt(i) == needle.charAt(j)) {
+                j++;
+            }
+            if (j == m) {
+                return i - m + 1;
+            }
+        }
+        return -1;
+    }
+}
+```
+
+
+
+### [1408. 数组中的字符串匹配](https://leetcode.cn/problems/string-matching-in-an-array/)
+
+简单
+
+给你一个字符串数组 `words` ，数组中的每个字符串都可以看作是一个单词。请你按 **任意** 顺序返回 `words` 中是其他单词的子字符串的所有单词。
+
+如果你可以删除 `words[j]` 最左侧和/或最右侧的若干字符得到 `words[i]` ，那么字符串 `words[i]` 就是 `words[j]` 的一个子字符串。
+
+**示例 1：**
+
+```
+输入：words = ["mass","as","hero","superhero"]
+输出：["as","hero"]
+解释："as" 是 "mass" 的子字符串，"hero" 是 "superhero" 的子字符串。
+["hero","as"] 也是有效的答案。
+```
+
+C++版本
+
+```c++
+// 方法一：暴力枚举
+class Solution {
+public:
+    vector<string> stringMatching(vector<string>& words) {
+        vector<string> ret;
+        for (int i = 0; i < words.size(); i++) {
+            for (int j = 0; j < words.size(); j++) {
+                if (i != j && words[j].find(words[i]) != string::npos) {
+                    ret.push_back(words[i]);
+                    break;
+                }
+            }
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：暴力枚举
+class Solution {
+    public List<String> stringMatching(String[] words) {
+        List<String> ret = new ArrayList<String>();
+        for (int i = 0; i < words.length; i++) {
+            for (int j = 0; j < words.length; j++) {
+                if (i != j && words[j].contains(words[i])) {
+                    ret.add(words[i]);
+                    break;
+                }
+            }
+        }
+        return ret;
+    }
+}
+```
+
+
+
+
+
+
+
 
 
