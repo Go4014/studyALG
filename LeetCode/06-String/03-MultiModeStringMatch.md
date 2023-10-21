@@ -364,6 +364,394 @@ class MapSum {
 
 
 
+### [648. 单词替换](https://leetcode.cn/problems/replace-words/)
+
+中等
+
+在英语中，我们有一个叫做 `词根`(root) 的概念，可以词根**后面**添加其他一些词组成另一个较长的单词——我们称这个词为 `继承词`(successor)。例如，词根`an`，跟随着单词 `other`(其他)，可以形成新的单词 `another`(另一个)。
+
+现在，给定一个由许多**词根**组成的词典 `dictionary` 和一个用空格分隔单词形成的句子 `sentence`。你需要将句子中的所有**继承词**用**词根**替换掉。如果**继承词**有许多可以形成它的**词根**，则用**最短**的词根替换它。
+
+你需要输出替换之后的句子。
+
+**示例 1：**
+
+```
+输入：dictionary = ["cat","bat","rat"], sentence = "the cattle was rattled by the battery"
+输出："the cat was rat by the bat"
+```
+
+C++版本
+
+```c++
+// 方法一：哈希集合
+class Solution {
+public:
+    vector<string_view> split(string &str, char ch) {
+        int pos = 0;
+        int start = 0;
+        string_view s(str);
+        vector<string_view> ret;
+        while (pos < s.size()) {
+            while (pos < s.size() && s[pos] == ch) {
+                pos++;
+            }
+            start = pos;
+            while (pos < s.size() && s[pos] != ch) {
+                pos++;
+            }
+            if (start < s.size()) {
+                ret.emplace_back(s.substr(start, pos - start));
+            }
+        }
+        return ret;
+    }
+
+    string replaceWords(vector<string>& dictionary, string sentence) {
+        unordered_set<string_view> dictionarySet;
+        for (auto &root : dictionary) {
+            dictionarySet.emplace(root);
+        }
+        vector<string_view> words = split(sentence, ' ');
+        for (auto &word : words) {
+            for (int j = 0; j < word.size(); j++) {
+                if (dictionarySet.count(word.substr(0, 1 + j))) {
+                    word = word.substr(0, 1 + j);
+                    break;
+                }
+            }
+        }
+        string ans;
+        for (int i = 0; i < words.size() - 1; i++) {
+            ans.append(words[i]);
+            ans.append(" ");
+        }
+        ans.append(words.back());
+        return ans;
+    }
+};
+
+// 方法二：字典树
+struct Trie {
+    unordered_map<char, Trie *> children;
+};
+
+class Solution {
+public:
+    string replaceWords(vector<string>& dictionary, string sentence) {
+        Trie *trie = new Trie();
+        for (auto &word : dictionary) {
+            Trie *cur = trie;
+            for (char &c: word) {
+                if (!cur->children.count(c)) {
+                    cur->children[c] = new Trie();
+                }
+                cur = cur->children[c];
+            }
+            cur->children['#'] = new Trie();
+        }
+        vector<string> words = split(sentence, ' ');
+        for (auto &word : words) {
+            word = findRoot(word, trie);
+        }
+        string ans;
+        for (int i = 0; i < words.size() - 1; i++) {
+            ans.append(words[i]);
+            ans.append(" ");
+        }
+        ans.append(words.back());
+        return ans;
+    }
+
+    vector<string> split(string &str, char ch) {
+        int pos = 0;
+        int start = 0;
+        vector<string> ret;
+        while (pos < str.size()) {
+            while (pos < str.size() && str[pos] == ch) {
+                pos++;
+            }
+            start = pos;
+            while (pos < str.size() && str[pos] != ch) {
+                pos++;
+            }
+            if (start < str.size()) {
+                ret.emplace_back(str.substr(start, pos - start));
+            }
+        }
+        return ret;
+    }
+
+    string findRoot(string &word, Trie *trie) {
+        string root;
+        Trie *cur = trie;
+        for (char &c : word) {
+            if (cur->children.count('#')) {
+                return root;
+            }
+            if (!cur->children.count(c)) {
+                return word;
+            }
+            root.push_back(c);
+            cur = cur->children[c];
+        }
+        return root;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：哈希集合
+class Solution {
+    public String replaceWords(List<String> dictionary, String sentence) {
+        Set<String> dictionarySet = new HashSet<String>();
+        for (String root : dictionary) {
+            dictionarySet.add(root);
+        }
+        String[] words = sentence.split(" ");
+        for (int i = 0; i < words.length; i++) {
+            String word = words[i];
+            for (int j = 0; j < word.length(); j++) {
+                if (dictionarySet.contains(word.substring(0, 1 + j))) {
+                    words[i] = word.substring(0, 1 + j);
+                    break;
+                }
+            }
+        }
+        return String.join(" ", words);
+    }
+}
+
+// 方法二：字典树
+class Solution {
+    public String replaceWords(List<String> dictionary, String sentence) {
+        Trie trie = new Trie();
+        for (String word : dictionary) {
+            Trie cur = trie;
+            for (int i = 0; i < word.length(); i++) {
+                char c = word.charAt(i);
+                cur.children.putIfAbsent(c, new Trie());
+                cur = cur.children.get(c);
+            }
+            cur.children.put('#', new Trie());
+        }
+        String[] words = sentence.split(" ");
+        for (int i = 0; i < words.length; i++) {
+            words[i] = findRoot(words[i], trie);
+        }
+        return String.join(" ", words);
+    }
+
+    public String findRoot(String word, Trie trie) {
+        StringBuffer root = new StringBuffer();
+        Trie cur = trie;
+        for (int i = 0; i < word.length(); i++) {
+            char c = word.charAt(i);
+            if (cur.children.containsKey('#')) {
+                return root.toString();
+            }
+            if (!cur.children.containsKey(c)) {
+                return word;
+            }
+            root.append(c);
+            cur = cur.children.get(c);
+        }
+        return root.toString();
+    }
+}
+
+class Trie {
+    Map<Character, Trie> children;
+
+    public Trie() {
+        children = new HashMap<Character, Trie>();
+    }
+}
+```
+
+
+
+### [211. 添加与搜索单词 - 数据结构设计](https://leetcode.cn/problems/design-add-and-search-words-data-structure/)
+
+中等
+
+请你设计一个数据结构，支持 添加新单词 和 查找字符串是否与任何先前添加的字符串匹配 。
+
+实现词典类 `WordDictionary` ：
+
+- `WordDictionary()` 初始化词典对象
+- `void addWord(word)` 将 `word` 添加到数据结构中，之后可以对它进行匹配
+- `bool search(word)` 如果数据结构中存在字符串与 `word` 匹配，则返回 `true` ；否则，返回 `false` 。`word` 中可能包含一些 `'.'` ，每个 `.` 都可以表示任何一个字母。
+
+**示例：**
+
+```
+输入：
+["WordDictionary","addWord","addWord","addWord","search","search","search","search"]
+[[],["bad"],["dad"],["mad"],["pad"],["bad"],[".ad"],["b.."]]
+输出：
+[null,null,null,null,false,true,true,true]
+
+解释：
+WordDictionary wordDictionary = new WordDictionary();
+wordDictionary.addWord("bad");
+wordDictionary.addWord("dad");
+wordDictionary.addWord("mad");
+wordDictionary.search("pad"); // 返回 False
+wordDictionary.search("bad"); // 返回 True
+wordDictionary.search(".ad"); // 返回 True
+wordDictionary.search("b.."); // 返回 True
+```
+
+C++版本
+
+```c++
+// 方法一：字典树
+struct TrieNode{
+    vector<TrieNode *> child;
+    bool isEnd;
+    TrieNode() {
+        this->child = vector<TrieNode *>(26,nullptr);
+        this->isEnd = false;
+    }
+};
+
+void insert(TrieNode * root, const string & word) {
+    TrieNode * node = root;
+    for (auto c : word) {
+        if (node->child[c - 'a'] == nullptr) {
+            node->child[c - 'a'] = new TrieNode();
+        }
+        node = node->child[c - 'a'];
+    }
+    node->isEnd = true;
+}
+
+class WordDictionary {
+public:
+    WordDictionary() {
+        trie = new TrieNode();
+    }
+    
+    void addWord(string word) {
+        insert(trie,word);
+    }
+    
+    bool search(string word) {
+        return dfs(word, 0, trie);
+    }
+
+    bool dfs(const string & word,int index,TrieNode * node) {
+　　　　if (index == word.size()) {
+            return node->isEnd;    
+        }
+        char ch = word[index];
+        if (ch >= 'a' && ch <= 'z') {
+            TrieNode * child = node->child[ch - 'a'];
+            if (child != nullptr && dfs(word, index + 1, child)) {
+                return true;
+            }
+        } else if (ch == '.') {
+            for (int i = 0; i < 26; i++) {
+                TrieNode * child = node->child[i];
+                if (child != nullptr && dfs(word, index + 1, child)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+private:
+    TrieNode * trie;
+};
+```
+
+Java版本
+
+```java
+// 方法一：字典树
+class WordDictionary {
+    private Trie root;
+
+    public WordDictionary() {
+        root = new Trie();
+    }
+    
+    public void addWord(String word) {
+        root.insert(word);
+    }
+    
+    public boolean search(String word) {
+        return dfs(word, 0, root);
+    }
+
+    private boolean dfs(String word, int index, Trie node) {
+        if (index == word.length()) {
+            return node.isEnd();
+        }
+        char ch = word.charAt(index);
+        if (Character.isLetter(ch)) {
+            int childIndex = ch - 'a';
+            Trie child = node.getChildren()[childIndex];
+            if (child != null && dfs(word, index + 1, child)) {
+                return true;
+            }
+        } else {
+            for (int i = 0; i < 26; i++) {
+                Trie child = node.getChildren()[i];
+                if (child != null && dfs(word, index + 1, child)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
+
+class Trie {
+    private Trie[] children;
+    private boolean isEnd;
+
+    public Trie() {
+        children = new Trie[26];
+        isEnd = false;
+    }
+    
+    public void insert(String word) {
+        Trie node = this;
+        for (int i = 0; i < word.length(); i++) {
+            char ch = word.charAt(i);
+            int index = ch - 'a';
+            if (node.children[index] == null) {
+                node.children[index] = new Trie();
+            }
+            node = node.children[index];
+        }
+        node.isEnd = true;
+    }
+
+    public Trie[] getChildren() {
+        return children;
+    }
+
+    public boolean isEnd() {
+        return isEnd;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
