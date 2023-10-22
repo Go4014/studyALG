@@ -364,7 +364,7 @@ class MapSum {
 
 
 
-### [648. 单词替换](https://leetcode.cn/problems/replace-words/)
+#### [648. 单词替换](https://leetcode.cn/problems/replace-words/)
 
 中等
 
@@ -573,7 +573,7 @@ class Trie {
 
 
 
-### [211. 添加与搜索单词 - 数据结构设计](https://leetcode.cn/problems/design-add-and-search-words-data-structure/)
+#### [211. 添加与搜索单词 - 数据结构设计](https://leetcode.cn/problems/design-add-and-search-words-data-structure/)
 
 中等
 
@@ -744,9 +744,577 @@ class Trie {
 
 
 
+#### [421. 数组中两个数的最大异或值](https://leetcode.cn/problems/maximum-xor-of-two-numbers-in-an-array/)
+
+中等
+
+给你一个整数数组 `nums` ，返回 `nums[i] XOR nums[j]` 的最大运算结果，其中 `0 ≤ i ≤ j < n` 。
+
+**示例 1：**
+
+```
+输入：nums = [3,10,5,25,2,8]
+输出：28
+解释：最大运算结果是 5 XOR 25 = 28.
+```
+
+C++版本
+
+```c++
+// 方法一：哈希表
+class Solution {
+private:
+    // 最高位的二进制位编号为 30
+    static constexpr int HIGH_BIT = 30;
+
+public:
+    int findMaximumXOR(vector<int>& nums) {
+        int x = 0;
+        for (int k = HIGH_BIT; k >= 0; --k) {
+            unordered_set<int> seen;
+            // 将所有的 pre^k(a_j) 放入哈希表中
+            for (int num: nums) {
+                // 如果只想保留从最高位开始到第 k 个二进制位为止的部分
+                // 只需将其右移 k 位
+                seen.insert(num >> k);
+            }
+
+            // 目前 x 包含从最高位开始到第 k+1 个二进制位为止的部分
+            // 我们将 x 的第 k 个二进制位置为 1，即为 x = x*2+1
+            int x_next = x * 2 + 1;
+            bool found = false;
+            
+            // 枚举 i
+            for (int num: nums) {
+                if (seen.count(x_next ^ (num >> k))) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found) {
+                x = x_next;
+            }
+            else {
+                // 如果没有找到满足等式的 a_i 和 a_j，那么 x 的第 k 个二进制位只能为 0
+                // 即为 x = x*2
+                x = x_next - 1;
+            }
+        }
+        return x;
+    }
+};
+
+// 方法二：字典树
+struct Trie {
+    // 左子树指向表示 0 的子节点
+    Trie* left = nullptr;
+    // 右子树指向表示 1 的子节点
+    Trie* right = nullptr;
+
+    Trie() {}
+};
+
+class Solution {
+private:
+    // 字典树的根节点
+    Trie* root = new Trie();
+    // 最高位的二进制位编号为 30
+    static constexpr int HIGH_BIT = 30;
+
+public:
+    void add(int num) {
+        Trie* cur = root;
+        for (int k = HIGH_BIT; k >= 0; --k) {
+            int bit = (num >> k) & 1;
+            if (bit == 0) {
+                if (!cur->left) {
+                    cur->left = new Trie();
+                }
+                cur = cur->left;
+            }
+            else {
+                if (!cur->right) {
+                    cur->right = new Trie();
+                }
+                cur = cur->right;
+            }
+        }
+    }
+
+    int check(int num) {
+        Trie* cur = root;
+        int x = 0;
+        for (int k = HIGH_BIT; k >= 0; --k) {
+            int bit = (num >> k) & 1;
+            if (bit == 0) {
+                // a_i 的第 k 个二进制位为 0，应当往表示 1 的子节点 right 走
+                if (cur->right) {
+                    cur = cur->right;
+                    x = x * 2 + 1;
+                }
+                else {
+                    cur = cur->left;
+                    x = x * 2;
+                }
+            }
+            else {
+                // a_i 的第 k 个二进制位为 1，应当往表示 0 的子节点 left 走
+                if (cur->left) {
+                    cur = cur->left;
+                    x = x * 2 + 1;
+                }
+                else {
+                    cur = cur->right;
+                    x = x * 2;
+                }
+            }
+        }
+        return x;
+    }
+
+    int findMaximumXOR(vector<int>& nums) {
+        int n = nums.size();
+        int x = 0;
+        for (int i = 1; i < n; ++i) {
+            // 将 nums[i-1] 放入字典树，此时 nums[0 .. i-1] 都在字典树中
+            add(nums[i - 1]);
+            // 将 nums[i] 看作 ai，找出最大的 x 更新答案
+            x = max(x, check(nums[i]));
+        }
+        return x;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：哈希表
+class Solution {
+    // 最高位的二进制位编号为 30
+    static final int HIGH_BIT = 30;
+
+    public int findMaximumXOR(int[] nums) {
+        int x = 0;
+        for (int k = HIGH_BIT; k >= 0; --k) {
+            Set<Integer> seen = new HashSet<Integer>();
+            // 将所有的 pre^k(a_j) 放入哈希表中
+            for (int num : nums) {
+                // 如果只想保留从最高位开始到第 k 个二进制位为止的部分
+                // 只需将其右移 k 位
+                seen.add(num >> k);
+            }
+
+            // 目前 x 包含从最高位开始到第 k+1 个二进制位为止的部分
+            // 我们将 x 的第 k 个二进制位置为 1，即为 x = x*2+1
+            int xNext = x * 2 + 1;
+            boolean found = false;
+            
+            // 枚举 i
+            for (int num : nums) {
+                if (seen.contains(xNext ^ (num >> k))) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found) {
+                x = xNext;
+            } else {
+                // 如果没有找到满足等式的 a_i 和 a_j，那么 x 的第 k 个二进制位只能为 0
+                // 即为 x = x*2
+                x = xNext - 1;
+            }
+        }
+        return x;
+    }
+}
+
+// 方法二：字典树
+class Solution {
+    // 字典树的根节点
+    Trie root = new Trie();
+    // 最高位的二进制位编号为 30
+    static final int HIGH_BIT = 30;
+
+    public int findMaximumXOR(int[] nums) {
+        int n = nums.length;
+        int x = 0;
+        for (int i = 1; i < n; ++i) {
+            // 将 nums[i-1] 放入字典树，此时 nums[0 .. i-1] 都在字典树中
+            add(nums[i - 1]);
+            // 将 nums[i] 看作 ai，找出最大的 x 更新答案
+            x = Math.max(x, check(nums[i]));
+        }
+        return x;
+    }
+
+    public void add(int num) {
+        Trie cur = root;
+        for (int k = HIGH_BIT; k >= 0; --k) {
+            int bit = (num >> k) & 1;
+            if (bit == 0) {
+                if (cur.left == null) {
+                    cur.left = new Trie();
+                }
+                cur = cur.left;
+            }
+            else {
+                if (cur.right == null) {
+                    cur.right = new Trie();
+                }
+                cur = cur.right;
+            }
+        }
+    }
+
+    public int check(int num) {
+        Trie cur = root;
+        int x = 0;
+        for (int k = HIGH_BIT; k >= 0; --k) {
+            int bit = (num >> k) & 1;
+            if (bit == 0) {
+                // a_i 的第 k 个二进制位为 0，应当往表示 1 的子节点 right 走
+                if (cur.right != null) {
+                    cur = cur.right;
+                    x = x * 2 + 1;
+                } else {
+                    cur = cur.left;
+                    x = x * 2;
+                }
+            } else {
+                // a_i 的第 k 个二进制位为 1，应当往表示 0 的子节点 left 走
+                if (cur.left != null) {
+                    cur = cur.left;
+                    x = x * 2 + 1;
+                } else {
+                    cur = cur.right;
+                    x = x * 2;
+                }
+            }
+        }
+        return x;
+    }
+}
+
+class Trie {
+    // 左子树指向表示 0 的子节点
+    Trie left = null;
+    // 右子树指向表示 1 的子节点
+    Trie right = null;
+}
+```
 
 
 
+#### [212. 单词搜索 II](https://leetcode.cn/problems/word-search-ii/)
+
+困难
+
+给定一个 `m x n` 二维字符网格 `board` 和一个单词（字符串）列表 `words`， *返回所有二维网格上的单词* 。
+
+单词必须按照字母顺序，通过 **相邻的单元格** 内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母在一个单词中不允许被重复使用。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/07/search1.jpg)
+
+```
+输入：board = [["o","a","a","n"],["e","t","a","e"],["i","h","k","r"],["i","f","l","v"]], words = ["oath","pea","eat","rain"]
+输出：["eat","oath"]
+```
+
+C++版本
+
+```c++
+// 方法一：回溯 + 字典树
+struct TrieNode {
+    string word;
+    unordered_map<char,TrieNode *> children;
+    TrieNode() {
+        this->word = "";
+    }   
+};
+
+void insertTrie(TrieNode * root,const string & word) {
+    TrieNode * node = root;
+    for (auto c : word){
+        if (!node->children.count(c)) {
+            node->children[c] = new TrieNode();
+        }
+        node = node->children[c];
+    }
+    node->word = word;
+}
+
+class Solution {
+public:
+    int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    bool dfs(vector<vector<char>>& board, int x, int y, TrieNode * root, set<string> & res) {
+        char ch = board[x][y];        
+        if (!root->children.count(ch)) {
+            return false;
+        }
+        root = root->children[ch];
+        if (root->word.size() > 0) {
+            res.insert(root->word);
+        }
+
+        board[x][y] = '#';
+        for (int i = 0; i < 4; ++i) {
+            int nx = x + dirs[i][0];
+            int ny = y + dirs[i][1];
+            if (nx >= 0 && nx < board.size() && ny >= 0 && ny < board[0].size()) {
+                if (board[nx][ny] != '#') {
+                    dfs(board, nx, ny, root,res);
+                }
+            }
+        }
+        board[x][y] = ch;
+
+        return true;      
+    }
+
+    vector<string> findWords(vector<vector<char>> & board, vector<string> & words) {
+        TrieNode * root = new TrieNode();
+        set<string> res;
+        vector<string> ans;
+
+        for (auto & word: words){
+            insertTrie(root,word);
+        }
+        for (int i = 0; i < board.size(); ++i) {
+            for (int j = 0; j < board[0].size(); ++j) {
+                dfs(board, i, j, root, res);
+            }
+        }        
+        for (auto & word: res) {
+            ans.emplace_back(word);
+        }
+        return ans;        
+    }
+};
+
+// 方法二：删除被匹配的单词
+struct TrieNode {
+    string word;
+    unordered_map<char, TrieNode *> children;
+    TrieNode() {
+        this->word = "";
+    }   
+};
+
+void insertTrie(TrieNode * root, const string & word) {
+    TrieNode * node = root;
+
+    for (auto c : word) {
+        if (!node->children.count(c)) {
+            node->children[c] = new TrieNode();
+        }
+        node = node->children[c];
+    }
+
+    node->word = word;
+}
+
+class Solution {
+public:
+    int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    bool dfs(vector<vector<char>>& board, int x, int y, TrieNode * root, set<string> & res) {
+        char ch = board[x][y];   
+     
+        if (root == nullptr || !root->children.count(ch)) {
+            return false;
+        }
+
+        TrieNode * nxt = root->children[ch];
+        if (nxt->word.size() > 0) {
+            res.insert(nxt->word);
+            nxt->word = "";
+        }
+        if (!nxt->children.empty()) {
+            board[x][y] = '#';
+            for (int i = 0; i < 4; ++i) {
+                int nx = x + dirs[i][0];
+                int ny = y + dirs[i][1];
+                if (nx >= 0 && nx < board.size() && ny >= 0 && ny < board[0].size()) {
+                    if (board[nx][ny] != '#') {
+                        dfs(board, nx, ny, nxt,res);
+                    }
+                }
+            }
+            board[x][y] = ch;
+        }
+        if (nxt->children.empty()) {
+            root->children.erase(ch);
+        }
+
+        return true;      
+    }
+
+    vector<string> findWords(vector<vector<char>> & board, vector<string> & words) {
+        TrieNode * root = new TrieNode();
+        set<string> res;
+        vector<string> ans;
+
+        for (auto & word: words) {
+            insertTrie(root,word);
+        }
+        for (int i = 0; i < board.size(); ++i) {
+            for(int j = 0; j < board[0].size(); ++j) {
+                dfs(board, i, j, root, res);
+            }
+        }        
+        for (auto & word: res) {
+            ans.emplace_back(word);
+        }
+        
+        return ans;        
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：回溯 + 字典树
+class Solution {
+    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    public List<String> findWords(char[][] board, String[] words) {
+        Trie trie = new Trie();
+        for (String word : words) {
+            trie.insert(word);
+        }
+
+        Set<String> ans = new HashSet<String>();
+        for (int i = 0; i < board.length; ++i) {
+            for (int j = 0; j < board[0].length; ++j) {
+                dfs(board, trie, i, j, ans);
+            }
+        }
+
+        return new ArrayList<String>(ans);
+    }
+
+    public void dfs(char[][] board, Trie now, int i1, int j1, Set<String> ans) {
+        if (!now.children.containsKey(board[i1][j1])) {
+            return;
+        }
+        char ch = board[i1][j1];
+        now = now.children.get(ch);
+        if (!"".equals(now.word)) {
+            ans.add(now.word);
+        }
+
+        board[i1][j1] = '#';
+        for (int[] dir : dirs) {
+            int i2 = i1 + dir[0], j2 = j1 + dir[1];
+            if (i2 >= 0 && i2 < board.length && j2 >= 0 && j2 < board[0].length) {
+                dfs(board, now, i2, j2, ans);
+            }
+        }
+        board[i1][j1] = ch;
+    }
+}
+
+class Trie {
+    String word;
+    Map<Character, Trie> children;
+    boolean isWord;
+
+    public Trie() {
+        this.word = "";
+        this.children = new HashMap<Character, Trie>();
+    }
+
+    public void insert(String word) {
+        Trie cur = this;
+        for (int i = 0; i < word.length(); ++i) {
+            char c = word.charAt(i);
+            if (!cur.children.containsKey(c)) {
+                cur.children.put(c, new Trie());
+            }
+            cur = cur.children.get(c);
+        }
+        cur.word = word;
+    }
+}
+
+// 方法二：删除被匹配的单词
+class Solution {
+    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    public List<String> findWords(char[][] board, String[] words) {
+        Trie trie = new Trie();
+        for (String word : words) {
+            trie.insert(word);
+        }
+
+        Set<String> ans = new HashSet<String>();
+        for (int i = 0; i < board.length; ++i) {
+            for (int j = 0; j < board[0].length; ++j) {
+                dfs(board, trie, i, j, ans);
+            }
+        }
+
+        return new ArrayList<String>(ans);
+    }
+
+    public void dfs(char[][] board, Trie now, int i1, int j1, Set<String> ans) {
+        if (!now.children.containsKey(board[i1][j1])) {
+            return;
+        }
+        char ch = board[i1][j1];
+        Trie nxt = now.children.get(ch);
+        if (!"".equals(nxt.word)) {
+            ans.add(nxt.word);
+            nxt.word = "";
+        }
+
+        if (!nxt.children.isEmpty()) {
+            board[i1][j1] = '#';
+            for (int[] dir : dirs) {
+                int i2 = i1 + dir[0], j2 = j1 + dir[1];
+                if (i2 >= 0 && i2 < board.length && j2 >= 0 && j2 < board[0].length) {
+                    dfs(board, nxt, i2, j2, ans);
+                }
+            }
+            board[i1][j1] = ch;
+        }
+
+        if (nxt.children.isEmpty()) {
+            now.children.remove(ch);
+        }
+    }
+}
+
+class Trie {
+    String word;
+    Map<Character, Trie> children;
+    boolean isWord;
+
+    public Trie() {
+        this.word = "";
+        this.children = new HashMap<Character, Trie>();
+    }
+
+    public void insert(String word) {
+        Trie cur = this;
+        for (int i = 0; i < word.length(); ++i) {
+            char c = word.charAt(i);
+            if (!cur.children.containsKey(c)) {
+                cur.children.put(c, new Trie());
+            }
+            cur = cur.children.get(c);
+        }
+        cur.word = word;
+    }
+}
+```
 
 
 
