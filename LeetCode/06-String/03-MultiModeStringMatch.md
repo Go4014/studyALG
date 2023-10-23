@@ -1318,7 +1318,187 @@ class Trie {
 
 
 
+#### [336. 回文对](https://leetcode.cn/problems/palindrome-pairs/)
 
+困难
+
+给定一个由唯一字符串构成的 **0 索引** 数组 `words` 。
+
+**回文对** 是一对整数 `(i, j)` ，满足以下条件：
+
+- `0 <= i, j < words.length`，
+- `i != j` ，并且
+- `words[i] + words[j]`（两个字符串的连接）是一个回文。
+
+返回一个数组，它包含 `words` 中所有满足 **回文对** 条件的字符串。
+
+你必须设计一个时间复杂度为 `O(sum of words[i].length)` 的算法。
+
+**示例 1：**
+
+```
+输入：words = ["abcd","dcba","lls","s","sssll"]
+输出：[[0,1],[1,0],[3,2],[2,4]] 
+解释：可拼接成的回文串为 ["dcbaabcd","abcddcba","slls","llssssll"]
+```
+
+C++版本
+
+```c++
+
+```
+
+Java版本
+
+```java
+class Solution {
+    class TriNode {
+        TriNode []childNode = new TriNode[26];
+        Integer index;
+    }
+    TriNode root = new TriNode();
+
+    private void insert(String word,int index) {
+        TriNode curr = root;
+        for (int i = 0; i < word.length(); i++) {
+            int pos = word.charAt(i) - 'a';
+            if (curr.childNode[pos] == null) {
+                curr.childNode[pos]=new TriNode();
+            }
+            curr = curr.childNode[pos];
+        }
+        curr.index = index;
+    }
+
+    private Integer search(String word,int start,int end) {
+        TriNode curr = root;
+        for (int i = end; i >= start; i--) {
+            int pos = word.charAt(i) - 'a';
+            if (curr.childNode[pos] == null) {
+                return null;
+            }
+            curr = curr.childNode[pos];
+        }
+        return curr.index;
+    }
+
+    private boolean isPalindrome(String s,int start,int end) {
+        int i=start,j=end;
+        while (i < j) {
+            if (s.charAt(i) != s.charAt(j)) {
+                return false;
+            }
+            i++;j--;
+        }
+        return true;
+    }
+
+    public List<List<Integer>> palindromePairs(String[] words) {
+        List<List<Integer>> res = new ArrayList<>();
+        for (int i = 0; i < words.length; i++) {
+            insert(words[i], i);
+        }
+        for (int i = 0; i < words.length; i++) {
+            String word = words[i];
+            int len = word.length();
+            for (int j = 0; j <= len; j++) {
+                if (isPalindrome(word, j, len - 1)) {
+                    Integer index = search(word, 0, j - 1);
+                    if (index != null && index != i) {
+                        res.add(Arrays.asList(i, index));
+                    }
+                }                
+                if (j != 0 && isPalindrome(word, 0, j - 1)) {
+                    Integer index = search(word, j, len - 1);
+                    if (index != null && index != i) {
+                        res.add(Arrays.asList(index,i));
+                    }
+                }
+            }
+        }
+        return res;
+    }
+}
+```
+
+
+
+#### [1023. 驼峰式匹配](https://leetcode.cn/problems/camelcase-matching/)
+
+中等
+
+给你一个字符串数组 `queries`，和一个表示模式的字符串 `pattern`，请你返回一个布尔数组 `answer` 。只有在待查项 `queries[i]` 与模式串 `pattern` 匹配时， `answer[i]` 才为 `true`，否则为 `false`。
+
+如果可以将**小写字母**插入模式串 `pattern` 得到待查询项 `query`，那么待查询项与给定模式串匹配。可以在任何位置插入每个字符，也可以不插入字符。
+
+**示例 1：**
+
+```
+输入：queries = ["FooBar","FooBarTest","FootBall","FrameBuffer","ForceFeedBack"], pattern = "FB"
+输出：[true,false,true,true,false]
+示例：
+"FooBar" 可以这样生成："F" + "oo" + "B" + "ar"。
+"FootBall" 可以这样生成："F" + "oot" + "B" + "all".
+"FrameBuffer" 可以这样生成："F" + "rame" + "B" + "uffer".
+```
+
+C++版本
+
+```c++
+// 方法一：双指针
+class Solution {
+public:
+    vector<bool> camelMatch(vector<string>& queries, string pattern) {
+        int n = queries.size();
+        vector<bool> res(n, true);
+        for (int i = 0; i < n; i++) {
+            int p = 0;
+            for (auto c : queries[i]) {
+                if (p < pattern.size() && pattern[p] == c) {
+                    p++;
+                } else if (isupper(c)) {
+                    res[i] = false;
+                    break;
+                }
+            }
+            if (p < pattern.size()) {
+                res[i] = false;
+            }
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：双指针
+class Solution {
+    public List<Boolean> camelMatch(String[] queries, String pattern) {
+        int n = queries.length;
+        List<Boolean> res = new ArrayList<Boolean>();
+        for (int i = 0; i < n; i++) {
+            boolean flag = true;
+            int p = 0;
+            for (int j = 0; j < queries[i].length(); j++) {
+                char c = queries[i].charAt(j);
+                if (p < pattern.length() && pattern.charAt(p) == c) {
+                    p++;
+                } else if (Character.isUpperCase(c)) {
+                    flag = false;
+                    break;
+                }
+            }
+            if (p < pattern.length()) {
+                flag = false;
+            }
+            res.add(flag);
+        }
+        return res;
+    }
+}
+```
 
 
 
