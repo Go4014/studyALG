@@ -1502,9 +1502,319 @@ class Solution {
 
 
 
+#### [676. 实现一个魔法字典](https://leetcode.cn/problems/implement-magic-dictionary/)
+
+中等
+
+设计一个使用单词列表进行初始化的数据结构，单词列表中的单词 **互不相同** 。 如果给出一个单词，请判定能否只将这个单词中**一个**字母换成另一个字母，使得所形成的新单词存在于你构建的字典中。
+
+实现 `MagicDictionary` 类：
+
+- `MagicDictionary()` 初始化对象
+- `void buildDict(String[] dictionary)` 使用字符串数组 `dictionary` 设定该数据结构，`dictionary` 中的字符串互不相同
+- `bool search(String searchWord)` 给定一个字符串 `searchWord` ，判定能否只将字符串中 **一个** 字母换成另一个字母，使得所形成的新字符串能够与字典中的任一字符串匹配。如果可以，返回 `true` ；否则，返回 `false` 。
+
+**示例：**
+
+```
+输入
+["MagicDictionary", "buildDict", "search", "search", "search", "search"]
+[[], [["hello", "leetcode"]], ["hello"], ["hhllo"], ["hell"], ["leetcoded"]]
+输出
+[null, null, false, true, false, false]
+
+解释
+MagicDictionary magicDictionary = new MagicDictionary();
+magicDictionary.buildDict(["hello", "leetcode"]);
+magicDictionary.search("hello"); // 返回 False
+magicDictionary.search("hhllo"); // 将第二个 'h' 替换为 'e' 可以匹配 "hello" ，所以返回 True
+magicDictionary.search("hell"); // 返回 False
+magicDictionary.search("leetcoded"); // 返回 False
+```
+
+C++版本
+
+```c++
+// 方法一：枚举每个字典中的字符串并判断
+class MagicDictionary {
+public:
+    MagicDictionary() {}
+    
+    void buildDict(vector<string> dictionary) {
+        words = dictionary;
+    }
+    
+    bool search(string searchWord) {
+        for (auto&& word: words) {
+            if (word.size() != searchWord.size()) {
+                continue;
+            }
+
+            int diff = 0;
+            for (int i = 0; i < word.size(); ++i) {
+                if (word[i] != searchWord[i]) {
+                    ++diff;
+                    if (diff > 1) {
+                        break;
+                    }
+                }
+            }
+            if (diff == 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+private:
+    vector<string> words;
+};
+
+// 方法二：使用字典树优化枚举
+struct Trie {
+    bool is_finished;
+    Trie* child[26];
+
+    Trie() {
+        is_finished = false;
+        fill(begin(child), end(child), nullptr);
+    }
+};
+
+class MagicDictionary {
+public:
+    MagicDictionary() {
+        root = new Trie();
+    }
+    
+    void buildDict(vector<string> dictionary) {
+        for (auto&& word: dictionary) {
+            Trie* cur = root;
+            for (char ch: word) {
+                int idx = ch - 'a';
+                if (!cur->child[idx]) {
+                    cur->child[idx] = new Trie();
+                }
+                cur = cur->child[idx];
+            }
+            cur->is_finished = true;
+        }
+    }
+    
+    bool search(string searchWord) {
+        function<bool(Trie*, int, bool)> dfs = [&](Trie* node, int pos, bool modified) {
+            if (pos == searchWord.size()) {
+                return modified && node->is_finished;
+            }
+            int idx = searchWord[pos] - 'a';
+            if (node->child[idx]) {
+                if (dfs(node->child[idx], pos + 1, modified)) {
+                    return true;
+                }
+            }
+            if (!modified) {
+                for (int i = 0; i < 26; ++i) {
+                    if (i != idx && node->child[i]) {
+                        if (dfs(node->child[i], pos + 1, true)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        };
+
+        return dfs(root, 0, false);
+    }
+
+private:
+    Trie* root;
+};
+```
+
+Java版本
+
+```java
+// 方法一：枚举每个字典中的字符串并判断
+class MagicDictionary {
+    private String[] words;
+
+    public MagicDictionary() {
+
+    }
+
+    public void buildDict(String[] dictionary) {
+        words = dictionary;
+    }
+
+    public boolean search(String searchWord) {
+        for (String word : words) {
+            if (word.length() != searchWord.length()) {
+                continue;
+            }
+
+            int diff = 0;
+            for (int i = 0; i < word.length(); ++i) {
+                if (word.charAt(i) != searchWord.charAt(i)) {
+                    ++diff;
+                    if (diff > 1) {
+                        break;
+                    }
+                }
+            }
+            if (diff == 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+//方法二：使用字典树优化枚举
+class MagicDictionary {
+    Trie root;
+
+    public MagicDictionary() {
+        root = new Trie();
+    }
+
+    public void buildDict(String[] dictionary) {
+        for (String word : dictionary) {
+            Trie cur = root;
+            for (int i = 0; i < word.length(); ++i) {
+                char ch = word.charAt(i);
+                int idx = ch - 'a';
+                if (cur.child[idx] == null) {
+                    cur.child[idx] = new Trie();
+                }
+                cur = cur.child[idx];
+            }
+            cur.isFinished = true;
+        }
+    }
+
+    public boolean search(String searchWord) {
+        return dfs(searchWord, root, 0, false);
+    }
+
+    private boolean dfs(String searchWord, Trie node, int pos, boolean modified) {
+        if (pos == searchWord.length()) {
+            return modified && node.isFinished;
+        }
+        int idx = searchWord.charAt(pos) - 'a';
+        if (node.child[idx] != null) {
+            if (dfs(searchWord, node.child[idx], pos + 1, modified)) {
+                return true;
+            }
+        }
+        if (!modified) {
+            for (int i = 0; i < 26; ++i) {
+                if (i != idx && node.child[i] != null) {
+                    if (dfs(searchWord, node.child[i], pos + 1, true)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+}
+
+class Trie {
+    boolean isFinished;
+    Trie[] child;
+
+    public Trie() {
+        isFinished = false;
+        child = new Trie[26];
+    }
+}
+```
 
 
 
+#### [440. 字典序的第K小数字](https://leetcode.cn/problems/k-th-smallest-in-lexicographical-order/)
 
+困难
 
+给定整数 `n` 和 `k`，返回 `[1, n]` 中字典序第 `k` 小的数字。
+
+**示例 1:**
+
+```
+输入: n = 13, k = 2
+输出: 10
+解释: 字典序的排列是 [1, 10, 11, 12, 13, 2, 3, 4, 5, 6, 7, 8, 9]，所以第二小的数字是 10。
+```
+
+C++版本
+
+```c++
+// 方法一：字典树思想
+class Solution {
+public:
+    int getSteps(int curr, long n) {
+        int steps = 0;
+        long first = curr;
+        long last = curr;
+        while (first <= n) {
+            steps += min(last, n) - first + 1;
+            first = first * 10;
+            last = last * 10 + 9;
+        }
+        return steps;
+    }
+
+    int findKthNumber(int n, int k) {
+        int curr = 1;
+        k--;
+        while (k > 0) {
+            int steps = getSteps(curr, n);
+            if (steps <= k) {
+                k -= steps;
+                curr++;
+            } else {
+                curr = curr*10;
+                k--;
+            }
+        }
+        return curr;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：字典树思想
+class Solution {
+    public int findKthNumber(int n, int k) {
+        int curr = 1;
+        k--;
+        while (k > 0) {
+            int steps = getSteps(curr, n);
+            if (steps <= k) {
+                k -= steps;
+                curr++;
+            } else {
+                curr = curr * 10;
+                k--;
+            }
+        }
+        return curr;
+    }
+
+    public int getSteps(int curr, long n) {
+        int steps = 0;
+        long first = curr;
+        long last = curr;
+        while (first <= n) {
+            steps += Math.min(last, n) - first + 1;
+            first = first * 10;
+            last = last * 10 + 9;
+        }
+        return steps;
+    }
+}
+```
 
