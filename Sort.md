@@ -24,8 +24,6 @@ void selectionSort(vector<int>& arr) {
 Java版本
 
 ```java
-import java.util.Arrays;
-
 public class SelectionSort {
     public static void selectionSort(int[] arr) {
         if (arr == null || arr.length <= 1) {
@@ -75,8 +73,6 @@ void bubbleSort(vector<int>& arr) {
 Java版本
 
 ```java
-import java.util.Arrays;
-
 public class BubbleSort {
     public static void bubbleSort(int[] arr) {
         if (arr == null || arr.length <= 1) {
@@ -124,8 +120,6 @@ void insertionSort(vector<int>& arr) {
 Java版本
 
 ```java
-import java.util.Arrays;
-
 public class InsertionSort {
 
     public static void insertionSort(int[] arr) {
@@ -178,8 +172,6 @@ public:
 Java版本
 
 ```java
-import java.util.Arrays;
-
 public class ShellSort {
 
     public static void shellSort(int[] nums) {
@@ -258,8 +250,6 @@ public:
 Java版本
 
 ```java
-import java.util.Arrays;
-
 public class MergeSort {
 
     public static void mergeSort(int[] arr) {
@@ -362,8 +352,6 @@ public:
 Java版本
 
 ```java
-import java.util.Arrays;
-
 public class HeapSort {
     public void heapSort(int[] nums) {
         int heapSize = nums.length;
