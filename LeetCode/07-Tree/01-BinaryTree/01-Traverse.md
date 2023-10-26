@@ -643,7 +643,239 @@ class Solution {
 
 
 
+### [102. 二叉树的层序遍历](https://leetcode.cn/problems/binary-tree-level-order-traversal/)
 
+中等
+
+给你二叉树的根节点 `root` ，返回其节点值的 **层序遍历** 。 （即逐层地，从左到右访问所有节点）。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/tree1.jpg)
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：[[3],[9,20],[15,7]]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：广度优先搜索
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector <vector <int>> ret;
+        if (!root) {
+            return ret;
+        }
+
+        queue <TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            int currentLevelSize = q.size();
+            ret.push_back(vector <int> ());
+            for (int i = 1; i <= currentLevelSize; ++i) {
+                auto node = q.front(); q.pop();
+                ret.back().push_back(node->val);
+                if (node->left) q.push(node->left);
+                if (node->right) q.push(node->right);
+            }
+        }
+        
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：广度优先搜索
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> ret = new ArrayList<List<Integer>>();
+        if (root == null) {
+            return ret;
+        }
+
+        Queue<TreeNode> queue = new LinkedList<TreeNode>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            List<Integer> level = new ArrayList<Integer>();
+            int currentLevelSize = queue.size();
+            for (int i = 1; i <= currentLevelSize; ++i) {
+                TreeNode node = queue.poll();
+                level.add(node.val);
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+            ret.add(level);
+        }
+        
+        return ret;
+    }
+}
+```
+
+
+
+### [103. 二叉树的锯齿形层序遍历](https://leetcode.cn/problems/binary-tree-zigzag-level-order-traversal/)
+
+中等
+
+给你二叉树的根节点 `root` ，返回其节点值的 **锯齿形层序遍历** 。（即先从左往右，再从右往左进行下一层遍历，以此类推，层与层之间交替进行）。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/tree1.jpg)
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：[[3],[20,9],[15,7]]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：广度优先遍历
+class Solution {
+public:
+    vector<vector<int>> zigzagLevelOrder(TreeNode* root) {
+        vector<vector<int>> ans;
+        if (!root) {
+            return ans;
+        }
+
+        queue<TreeNode*> nodeQueue;
+        nodeQueue.push(root);
+        bool isOrderLeft = true;
+
+        while (!nodeQueue.empty()) {
+            deque<int> levelList;
+            int size = nodeQueue.size();
+            for (int i = 0; i < size; ++i) {
+                auto node = nodeQueue.front();
+                nodeQueue.pop();
+                if (isOrderLeft) {
+                    levelList.push_back(node->val);
+                } else {
+                    levelList.push_front(node->val);
+                }
+                if (node->left) {
+                    nodeQueue.push(node->left);
+                }
+                if (node->right) {
+                    nodeQueue.push(node->right);
+                }
+            }
+            ans.emplace_back(vector<int>{levelList.begin(), levelList.end()});
+            isOrderLeft = !isOrderLeft;
+        }
+
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：广度优先遍历
+class Solution {
+    public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
+        List<List<Integer>> ans = new LinkedList<List<Integer>>();
+        if (root == null) {
+            return ans;
+        }
+
+        Queue<TreeNode> nodeQueue = new ArrayDeque<TreeNode>();
+        nodeQueue.offer(root);
+        boolean isOrderLeft = true;
+
+        while (!nodeQueue.isEmpty()) {
+            Deque<Integer> levelList = new LinkedList<Integer>();
+            int size = nodeQueue.size();
+            for (int i = 0; i < size; ++i) {
+                TreeNode curNode = nodeQueue.poll();
+                if (isOrderLeft) {
+                    levelList.offerLast(curNode.val);
+                } else {
+                    levelList.offerFirst(curNode.val);
+                }
+                if (curNode.left != null) {
+                    nodeQueue.offer(curNode.left);
+                }
+                if (curNode.right != null) {
+                    nodeQueue.offer(curNode.right);
+                }
+            }
+            ans.add(new LinkedList<Integer>(levelList));
+            isOrderLeft = !isOrderLeft;
+        }
+
+        return ans;
+    }
+}
+```
 
 
 
