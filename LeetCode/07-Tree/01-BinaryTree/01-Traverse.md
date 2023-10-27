@@ -879,6 +879,221 @@ class Solution {
 
 
 
+### [107. 二叉树的层序遍历 II](https://leetcode.cn/problems/binary-tree-level-order-traversal-ii/)
+
+中等
+
+给你二叉树的根节点 `root` ，返回其节点值 **自底向上的层序遍历** 。 （即按从叶子节点所在层到根节点所在的层，逐层从左向右遍历）
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/tree1.jpg)
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：[[15,7],[9,20],[3]]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：广度优先搜索
+class Solution {
+public:
+    vector<vector<int>> levelOrderBottom(TreeNode* root) {
+        auto levelOrder = vector<vector<int>>();
+        if (!root) {
+            return levelOrder;
+        }
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            auto level = vector<int>();
+            int size = q.size();
+            for (int i = 0; i < size; ++i) {
+                auto node = q.front();
+                q.pop();
+                level.push_back(node->val);
+                if (node->left) {
+                    q.push(node->left);
+                }
+                if (node->right) {
+                    q.push(node->right);
+                }
+            }
+            levelOrder.push_back(level);
+        }
+        reverse(levelOrder.begin(), levelOrder.end());
+        return levelOrder;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：广度优先搜索
+class Solution {
+    public List<List<Integer>> levelOrderBottom(TreeNode root) {
+        List<List<Integer>> levelOrder = new LinkedList<List<Integer>>();
+        if (root == null) {
+            return levelOrder;
+        }
+        Queue<TreeNode> queue = new LinkedList<TreeNode>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            List<Integer> level = new ArrayList<Integer>();
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                level.add(node.val);
+                TreeNode left = node.left, right = node.right;
+                if (left != null) {
+                    queue.offer(left);
+                }
+                if (right != null) {
+                    queue.offer(right);
+                }
+            }
+            levelOrder.add(0, level);
+        }
+        return levelOrder;
+    }
+}
+```
+
+
+
+### [104. 二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/)
+
+简单
+
+给定一个二叉树 `root` ，返回其最大深度。
+
+二叉树的 **最大深度** 是指从根节点到最远叶子节点的最长路径上的节点数。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/26/tmp-tree.jpg)
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：3
+```
+
+C++版本
+
+```c++
+// 方法一：深度优先搜索
+class Solution {
+public:
+    int maxDepth(TreeNode* root) {
+        if (root == nullptr) return 0;
+        return max(maxDepth(root->left), maxDepth(root->right)) + 1;
+    }
+};
+
+// 方法二：广度优先搜索
+class Solution {
+public:
+    int maxDepth(TreeNode* root) {
+        if (root == nullptr) return 0;
+        queue<TreeNode*> Q;
+        Q.push(root);
+        int ans = 0;
+        while (!Q.empty()) {
+            int sz = Q.size();
+            while (sz > 0) {
+                TreeNode* node = Q.front();Q.pop();
+                if (node->left) Q.push(node->left);
+                if (node->right) Q.push(node->right);
+                sz -= 1;
+            }
+            ans += 1;
+        } 
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：深度优先搜索
+class Solution {
+    public int maxDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        } else {
+            int leftHeight = maxDepth(root.left);
+            int rightHeight = maxDepth(root.right);
+            return Math.max(leftHeight, rightHeight) + 1;
+        }
+    }
+}
+
+// 方法二：广度优先搜索
+class Solution {
+    public int maxDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        Queue<TreeNode> queue = new LinkedList<TreeNode>();
+        queue.offer(root);
+        int ans = 0;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            while (size > 0) {
+                TreeNode node = queue.poll();
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+                size--;
+            }
+            ans++;
+        }
+        return ans;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
 
 
 
