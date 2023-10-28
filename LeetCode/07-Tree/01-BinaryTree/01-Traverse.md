@@ -1088,11 +1088,291 @@ class Solution {
 
 
 
+### [111. 二叉树的最小深度](https://leetcode.cn/problems/minimum-depth-of-binary-tree/)
+
+简单
+
+给定一个二叉树，找出其最小深度。
+
+最小深度是从根节点到最近叶子节点的最短路径上的节点数量。
+
+**说明：**叶子节点是指没有子节点的节点。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/12/ex_depth.jpg)
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：2
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：深度优先搜索
+class Solution {
+public:
+    int minDepth(TreeNode *root) {
+        if (root == nullptr) {
+            return 0;
+        }
+
+        if (root->left == nullptr && root->right == nullptr) {
+            return 1;
+        }
+
+        int min_depth = INT_MAX;
+        if (root->left != nullptr) {
+            min_depth = min(minDepth(root->left), min_depth);
+        }
+        if (root->right != nullptr) {
+            min_depth = min(minDepth(root->right), min_depth);
+        }
+
+        return min_depth + 1;
+    }
+};
+
+// 方法二：广度优先搜索
+class Solution {
+public:
+    int minDepth(TreeNode *root) {
+        if (root == nullptr) {
+            return 0;
+        }
+
+        queue<pair<TreeNode *, int> > que;
+        que.emplace(root, 1);
+        while (!que.empty()) {
+            TreeNode *node = que.front().first;
+            int depth = que.front().second;
+            que.pop();
+            if (node->left == nullptr && node->right == nullptr) {
+                return depth;
+            }
+            if (node->left != nullptr) {
+                que.emplace(node->left, depth + 1);
+            }
+            if (node->right != nullptr) {
+                que.emplace(node->right, depth + 1);
+            }
+        }
+
+        return 0;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：深度优先搜索
+class Solution {
+    public int minDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+
+        if (root.left == null && root.right == null) {
+            return 1;
+        }
+
+        int min_depth = Integer.MAX_VALUE;
+        if (root.left != null) {
+            min_depth = Math.min(minDepth(root.left), min_depth);
+        }
+        if (root.right != null) {
+            min_depth = Math.min(minDepth(root.right), min_depth);
+        }
+
+        return min_depth + 1;
+    }
+}
+
+// 方法二：广度优先搜索
+class Solution {
+    class QueueNode {
+        TreeNode node;
+        int depth;
+
+        public QueueNode(TreeNode node, int depth) {
+            this.node = node;
+            this.depth = depth;
+        }
+    }
+
+    public int minDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+
+        Queue<QueueNode> queue = new LinkedList<QueueNode>();
+        queue.offer(new QueueNode(root, 1));
+        while (!queue.isEmpty()) {
+            QueueNode nodeDepth = queue.poll();
+            TreeNode node = nodeDepth.node;
+            int depth = nodeDepth.depth;
+            if (node.left == null && node.right == null) {
+                return depth;
+            }
+            if (node.left != null) {
+                queue.offer(new QueueNode(node.left, depth + 1));
+            }
+            if (node.right != null) {
+                queue.offer(new QueueNode(node.right, depth + 1));
+            }
+        }
+
+        return 0;
+    }
+}
+```
 
 
 
+### [124. 二叉树中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
 
+困难
 
+二叉树中的 **路径** 被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中 **至多出现一次** 。该路径 **至少包含一个** 节点，且不一定经过根节点。
+
+**路径和** 是路径中各节点值的总和。
+
+给你一个二叉树的根节点 `root` ，返回其 **最大路径和** 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/13/exx1.jpg)
+
+```
+输入：root = [1,2,3]
+输出：6
+解释：最优路径是 2 -> 1 -> 3 ，路径和为 2 + 1 + 3 = 6
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：递归
+class Solution {
+private:
+    int maxSum = INT_MIN;
+
+public:
+    int maxGain(TreeNode* node) {
+        if (node == nullptr) {
+            return 0;
+        }
+        
+        // 递归计算左右子节点的最大贡献值
+        // 只有在最大贡献值大于 0 时，才会选取对应子节点
+        int leftGain = max(maxGain(node->left), 0);
+        int rightGain = max(maxGain(node->right), 0);
+
+        // 节点的最大路径和取决于该节点的值与该节点的左右子节点的最大贡献值
+        int priceNewpath = node->val + leftGain + rightGain;
+
+        // 更新答案
+        maxSum = max(maxSum, priceNewpath);
+
+        // 返回节点的最大贡献值
+        return node->val + max(leftGain, rightGain);
+    }
+
+    int maxPathSum(TreeNode* root) {
+        maxGain(root);
+        return maxSum;
+    }
+};
+
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：递归
+class Solution {
+    int maxSum = Integer.MIN_VALUE;
+
+    public int maxPathSum(TreeNode root) {
+        maxGain(root);
+        return maxSum;
+    }
+
+    public int maxGain(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        
+        // 递归计算左右子节点的最大贡献值
+        // 只有在最大贡献值大于 0 时，才会选取对应子节点
+        int leftGain = Math.max(maxGain(node.left), 0);
+        int rightGain = Math.max(maxGain(node.right), 0);
+
+        // 节点的最大路径和取决于该节点的值与该节点的左右子节点的最大贡献值
+        int priceNewpath = node.val + leftGain + rightGain;
+
+        // 更新答案
+        maxSum = Math.max(maxSum, priceNewpath);
+
+        // 返回节点的最大贡献值
+        return node.val + Math.max(leftGain, rightGain);
+    }
+}
+```
 
 
 
