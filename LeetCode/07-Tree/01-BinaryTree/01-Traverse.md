@@ -1376,5 +1376,304 @@ class Solution {
 
 
 
+### [101. 对称二叉树](https://leetcode.cn/problems/symmetric-tree/)
+
+简单
+
+给你一个二叉树的根节点 `root` ， 检查它是否轴对称。
+
+**示例 1：**
+
+![img](https://pic.leetcode.cn/1698026966-JDYPDU-image.png)
+
+```
+输入：root = [1,2,2,3,4,4,3]
+输出：true
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：递归
+class Solution {
+public:
+    bool check(TreeNode *p, TreeNode *q) {
+        if (!p && !q) return true;
+        if (!p || !q) return false;
+        return p->val == q->val && check(p->left, q->right) && check(p->right, q->left);
+    }
+
+    bool isSymmetric(TreeNode* root) {
+        return check(root, root);
+    }
+};
+
+// 方法二：迭代
+class Solution {
+public:
+    bool check(TreeNode *u, TreeNode *v) {
+        queue <TreeNode*> q;
+        q.push(u); q.push(v);
+        while (!q.empty()) {
+            u = q.front(); q.pop();
+            v = q.front(); q.pop();
+            if (!u && !v) continue;
+            if ((!u || !v) || (u->val != v->val)) return false;
+
+            q.push(u->left); 
+            q.push(v->right);
+
+            q.push(u->right); 
+            q.push(v->left);
+        }
+        return true;
+    }
+
+    bool isSymmetric(TreeNode* root) {
+        return check(root, root);
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：递归
+class Solution {
+    public boolean isSymmetric(TreeNode root) {
+        return check(root, root);
+    }
+
+    public boolean check(TreeNode p, TreeNode q) {
+        if (p == null && q == null) {
+            return true;
+        }
+        if (p == null || q == null) {
+            return false;
+        }
+        return p.val == q.val && check(p.left, q.right) && check(p.right, q.left);
+    }
+}
+
+// 方法二：迭代
+class Solution {
+    public boolean isSymmetric(TreeNode root) {
+        return check(root, root);
+    }
+
+    public boolean check(TreeNode u, TreeNode v) {
+        Queue<TreeNode> q = new LinkedList<TreeNode>();
+        q.offer(u);
+        q.offer(v);
+        while (!q.isEmpty()) {
+            u = q.poll();
+            v = q.poll();
+            if (u == null && v == null) {
+                continue;
+            }
+            if ((u == null || v == null) || (u.val != v.val)) {
+                return false;
+            }
+
+            q.offer(u.left);
+            q.offer(v.right);
+
+            q.offer(u.right);
+            q.offer(v.left);
+        }
+        return true;
+    }
+}
+```
+
+
+
+### [112. 路径总和](https://leetcode.cn/problems/path-sum/)
+
+简单
+
+给你二叉树的根节点 `root` 和一个表示目标和的整数 `targetSum` 。判断该树中是否存在 **根节点到叶子节点** 的路径，这条路径上所有节点值相加等于目标和 `targetSum` 。如果存在，返回 `true` ；否则，返回 `false` 。
+
+**叶子节点** 是指没有子节点的节点。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/18/pathsum1.jpg)
+
+```
+输入：root = [5,4,8,11,null,13,4,7,2,null,null,null,1], targetSum = 22
+输出：true
+解释：等于目标和的根节点到叶节点路径如上图所示。
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：广度优先搜索
+class Solution {
+public:
+    bool hasPathSum(TreeNode *root, int sum) {
+        if (root == nullptr) {
+            return false;
+        }
+        queue<TreeNode *> que_node;
+        queue<int> que_val;
+        que_node.push(root);
+        que_val.push(root->val);
+        while (!que_node.empty()) {
+            TreeNode *now = que_node.front();
+            int temp = que_val.front();
+            que_node.pop();
+            que_val.pop();
+            if (now->left == nullptr && now->right == nullptr) {
+                if (temp == sum) {
+                    return true;
+                }
+                continue;
+            }
+            if (now->left != nullptr) {
+                que_node.push(now->left);
+                que_val.push(now->left->val + temp);
+            }
+            if (now->right != nullptr) {
+                que_node.push(now->right);
+                que_val.push(now->right->val + temp);
+            }
+        }
+        return false;
+    }
+};
+
+// 方法二：递归
+class Solution {
+public:
+    bool hasPathSum(TreeNode *root, int sum) {
+        if (root == nullptr) {
+            return false;
+        }
+        if (root->left == nullptr && root->right == nullptr) {
+            return sum == root->val;
+        }
+        return hasPathSum(root->left, sum - root->val) ||
+               hasPathSum(root->right, sum - root->val);
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：广度优先搜索
+class Solution {
+    public boolean hasPathSum(TreeNode root, int sum) {
+        if (root == null) {
+            return false;
+        }
+        Queue<TreeNode> queNode = new LinkedList<TreeNode>();
+        Queue<Integer> queVal = new LinkedList<Integer>();
+        queNode.offer(root);
+        queVal.offer(root.val);
+        while (!queNode.isEmpty()) {
+            TreeNode now = queNode.poll();
+            int temp = queVal.poll();
+            if (now.left == null && now.right == null) {
+                if (temp == sum) {
+                    return true;
+                }
+                continue;
+            }
+            if (now.left != null) {
+                queNode.offer(now.left);
+                queVal.offer(now.left.val + temp);
+            }
+            if (now.right != null) {
+                queNode.offer(now.right);
+                queVal.offer(now.right.val + temp);
+            }
+        }
+        return false;
+    }
+}
+
+// 方法二：递归
+class Solution {
+    public boolean hasPathSum(TreeNode root, int sum) {
+        if (root == null) {
+            return false;
+        }
+        if (root.left == null && root.right == null) {
+            return sum == root.val;
+        }
+        return hasPathSum(root.left, sum - root.val) || hasPathSum(root.right, sum - root.val);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
