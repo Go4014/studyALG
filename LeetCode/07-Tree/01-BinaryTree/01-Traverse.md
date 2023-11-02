@@ -3018,13 +3018,145 @@ struct Node {
 C++版本
 
 ```c++
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public Node left;
+    public Node right;
+    public Node next;
 
+    public Node() {}
+    
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, Node _left, Node _right, Node _next) {
+        val = _val;
+        left = _left;
+        right = _right;
+        next = _next;
+    }
+};
+*/
+// 方法一：层次遍历
+class Solution {
+public:
+    Node* connect(Node* root) {
+        if (!root) {
+            return nullptr;
+        }
+        queue<Node*> q;
+        q.push(root);
+        while (!q.empty()) {
+            int n = q.size();
+            Node *last = nullptr;
+            for (int i = 1; i <= n; ++i) {
+                Node *f = q.front();
+                q.pop();
+                if (f->left) {
+                    q.push(f->left);
+                }
+                if (f->right) {
+                    q.push(f->right);
+                }
+                if (i != 1) {
+                    last->next = f;
+                }
+                last = f;
+            }
+        }
+        return root;
+    }
+};
+
+// 方法二：使用已建立的 next 指针
+class Solution {
+public:
+    void handle(Node* &last, Node* &p, Node* &nextStart) {
+        if (last) {
+            last->next = p;
+        } 
+        if (!nextStart) {
+            nextStart = p;
+        }
+        last = p;
+    }
+
+    Node* connect(Node* root) {
+        if (!root) {
+            return nullptr;
+        }
+        Node *start = root;
+        while (start) {
+            Node *last = nullptr, *nextStart = nullptr;
+            for (Node *p = start; p != nullptr; p = p->next) {
+                if (p->left) {
+                    handle(last, p->left, nextStart);
+                }
+                if (p->right) {
+                    handle(last, p->right, nextStart);
+                }
+            }
+            start = nextStart;
+        }
+        return root;
+    }
+};
 ```
 
 Java版本
 
 ```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public Node left;
+    public Node right;
+    public Node next;
 
+    public Node() {}
+    
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, Node _left, Node _right, Node _next) {
+        val = _val;
+        left = _left;
+        right = _right;
+        next = _next;
+    }
+};
+*/
+// 方法一：层次遍历
+class Solution {
+    public Node connect(Node root) {
+        Node dummy = new Node(0);
+        dummy.next = root;
+        while(dummy.next!=null){
+            Node cur = dummy.next;
+            Node pre = dummy;
+            dummy.next = null;
+            while(cur!=null){
+                if(cur.left!=null){
+                    pre.next = cur.left;
+                    pre = cur.left;
+                }
+                if(cur.right!=null){
+                    pre.next = cur.right;
+                    pre = cur.right;
+                }
+                cur = cur.next;
+            }
+        }
+        return root;
+    }
+}
+
+// 方法二：使用已建立的 next 指针
 ```
 
 
