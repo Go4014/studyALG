@@ -2745,7 +2745,287 @@ class Solution {
 
 
 
+### [116. 填充每个节点的下一个右侧节点指针](https://leetcode.cn/problems/populating-next-right-pointers-in-each-node/)
 
+中等
+
+给定一个 **完美二叉树** ，其所有叶子节点都在同一层，每个父节点都有两个子节点。二叉树定义如下：
+
+```
+struct Node {
+  int val;
+  Node *left;
+  Node *right;
+  Node *next;
+}
+```
+
+填充它的每个 next 指针，让这个指针指向其下一个右侧节点。如果找不到下一个右侧节点，则将 next 指针设置为 `NULL`。
+
+初始状态下，所有 next 指针都被设置为 `NULL`。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2019/02/14/116_sample.png)
+
+```
+输入：root = [1,2,3,4,5,6,7]
+输出：[1,#,2,3,#,4,5,6,7,#]
+解释：给定二叉树如图 A 所示，你的函数应该填充它的每个 next 指针，以指向其下一个右侧节点，如图 B 所示。序列化的输出按层序遍历排列，同一层节点由 next 指针连接，'#' 标志着每一层的结束。
+```
+
+C++版本
+
+```c++
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    Node* left;
+    Node* right;
+    Node* next;
+
+    Node() : val(0), left(NULL), right(NULL), next(NULL) {}
+
+    Node(int _val) : val(_val), left(NULL), right(NULL), next(NULL) {}
+
+    Node(int _val, Node* _left, Node* _right, Node* _next)
+        : val(_val), left(_left), right(_right), next(_next) {}
+};
+*/
+// 方法一：层次遍历
+class Solution {
+public:
+    Node* connect(Node* root) {
+        if (root == nullptr) {
+            return root;
+        }
+        
+        // 初始化队列同时将第一层节点加入队列中，即根节点
+        queue<Node*> Q;
+        Q.push(root);
+        
+        // 外层的 while 循环迭代的是层数
+        while (!Q.empty()) {
+            
+            // 记录当前队列大小
+            int size = Q.size();
+            
+            // 遍历这一层的所有节点
+            for(int i = 0; i < size; i++) {
+                
+                // 从队首取出元素
+                Node* node = Q.front();
+                Q.pop();
+                
+                // 连接
+                if (i < size - 1) {
+                    node->next = Q.front();
+                }
+                
+                // 拓展下一层节点
+                if (node->left != nullptr) {
+                    Q.push(node->left);
+                }
+                if (node->right != nullptr) {
+                    Q.push(node->right);
+                }
+            }
+        }
+        
+        // 返回根节点
+        return root;
+    }
+};
+
+// 方法二：使用已建立的 next\text{next}next 指针
+class Solution {
+public:
+    Node* connect(Node* root) {
+        if (root == nullptr) {
+            return root;
+        }
+        
+        // 从根节点开始
+        Node* leftmost = root;
+        
+        while (leftmost->left != nullptr) {
+            
+            // 遍历这一层节点组织成的链表，为下一层的节点更新 next 指针
+            Node* head = leftmost;
+            
+            while (head != nullptr) {
+                
+                // CONNECTION 1
+                head->left->next = head->right;
+                
+                // CONNECTION 2
+                if (head->next != nullptr) {
+                    head->right->next = head->next->left;
+                }
+                
+                // 指针向后移动
+                head = head->next;
+            }
+            
+            // 去下一层的最左的节点
+            leftmost = leftmost->left;
+        }
+        
+        return root;
+    }
+};
+```
+
+Java版本
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public Node left;
+    public Node right;
+    public Node next;
+
+    public Node() {}
+    
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, Node _left, Node _right, Node _next) {
+        val = _val;
+        left = _left;
+        right = _right;
+        next = _next;
+    }
+};
+*/
+// 方法一：层次遍历
+class Solution {
+    public Node connect(Node root) {
+        if (root == null) {
+            return root;
+        }
+        
+        // 初始化队列同时将第一层节点加入队列中，即根节点
+        Queue<Node> queue = new LinkedList<Node>(); 
+        queue.add(root);
+        
+        // 外层的 while 循环迭代的是层数
+        while (!queue.isEmpty()) {
+            
+            // 记录当前队列大小
+            int size = queue.size();
+            
+            // 遍历这一层的所有节点
+            for (int i = 0; i < size; i++) {
+                
+                // 从队首取出元素
+                Node node = queue.poll();
+                
+                // 连接
+                if (i < size - 1) {
+                    node.next = queue.peek();
+                }
+                
+                // 拓展下一层节点
+                if (node.left != null) {
+                    queue.add(node.left);
+                }
+                if (node.right != null) {
+                    queue.add(node.right);
+                }
+            }
+        }
+        
+        // 返回根节点
+        return root;
+    }
+}
+
+// 方法二：使用已建立的 next\text{next}next 指针
+class Solution {
+    public Node connect(Node root) {
+        if (root == null) {
+            return root;
+        }
+        
+        // 从根节点开始
+        Node leftmost = root;
+        
+        while (leftmost.left != null) {
+            
+            // 遍历这一层节点组织成的链表，为下一层的节点更新 next 指针
+            Node head = leftmost;
+            
+            while (head != null) {
+                
+                // CONNECTION 1
+                head.left.next = head.right;
+                
+                // CONNECTION 2
+                if (head.next != null) {
+                    head.right.next = head.next.left;
+                }
+                
+                // 指针向后移动
+                head = head.next;
+            }
+            
+            // 去下一层的最左的节点
+            leftmost = leftmost.left;
+        }
+        
+        return root;
+    }
+}
+```
+
+
+
+### [117. 填充每个节点的下一个右侧节点指针 II](https://leetcode.cn/problems/populating-next-right-pointers-in-each-node-ii/)
+
+中等
+
+给定一个二叉树：
+
+```
+struct Node {
+  int val;
+  Node *left;
+  Node *right;
+  Node *next;
+}
+```
+
+填充它的每个 next 指针，让这个指针指向其下一个右侧节点。如果找不到下一个右侧节点，则将 next 指针设置为 `NULL` 。
+
+初始状态下，所有 next 指针都被设置为 `NULL` 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2019/02/15/117_sample.png)
+
+```
+输入：root = [1,2,3,4,5,null,7]
+输出：[1,#,2,3,#,4,5,7,#]
+解释：给定二叉树如图 A 所示，你的函数应该填充它的每个 next 指针，以指向其下一个右侧节点，如图 B 所示。序列化输出按层序遍历顺序（由 next 指针连接），'#' 表示每层的末尾。
+```
+
+C++版本
+
+```c++
+
+```
+
+Java版本
+
+```java
+
+```
 
 
 
