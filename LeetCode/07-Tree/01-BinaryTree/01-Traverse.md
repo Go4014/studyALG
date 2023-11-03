@@ -3161,3 +3161,427 @@ class Solution {
 
 
 
+### [114. 二叉树展开为链表](https://leetcode.cn/problems/flatten-binary-tree-to-linked-list/)
+
+中等
+
+给你二叉树的根结点 `root` ，请你将它展开为一个单链表：
+
+- 展开后的单链表应该同样使用 `TreeNode` ，其中 `right` 子指针指向链表中下一个结点，而左子指针始终为 `null` 。
+- 展开后的单链表应该与二叉树 [**先序遍历**](https://baike.baidu.com/item/先序遍历/6442839?fr=aladdin) 顺序相同。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/14/flaten.jpg)
+
+```
+输入：root = [1,2,5,3,4,null,6]
+输出：[1,null,2,null,3,null,4,null,5,null,6]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：前序遍历
+class Solution {
+public:
+    void flatten(TreeNode* root) {
+        vector<TreeNode*> l;
+        preorderTraversal(root, l);
+        int n = l.size();
+        for (int i = 1; i < n; i++) {
+            TreeNode *prev = l.at(i - 1), *curr = l.at(i);
+            prev->left = nullptr;
+            prev->right = curr;
+        }
+    }
+
+    void preorderTraversal(TreeNode* root, vector<TreeNode*> &l) {
+        if (root != NULL) {
+            l.push_back(root);
+            preorderTraversal(root->left, l);
+            preorderTraversal(root->right, l);
+        }
+    }
+};
+
+// 方法二：前序遍历和展开同步进行
+class Solution {
+public:
+    void flatten(TreeNode* root) {
+        if (root == nullptr) {
+            return;
+        }
+        auto stk = stack<TreeNode*>();
+        stk.push(root);
+        TreeNode *prev = nullptr;
+        while (!stk.empty()) {
+            TreeNode *curr = stk.top(); stk.pop();
+            if (prev != nullptr) {
+                prev->left = nullptr;
+                prev->right = curr;
+            }
+            TreeNode *left = curr->left, *right = curr->right;
+            if (right != nullptr) {
+                stk.push(right);
+            }
+            if (left != nullptr) {
+                stk.push(left);
+            }
+            prev = curr;
+        }
+    }
+};
+
+// 方法三：寻找前驱节点
+class Solution {
+public:
+    void flatten(TreeNode* root) {
+        TreeNode *curr = root;
+        while (curr != nullptr) {
+            if (curr->left != nullptr) {
+                auto next = curr->left;
+                auto predecessor = next;
+                while (predecessor->right != nullptr) {
+                    predecessor = predecessor->right;
+                }
+                predecessor->right = curr->right;
+                curr->left = nullptr;
+                curr->right = next;
+            }
+            curr = curr->right;
+        }
+    }
+};
+```
+
+Java版本
+
+```Java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：前序遍历
+class Solution {
+    public void flatten(TreeNode root) {
+        List<TreeNode> list = new ArrayList<TreeNode>();
+        preorderTraversal(root, list);
+        int size = list.size();
+        for (int i = 1; i < size; i++) {
+            TreeNode prev = list.get(i - 1), curr = list.get(i);
+            prev.left = null;
+            prev.right = curr;
+        }
+    }
+
+    public void preorderTraversal(TreeNode root, List<TreeNode> list) {
+        if (root != null) {
+            list.add(root);
+            preorderTraversal(root.left, list);
+            preorderTraversal(root.right, list);
+        }
+    }
+}
+
+// 方法二：前序遍历和展开同步进行
+class Solution {
+    public void flatten(TreeNode root) {
+        if (root == null) {
+            return;
+        }
+        Deque<TreeNode> stack = new LinkedList<TreeNode>();
+        stack.push(root);
+        TreeNode prev = null;
+        while (!stack.isEmpty()) {
+            TreeNode curr = stack.pop();
+            if (prev != null) {
+                prev.left = null;
+                prev.right = curr;
+            }
+            TreeNode left = curr.left, right = curr.right;
+            if (right != null) {
+                stack.push(right);
+            }
+            if (left != null) {
+                stack.push(left);
+            }
+            prev = curr;
+        }
+    }
+}
+
+// 方法三：寻找前驱节点
+class Solution {
+    public void flatten(TreeNode root) {
+        TreeNode curr = root;
+        while (curr != null) {
+            if (curr.left != null) {
+                TreeNode next = curr.left;
+                TreeNode predecessor = next;
+                while (predecessor.right != null) {
+                    predecessor = predecessor.right;
+                }
+                predecessor.right = curr.right;
+                curr.left = null;
+                curr.right = next;
+            }
+            curr = curr.right;
+        }
+    }
+}
+```
+
+
+
+### [297. 二叉树的序列化与反序列化](https://leetcode.cn/problems/serialize-and-deserialize-binary-tree/)
+
+困难
+
+序列化是将一个数据结构或者对象转换为连续的比特位的操作，进而可以将转换后的数据存储在一个文件或者内存中，同时也可以通过网络传输到另一个计算机环境，采取相反方式重构得到原数据。
+
+请设计一个算法来实现二叉树的序列化与反序列化。这里不限定你的序列 / 反序列化算法执行逻辑，你只需要保证一个二叉树可以被序列化为一个字符串并且将这个字符串反序列化为原始的树结构。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/15/serdeser.jpg)
+
+```
+输入：root = [1,2,3,null,null,4,5]
+输出：[1,2,3,null,null,4,5]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+// 方法一：深度优先搜索
+class Codec {
+public:
+    void rserialize(TreeNode* root, string& str) {
+        if (root == nullptr) {
+            str += "None,";
+        } else {
+            str += to_string(root->val) + ",";
+            rserialize(root->left, str);
+            rserialize(root->right, str);
+        }
+    }
+
+    string serialize(TreeNode* root) {
+        string ret;
+        rserialize(root, ret);
+        return ret;
+    }
+
+    TreeNode* rdeserialize(list<string>& dataArray) {
+        if (dataArray.front() == "None") {
+            dataArray.erase(dataArray.begin());
+            return nullptr;
+        }
+
+        TreeNode* root = new TreeNode(stoi(dataArray.front()));
+        dataArray.erase(dataArray.begin());
+        root->left = rdeserialize(dataArray);
+        root->right = rdeserialize(dataArray);
+        return root;
+    }
+
+    TreeNode* deserialize(string data) {
+        list<string> dataArray;
+        string str;
+        for (auto& ch : data) {
+            if (ch == ',') {
+                dataArray.push_back(str);
+                str.clear();
+            } else {
+                str.push_back(ch);
+            }
+        }
+        if (!str.empty()) {
+            dataArray.push_back(str);
+            str.clear();
+        }
+        return rdeserialize(dataArray);
+    }
+};
+
+// 方法二：括号表示编码 + 递归下降解码
+class Codec {
+public:
+    string serialize(TreeNode* root) {
+        if (!root) {
+            return "X";
+        }
+        auto left = "(" + serialize(root->left) + ")";
+        auto right = "(" + serialize(root->right) + ")";
+        return left + to_string(root->val) + right;
+    }
+
+    inline TreeNode* parseSubtree(const string &data, int &ptr) {
+        ++ptr; // 跳过左括号
+        auto subtree = parse(data, ptr);
+        ++ptr; // 跳过右括号
+        return subtree;
+    }
+
+    inline int parseInt(const string &data, int &ptr) {
+        int x = 0, sgn = 1;
+        if (!isdigit(data[ptr])) {
+            sgn = -1;
+            ++ptr;
+        }
+        while (isdigit(data[ptr])) {
+            x = x * 10 + data[ptr++] - '0';
+        }
+        return x * sgn;
+    }
+
+    TreeNode* parse(const string &data, int &ptr) {
+        if (data[ptr] == 'X') {
+            ++ptr;
+            return nullptr;
+        }
+        auto cur = new TreeNode(0);
+        cur->left = parseSubtree(data, ptr);
+        cur->val = parseInt(data, ptr);
+        cur->right = parseSubtree(data, ptr);
+        return cur;
+    }
+
+    TreeNode* deserialize(string data) {
+        int ptr = 0;
+        return parse(data, ptr);
+    }
+};
+```
+
+Java版本
+
+```Java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+// 方法一：深度优先搜索
+public class Codec {
+    public String serialize(TreeNode root) {
+        return rserialize(root, "");
+    }
+  
+    public TreeNode deserialize(String data) {
+        String[] dataArray = data.split(",");
+        List<String> dataList = new LinkedList<String>(Arrays.asList(dataArray));
+        return rdeserialize(dataList);
+    }
+
+    public String rserialize(TreeNode root, String str) {
+        if (root == null) {
+            str += "None,";
+        } else {
+            str += str.valueOf(root.val) + ",";
+            str = rserialize(root.left, str);
+            str = rserialize(root.right, str);
+        }
+        return str;
+    }
+  
+    public TreeNode rdeserialize(List<String> dataList) {
+        if (dataList.get(0).equals("None")) {
+            dataList.remove(0);
+            return null;
+        }
+  
+        TreeNode root = new TreeNode(Integer.valueOf(dataList.get(0)));
+        dataList.remove(0);
+        root.left = rdeserialize(dataList);
+        root.right = rdeserialize(dataList);
+    
+        return root;
+    }
+}
+
+// 方法二：括号表示编码 + 递归下降解码
+public class Codec {
+    public String serialize(TreeNode root) {
+        if (root == null) {
+            return "X";
+        }
+        String left = "(" + serialize(root.left) + ")";
+        String right = "(" + serialize(root.right) + ")";
+        return left + root.val + right;
+    }
+
+    public TreeNode deserialize(String data) {
+        int[] ptr = {0};
+        return parse(data, ptr);
+    }
+
+    public TreeNode parse(String data, int[] ptr) {
+        if (data.charAt(ptr[0]) == 'X') {
+            ++ptr[0];
+            return null;
+        }
+        TreeNode cur = new TreeNode(0);
+        cur.left = parseSubtree(data, ptr);
+        cur.val = parseInt(data, ptr);
+        cur.right = parseSubtree(data, ptr);
+        return cur;
+    }
+
+    public TreeNode parseSubtree(String data, int[] ptr) {
+        ++ptr[0]; // 跳过左括号
+        TreeNode subtree = parse(data, ptr);
+        ++ptr[0]; // 跳过右括号
+        return subtree;
+    }
+
+    public int parseInt(String data, int[] ptr) {
+        int x = 0, sgn = 1;
+        if (!Character.isDigit(data.charAt(ptr[0]))) {
+            sgn = -1;
+            ++ptr[0];
+        }
+        while (Character.isDigit(data.charAt(ptr[0]))) {
+            x = x * 10 + data.charAt(ptr[0]++) - '0';
+        }
+        return x * sgn;
+    }
+}
+```
+
