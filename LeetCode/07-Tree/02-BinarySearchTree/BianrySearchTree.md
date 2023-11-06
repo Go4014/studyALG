@@ -326,6 +326,225 @@ class BSTIterator {
 
 
 
+### [700. 二叉搜索树中的搜索](https://leetcode.cn/problems/search-in-a-binary-search-tree/)
+
+简单
+
+给定二叉搜索树（BST）的根节点 `root` 和一个整数值 `val`。
+
+你需要在 BST 中找到节点值等于 `val` 的节点。 返回以该节点为根的子树。 如果节点不存在，则返回 `null` 。
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2021/01/12/tree1.jpg)
+
+```
+输入：root = [4,2,7,1,3], val = 2
+输出：[2,1,3]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：递归
+class Solution {
+public:
+    TreeNode *searchBST(TreeNode *root, int val) {
+        if (root == nullptr) {
+            return nullptr;
+        }
+        if (val == root->val) {
+            return root;
+        }
+        return searchBST(val < root->val ? root->left : root->right, val);
+    }
+};
+
+// 方法二：迭代
+class Solution {
+public:
+    TreeNode *searchBST(TreeNode *root, int val) {
+        while (root) {
+            if (val == root->val) {
+                return root;
+            }
+            root = val < root->val ? root->left : root->right;
+        }
+        return nullptr;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：递归
+class Solution {
+    public TreeNode searchBST(TreeNode root, int val) {
+        if (root == null) {
+            return null;
+        }
+        if (val == root.val) {
+            return root;
+        }
+        return searchBST(val < root.val ? root.left : root.right, val);
+    }
+}
+
+// 方法二：迭代
+class Solution {
+    public TreeNode searchBST(TreeNode root, int val) {
+        while (root != null) {
+            if (val == root.val) {
+                return root;
+            }
+            root = val < root.val ? root.left : root.right;
+        }
+        return null;
+    }
+}
+```
+
+
+
+### [701. 二叉搜索树中的插入操作](https://leetcode.cn/problems/insert-into-a-binary-search-tree/)
+
+中等
+
+给定二叉搜索树（BST）的根节点 `root` 和要插入树中的值 `value` ，将值插入二叉搜索树。 返回插入后二叉搜索树的根节点。 输入数据 **保证** ，新值和原始二叉搜索树中的任意节点值都不同。
+
+**注意**，可能存在多种有效的插入方式，只要树在插入后仍保持为二叉搜索树即可。 你可以返回 **任意有效的结果** 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/05/insertbst.jpg)
+
+```
+输入：root = [4,2,7,1,3], val = 5
+输出：[4,2,7,1,3,5]
+```
+
+解释：另一个满足题目要求可以通过的树是：
+
+![解释](https://assets.leetcode.com/uploads/2020/10/05/bst.jpg)
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：模拟
+class Solution {
+public:
+    TreeNode* insertIntoBST(TreeNode* root, int val) {
+        if (root == nullptr) {
+            return new TreeNode(val);
+        }
+        TreeNode* pos = root;
+        while (pos != nullptr) {
+            if (val < pos->val) {
+                if (pos->left == nullptr) {
+                    pos->left = new TreeNode(val);
+                    break;
+                } else {
+                    pos = pos->left;
+                }
+            } else {
+                if (pos->right == nullptr) {
+                    pos->right = new TreeNode(val);
+                    break;
+                } else {
+                    pos = pos->right;
+                }
+            }
+        }
+        return root;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：模拟
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public TreeNode insertIntoBST(TreeNode root, int val) {
+        if (root == null) {
+            return new TreeNode(val);
+        }
+        TreeNode pos = root;
+        while (pos != null) {
+            if (val < pos.val) {
+                if (pos.left == null) {
+                    pos.left = new TreeNode(val);
+                    break;
+                } else {
+                    pos = pos.left;
+                }
+            } else {
+                if (pos.right == null) {
+                    pos.right = new TreeNode(val);
+                    break;
+                } else {
+                    pos = pos.right;
+                }
+            }
+        }
+        return root;
+    }
+}
+```
+
 
 
 
