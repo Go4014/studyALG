@@ -547,5 +547,328 @@ class Solution {
 
 
 
+### [450. 删除二叉搜索树中的节点](https://leetcode.cn/problems/delete-node-in-a-bst/)
 
+中等
+
+给定一个二叉搜索树的根节点 **root** 和一个值 **key**，删除二叉搜索树中的 **key** 对应的节点，并保证二叉搜索树的性质不变。返回二叉搜索树（有可能被更新）的根节点的引用。
+
+一般来说，删除节点可分为两个步骤：
+
+1. 首先找到需要删除的节点；
+2. 如果找到了，删除它。
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2020/09/04/del_node_1.jpg)
+
+```
+输入：root = [5,3,6,2,4,null,7], key = 3
+输出：[5,4,6,2,null,null,7]
+解释：给定需要删除的节点值是 3，所以我们首先找到 3 这个节点，然后删除它。
+一个正确的答案是 [5,4,6,2,null,null,7], 如下图所示。
+另一个正确答案是 [5,2,6,null,4,null,7]。
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：递归
+class Solution {
+public:
+    TreeNode* deleteNode(TreeNode* root, int key) {
+        if (root == nullptr) {
+            return nullptr;
+        }
+        if (root->val > key) {
+            root->left = deleteNode(root->left, key);
+            return root;
+        }
+        if (root->val < key) {
+            root->right = deleteNode(root->right, key);
+            return root;
+        }
+        if (root->val == key) {
+            if (!root->left && !root->right) {
+                return nullptr;
+            }
+            if (!root->right) {
+                return root->left;
+            }
+            if (!root->left) {
+                return root->right;
+            }
+            TreeNode *successor = root->right;
+            while (successor->left) {
+                successor = successor->left;
+            }
+            root->right = deleteNode(root->right, successor->val);
+            successor->right = root->right;
+            successor->left = root->left;
+            return successor;
+        }
+        return root;
+    }
+};
+
+// 方法二：迭代
+class Solution {
+public:
+    TreeNode* deleteNode(TreeNode* root, int key) {
+        TreeNode *cur = root, *curParent = nullptr;
+        while (cur && cur->val != key) {
+            curParent = cur;
+            if (cur->val > key) {
+                cur = cur->left;
+            } else {
+                cur = cur->right;
+            }
+        }
+        if (!cur) {
+            return root;
+        }
+        if (!cur->left && !cur->right) {
+            cur = nullptr;
+        } else if (!cur->right) {
+            cur = cur->left;
+        } else if (!cur->left) {
+            cur = cur->right;
+        } else {
+            TreeNode *successor = cur->right, *successorParent = cur;
+            while (successor->left) {
+                successorParent = successor;
+                successor = successor->left;
+            }
+            if (successorParent->val == cur->val) {
+                successorParent->right = successor->right;
+            } else {
+                successorParent->left = successor->right;
+            }
+            successor->right = cur->right;
+            successor->left = cur->left;
+            cur = successor;
+        }
+        if (!curParent) {
+            return cur;
+        } else {
+            if (curParent->left && curParent->left->val == key) {
+                curParent->left = cur;
+            } else {
+                curParent->right = cur;
+            }
+            return root;
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：递归
+class Solution {
+    public TreeNode deleteNode(TreeNode root, int key) {
+        if (root == null) {
+            return null;
+        }
+        if (root.val > key) {
+            root.left = deleteNode(root.left, key);
+            return root;
+        }
+        if (root.val < key) {
+            root.right = deleteNode(root.right, key);
+            return root;
+        }
+        if (root.val == key) {
+            if (root.left == null && root.right == null) {
+                return null;
+            }
+            if (root.right == null) {
+                return root.left;
+            }
+            if (root.left == null) {
+                return root.right;
+            }
+            TreeNode successor = root.right;
+            while (successor.left != null) {
+                successor = successor.left;
+            }
+            root.right = deleteNode(root.right, successor.val);
+            successor.right = root.right;
+            successor.left = root.left;
+            return successor;
+        }
+        return root;
+    }
+}
+
+// 方法二：迭代
+class Solution {
+    public TreeNode deleteNode(TreeNode root, int key) {
+        TreeNode cur = root, curParent = null;
+        while (cur != null && cur.val != key) {
+            curParent = cur;
+            if (cur.val > key) {
+                cur = cur.left;
+            } else {
+                cur = cur.right;
+            }
+        }
+        if (cur == null) {
+            return root;
+        }
+        if (cur.left == null && cur.right == null) {
+            cur = null;
+        } else if (cur.right == null) {
+            cur = cur.left;
+        } else if (cur.left == null) {
+            cur = cur.right;
+        } else {
+            TreeNode successor = cur.right, successorParent = cur;
+            while (successor.left != null) {
+                successorParent = successor;
+                successor = successor.left;
+            }
+            if (successorParent.val == cur.val) {
+                successorParent.right = successor.right;
+            } else {
+                successorParent.left = successor.right;
+            }
+            successor.right = cur.right;
+            successor.left = cur.left;
+            cur = successor;
+        }
+        if (curParent == null) {
+            return cur;
+        } else {
+            if (curParent.left != null && curParent.left.val == key) {
+                curParent.left = cur;
+            } else {
+                curParent.right = cur;
+            }
+            return root;
+        }
+    }
+}
+```
+
+
+
+### [703. 数据流中的第 K 大元素](https://leetcode.cn/problems/kth-largest-element-in-a-stream/)
+
+简单
+
+设计一个找到数据流中第 `k` 大元素的类（class）。注意是排序后的第 `k` 大元素，不是第 `k` 个不同的元素。
+
+请实现 `KthLargest` 类：
+
+- `KthLargest(int k, int[] nums)` 使用整数 `k` 和整数流 `nums` 初始化对象。
+- `int add(int val)` 将 `val` 插入数据流 `nums` 后，返回当前数据流中第 `k` 大的元素。
+
+**示例：**
+
+```
+输入：
+["KthLargest", "add", "add", "add", "add", "add"]
+[[3, [4, 5, 8, 2]], [3], [5], [10], [9], [4]]
+输出：
+[null, 4, 5, 5, 8, 8]
+
+解释：
+KthLargest kthLargest = new KthLargest(3, [4, 5, 8, 2]);
+kthLargest.add(3);   // return 4
+kthLargest.add(5);   // return 5
+kthLargest.add(10);  // return 5
+kthLargest.add(9);   // return 8
+kthLargest.add(4);   // return 8
+```
+
+C++版本
+
+```c++
+/**
+ * Your KthLargest object will be instantiated and called as such:
+ * KthLargest* obj = new KthLargest(k, nums);
+ * int param_1 = obj->add(val);
+ */
+// 方法一：优先队列
+class KthLargest {
+public:
+    priority_queue<int, vector<int>, greater<int>> q;
+    int k;
+    KthLargest(int k, vector<int>& nums) {
+        this->k = k;
+        for (auto& x: nums) {
+            add(x);
+        }
+    }
+    
+    int add(int val) {
+        q.push(val);
+        if (q.size() > k) {
+            q.pop();
+        }
+        return q.top();
+    }
+};
+
+
+```
+
+Java版本
+
+```java
+/**
+ * Your KthLargest object will be instantiated and called as such:
+ * KthLargest obj = new KthLargest(k, nums);
+ * int param_1 = obj.add(val);
+ */
+// 方法一：优先队列
+class KthLargest {
+    PriorityQueue<Integer> pq;
+    int k;
+
+    public KthLargest(int k, int[] nums) {
+        this.k = k;
+        pq = new PriorityQueue<Integer>();
+        for (int x : nums) {
+            add(x);
+        }
+    }
+    
+    public int add(int val) {
+        pq.offer(val);
+        if (pq.size() > k) {
+            pq.poll();
+        }
+        return pq.peek();
+    }
+}
+```
 
