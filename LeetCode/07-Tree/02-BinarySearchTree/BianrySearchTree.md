@@ -1827,3 +1827,477 @@ class AVL {
 
 
 
+### [235. 二叉搜索树的最近公共祖先](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-search-tree/)
+
+中等
+
+给定一个二叉搜索树, 找到该树中两个指定节点的最近公共祖先。
+
+[百度百科](https://baike.baidu.com/item/最近公共祖先/8918834?fr=aladdin)中最近公共祖先的定义为：“对于有根树 T 的两个结点 p、q，最近公共祖先表示为一个结点 x，满足 x 是 p、q 的祖先且 x 的深度尽可能大（**一个节点也可以是它自己的祖先**）。”
+
+例如，给定如下二叉搜索树: root = [6,2,8,0,4,7,9,null,null,3,5]
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/14/binarysearchtree_improved.png)
+
+**示例 1:**
+
+```
+输入: root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 8
+输出: 6 
+解释: 节点 2 和节点 8 的最近公共祖先是 6。
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+// 方法一：两次遍历
+class Solution {
+public:
+    vector<TreeNode*> getPath(TreeNode* root, TreeNode* target) {
+        vector<TreeNode*> path;
+        TreeNode* node = root;
+        while (node != target) {
+            path.push_back(node);
+            if (target->val < node->val) {
+                node = node->left;
+            }
+            else {
+                node = node->right;
+            }
+        }
+        path.push_back(node);
+        return path;
+    }
+
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        vector<TreeNode*> path_p = getPath(root, p);
+        vector<TreeNode*> path_q = getPath(root, q);
+        TreeNode* ancestor;
+        for (int i = 0; i < path_p.size() && i < path_q.size(); ++i) {
+            if (path_p[i] == path_q[i]) {
+                ancestor = path_p[i];
+            }
+            else {
+                break;
+            }
+        }
+        return ancestor;
+    }
+};
+
+// 方法二：一次遍历
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        TreeNode* ancestor = root;
+        while (true) {
+            if (p->val < ancestor->val && q->val < ancestor->val) {
+                ancestor = ancestor->left;
+            }
+            else if (p->val > ancestor->val && q->val > ancestor->val) {
+                ancestor = ancestor->right;
+            }
+            else {
+                break;
+            }
+        }
+        return ancestor;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+// 方法一：两次遍历
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        List<TreeNode> path_p = getPath(root, p);
+        List<TreeNode> path_q = getPath(root, q);
+        TreeNode ancestor = null;
+        for (int i = 0; i < path_p.size() && i < path_q.size(); ++i) {
+            if (path_p.get(i) == path_q.get(i)) {
+                ancestor = path_p.get(i);
+            } else {
+                break;
+            }
+        }
+        return ancestor;
+    }
+
+    public List<TreeNode> getPath(TreeNode root, TreeNode target) {
+        List<TreeNode> path = new ArrayList<TreeNode>();
+        TreeNode node = root;
+        while (node != target) {
+            path.add(node);
+            if (target.val < node.val) {
+                node = node.left;
+            } else {
+                node = node.right;
+            }
+        }
+        path.add(node);
+        return path;
+    }
+}
+
+// 方法二：一次遍历
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        TreeNode ancestor = root;
+        while (true) {
+            if (p.val < ancestor.val && q.val < ancestor.val) {
+                ancestor = ancestor.left;
+            } else if (p.val > ancestor.val && q.val > ancestor.val) {
+                ancestor = ancestor.right;
+            } else {
+                break;
+            }
+        }
+        return ancestor;
+    }
+}
+```
+
+
+
+### [108. 将有序数组转换为二叉搜索树](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/)
+
+简单
+
+给你一个整数数组 `nums` ，其中元素已经按 **升序** 排列，请你将其转换为一棵 **高度平衡** 二叉搜索树。
+
+**高度平衡** 二叉树是一棵满足「每个节点的左右两个子树的高度差的绝对值不超过 1 」的二叉树。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/18/btree1.jpg)
+
+```
+输入：nums = [-10,-3,0,5,9]
+输出：[0,-3,9,-10,null,5]
+解释：[0,-10,5,null,-3,null,9] 也将被视为正确答案：
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：中序遍历，总是选择中间位置左边的数字作为根节点
+class Solution {
+public:
+    TreeNode* sortedArrayToBST(vector<int>& nums) {
+        return helper(nums, 0, nums.size() - 1);
+    }
+
+    TreeNode* helper(vector<int>& nums, int left, int right) {
+        if (left > right) {
+            return nullptr;
+        }
+
+        // 总是选择中间位置左边的数字作为根节点
+        int mid = (left + right) / 2;
+
+        TreeNode* root = new TreeNode(nums[mid]);
+        root->left = helper(nums, left, mid - 1);
+        root->right = helper(nums, mid + 1, right);
+        return root;
+    }
+};
+
+// 方法二：中序遍历，总是选择中间位置右边的数字作为根节点
+class Solution {
+public:
+    TreeNode* sortedArrayToBST(vector<int>& nums) {
+        return helper(nums, 0, nums.size() - 1);
+    }
+
+    TreeNode* helper(vector<int>& nums, int left, int right) {
+        if (left > right) {
+            return nullptr;
+        }
+
+        // 总是选择中间位置右边的数字作为根节点
+        int mid = (left + right + 1) / 2;
+
+        TreeNode* root = new TreeNode(nums[mid]);
+        root->left = helper(nums, left, mid - 1);
+        root->right = helper(nums, mid + 1, right);
+        return root;
+    }
+};
+
+// 方法三：中序遍历，选择任意一个中间位置数字作为根节点
+class Solution {
+public:
+    TreeNode* sortedArrayToBST(vector<int>& nums) {
+        return helper(nums, 0, nums.size() - 1);
+    }
+
+    TreeNode* helper(vector<int>& nums, int left, int right) {
+        if (left > right) {
+            return nullptr;
+        }
+
+        // 选择任意一个中间位置数字作为根节点
+        int mid = (left + right + rand() % 2) / 2;
+
+        TreeNode* root = new TreeNode(nums[mid]);
+        root->left = helper(nums, left, mid - 1);
+        root->right = helper(nums, mid + 1, right);
+        return root;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：中序遍历，总是选择中间位置左边的数字作为根节点
+class Solution {
+    public TreeNode sortedArrayToBST(int[] nums) {
+        return helper(nums, 0, nums.length - 1);
+    }
+
+    public TreeNode helper(int[] nums, int left, int right) {
+        if (left > right) {
+            return null;
+        }
+
+        // 总是选择中间位置左边的数字作为根节点
+        int mid = (left + right) / 2;
+
+        TreeNode root = new TreeNode(nums[mid]);
+        root.left = helper(nums, left, mid - 1);
+        root.right = helper(nums, mid + 1, right);
+        return root;
+    }
+}
+
+// 方法二：中序遍历，总是选择中间位置右边的数字作为根节点
+class Solution {
+    public TreeNode sortedArrayToBST(int[] nums) {
+        return helper(nums, 0, nums.length - 1);
+    }
+
+    public TreeNode helper(int[] nums, int left, int right) {
+        if (left > right) {
+            return null;
+        }
+
+        // 总是选择中间位置右边的数字作为根节点
+        int mid = (left + right + 1) / 2;
+
+        TreeNode root = new TreeNode(nums[mid]);
+        root.left = helper(nums, left, mid - 1);
+        root.right = helper(nums, mid + 1, right);
+        return root;
+    }
+}
+
+// 方法三：中序遍历，选择任意一个中间位置数字作为根节点
+class Solution {
+    Random rand = new Random();
+
+    public TreeNode sortedArrayToBST(int[] nums) {
+        return helper(nums, 0, nums.length - 1);
+    }
+
+    public TreeNode helper(int[] nums, int left, int right) {
+        if (left > right) {
+            return null;
+        }
+
+        // 选择任意一个中间位置数字作为根节点
+        int mid = (left + right + rand.nextInt(2)) / 2;
+
+        TreeNode root = new TreeNode(nums[mid]);
+        root.left = helper(nums, left, mid - 1);
+        root.right = helper(nums, mid + 1, right);
+        return root;
+    }
+}
+```
+
+
+
+### [110. 平衡二叉树](https://leetcode.cn/problems/balanced-binary-tree/)
+
+简单
+
+给定一个二叉树，判断它是否是高度平衡的二叉树。
+
+本题中，一棵高度平衡二叉树定义为：
+
+> 一个二叉树*每个节点* 的左右两个子树的高度差的绝对值不超过 1 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/06/balance_1.jpg)
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：true
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：自顶向下的递归
+class Solution {
+public:
+    int height(TreeNode* root) {
+        if (root == NULL) {
+            return 0;
+        } else {
+            return max(height(root->left), height(root->right)) + 1;
+        }
+    }
+
+    bool isBalanced(TreeNode* root) {
+        if (root == NULL) {
+            return true;
+        } else {
+            return abs(height(root->left) - height(root->right)) <= 1 && isBalanced(root->left) && isBalanced(root->right);
+        }
+    }
+};
+
+// 方法二：自底向上的递归
+class Solution {
+public:
+    int height(TreeNode* root) {
+        if (root == NULL) {
+            return 0;
+        }
+        int leftHeight = height(root->left);
+        int rightHeight = height(root->right);
+        if (leftHeight == -1 || rightHeight == -1 || abs(leftHeight - rightHeight) > 1) {
+            return -1;
+        } else {
+            return max(leftHeight, rightHeight) + 1;
+        }
+    }
+
+    bool isBalanced(TreeNode* root) {
+        return height(root) >= 0;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：自顶向下的递归
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public boolean isBalanced(TreeNode root) {
+        if (root == null) {
+            return true;
+        } else {
+            return Math.abs(height(root.left) - height(root.right)) <= 1 && isBalanced(root.left) && isBalanced(root.right);
+        }
+    }
+
+    public int height(TreeNode root) {
+        if (root == null) {
+            return 0;
+        } else {
+            return Math.max(height(root.left), height(root.right)) + 1;
+        }
+    }
+}
+
+// 方法二：自底向上的递归
+class Solution {
+    public boolean isBalanced(TreeNode root) {
+        return height(root) >= 0;
+    }
+
+    public int height(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        int leftHeight = height(root.left);
+        int rightHeight = height(root.right);
+        if (leftHeight == -1 || rightHeight == -1 || Math.abs(leftHeight - rightHeight) > 1) {
+            return -1;
+        } else {
+            return Math.max(leftHeight, rightHeight) + 1;
+        }
+    }
+}
+```
+
+
+
+
+
