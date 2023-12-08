@@ -400,6 +400,240 @@ class NumArray {
 
 
 
+### [354. 俄罗斯套娃信封问题](https://leetcode.cn/problems/russian-doll-envelopes/)
+
+困难
+
+给你一个二维整数数组 `envelopes` ，其中 `envelopes[i] = [wi, hi]` ，表示第 `i` 个信封的宽度和高度。
+
+当另一个信封的宽度和高度都比这个信封大的时候，这个信封就可以放进另一个信封里，如同俄罗斯套娃一样。
+
+请计算 **最多能有多少个** 信封能组成一组“俄罗斯套娃”信封（即可以把一个信封放到另一个信封里面）。
+
+**注意**：不允许旋转信封。
+
+**示例 1：**
+
+```
+输入：envelopes = [[5,4],[6,4],[6,7],[2,3]]
+输出：3
+解释：最多信封的个数为 3, 组合为: [2,3] => [5,4] => [6,7]。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int maxEnvelopes(vector<vector<int>>& envelopes) {
+        if (envelopes.empty()) {
+            return 0;
+        }
+        
+        int n = envelopes.size();
+        sort(envelopes.begin(), envelopes.end(), [](const auto& e1, const auto& e2) {
+            return e1[0] < e2[0] || (e1[0] == e2[0] && e1[1] > e2[1]);
+        });
+
+        vector<int> f(n, 1);
+        for (int i = 1; i < n; ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (envelopes[j][1] < envelopes[i][1]) {
+                    f[i] = max(f[i], f[j] + 1);
+                }
+            }
+        }
+        return *max_element(f.begin(), f.end());
+    }
+};
+
+// 方法二：基于二分查找的动态规划
+class Solution {
+public:
+    int maxEnvelopes(vector<vector<int>>& envelopes) {
+        if (envelopes.empty()) {
+            return 0;
+        }
+        
+        int n = envelopes.size();
+        sort(envelopes.begin(), envelopes.end(), [](const auto& e1, const auto& e2) {
+            return e1[0] < e2[0] || (e1[0] == e2[0] && e1[1] > e2[1]);
+        });
+
+        vector<int> f = {envelopes[0][1]};
+        for (int i = 1; i < n; ++i) {
+            if (int num = envelopes[i][1]; num > f.back()) {
+                f.push_back(num);
+            }
+            else {
+                auto it = lower_bound(f.begin(), f.end(), num);
+                *it = num;
+            }
+        }
+        return f.size();
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int maxEnvelopes(int[][] envelopes) {
+        if (envelopes.length == 0) {
+            return 0;
+        }
+        
+        int n = envelopes.length;
+        Arrays.sort(envelopes, new Comparator<int[]>() {
+            public int compare(int[] e1, int[] e2) {
+                if (e1[0] != e2[0]) {
+                    return e1[0] - e2[0];
+                } else {
+                    return e2[1] - e1[1];
+                }
+            }
+        });
+
+        int[] f = new int[n];
+        Arrays.fill(f, 1);
+        int ans = 1;
+        for (int i = 1; i < n; ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (envelopes[j][1] < envelopes[i][1]) {
+                    f[i] = Math.max(f[i], f[j] + 1);
+                }
+            }
+            ans = Math.max(ans, f[i]);
+        }
+        return ans;
+    }
+}
+
+// 方法二：基于二分查找的动态规划
+class Solution {
+    public int maxEnvelopes(int[][] envelopes) {
+        if (envelopes.length == 0) {
+            return 0;
+        }
+        
+        int n = envelopes.length;
+        Arrays.sort(envelopes, new Comparator<int[]>() {
+            public int compare(int[] e1, int[] e2) {
+                if (e1[0] != e2[0]) {
+                    return e1[0] - e2[0];
+                } else {
+                    return e2[1] - e1[1];
+                }
+            }
+        });
+
+        List<Integer> f = new ArrayList<Integer>();
+        f.add(envelopes[0][1]);
+        for (int i = 1; i < n; ++i) {
+            int num = envelopes[i][1];
+            if (num > f.get(f.size() - 1)) {
+                f.add(num);
+            } else {
+                int index = binarySearch(f, num);
+                f.set(index, num);
+            }
+        }
+        return f.size();
+    }
+
+    public int binarySearch(List<Integer> f, int target) {
+        int low = 0, high = f.size() - 1;
+        while (low < high) {
+            int mid = (high - low) / 2 + low;
+            if (f.get(mid) < target) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+        return low;
+    }
+}
+```
+
+
+
+### [1109. 航班预订统计](https://leetcode.cn/problems/corporate-flight-bookings/)
+
+中等
+
+这里有 `n` 个航班，它们分别从 `1` 到 `n` 进行编号。
+
+有一份航班预订表 `bookings` ，表中第 `i` 条预订记录 `bookings[i] = [firsti, lasti, seatsi]` 意味着在从 `firsti` 到 `lasti` （**包含** `firsti` 和 `lasti` ）的 **每个航班** 上预订了 `seatsi` 个座位。
+
+请你返回一个长度为 `n` 的数组 `answer`，里面的元素是每个航班预定的座位总数。
+
+**示例 1：**
+
+```
+输入：bookings = [[1,2,10],[2,3,20],[2,5,25]], n = 5
+输出：[10,55,45,25,25]
+解释：
+航班编号        1   2   3   4   5
+预订记录 1 ：   10  10
+预订记录 2 ：       20  20
+预订记录 3 ：       25  25  25  25
+总座位数：      10  55  45  25  25
+因此，answer = [10,55,45,25,25]
+```
+
+C++版本
+
+```c++
+// 方法一：差分
+class Solution {
+public:
+    vector<int> corpFlightBookings(vector<vector<int>>& bookings, int n) {
+        vector<int> nums(n);
+        for (auto& booking : bookings) {
+            nums[booking[0] - 1] += booking[2];
+            if (booking[1] < n) {
+                nums[booking[1]] -= booking[2];
+            }
+        }
+        for (int i = 1; i < n; i++) {
+            nums[i] += nums[i - 1];
+        }
+        return nums;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：差分
+class Solution {
+    public int[] corpFlightBookings(int[][] bookings, int n) {
+        int[] nums = new int[n];
+        for (int[] booking : bookings) {
+            nums[booking[0] - 1] += booking[2];
+            if (booking[1] < n) {
+                nums[booking[1]] -= booking[2];
+            }
+        }
+        for (int i = 1; i < n; i++) {
+            nums[i] += nums[i - 1];
+        }
+        return nums;
+    }
+}
+```
+
+
+
+
+
+
+
 
 
 
