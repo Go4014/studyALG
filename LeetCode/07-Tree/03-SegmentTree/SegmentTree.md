@@ -630,6 +630,350 @@ class Solution {
 
 
 
+### [1450. 在既定时间做作业的学生人数](https://leetcode.cn/problems/number-of-students-doing-homework-at-a-given-time/)
+
+简单
+
+给你两个整数数组 `startTime`（开始时间）和 `endTime`（结束时间），并指定一个整数 `queryTime` 作为查询时间。
+
+已知，第 `i` 名学生在 `startTime[i]` 时开始写作业并于 `endTime[i]` 时完成作业。
+
+请返回在查询时间 `queryTime` 时正在做作业的学生人数。形式上，返回能够使 `queryTime` 处于区间 `[startTime[i], endTime[i]]`（含）的学生人数。
+
+**示例 1：**
+
+```
+输入：startTime = [1,2,3], endTime = [3,2,7], queryTime = 4
+输出：1
+解释：一共有 3 名学生。
+第一名学生在时间 1 开始写作业，并于时间 3 完成作业，在时间 4 没有处于做作业的状态。
+第二名学生在时间 2 开始写作业，并于时间 2 完成作业，在时间 4 没有处于做作业的状态。
+第三名学生在时间 3 开始写作业，预计于时间 7 完成作业，这是是唯一一名在时间 4 时正在做作业的学生。
+```
+
+C++版本
+
+```c++
+// 方法一：枚举
+class Solution {
+public:
+    int busyStudent(vector<int>& startTime, vector<int>& endTime, int queryTime) {
+        int n = startTime.size();
+        int ans = 0;
+        for (int i = 0; i < n; i++) {
+            if (startTime[i] <= queryTime && endTime[i] >= queryTime) {
+                ans++;
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：差分数组
+class Solution {
+public:
+    int busyStudent(vector<int>& startTime, vector<int>& endTime, int queryTime) {
+        int n = startTime.size();
+        int maxEndTime = *max_element(endTime.begin(), endTime.end());
+        if (queryTime > maxEndTime) {
+            return 0;
+        }
+        vector<int> cnt(maxEndTime + 2);
+        for (int i = 0; i < n; i++) {
+            cnt[startTime[i]]++;
+            cnt[endTime[i] + 1]--;
+        }
+        int ans = 0;
+        for (int i = 0; i <= queryTime; i++) {
+            ans += cnt[i];
+        }
+        return ans;
+    }
+};
+
+// 方法三：二分查找
+class Solution {
+public: 
+    int busyStudent(vector<int>& startTime, vector<int>& endTime, int queryTime) {
+        sort(startTime.begin(), startTime.end());
+        sort(endTime.begin(), endTime.end());
+        int lessStart = upper_bound(startTime.begin(), startTime.end(), queryTime) - startTime.begin();
+        int lessEnd = lower_bound(endTime.begin(), endTime.end(), queryTime) - endTime.begin();
+        return lessStart - lessEnd;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：枚举
+class Solution {
+    public int busyStudent(int[] startTime, int[] endTime, int queryTime) {
+        int n = startTime.length;
+        int ans = 0;
+        for (int i = 0; i < n; i++) {
+            if (startTime[i] <= queryTime && endTime[i] >= queryTime) {
+                ans++;
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：差分数组
+class Solution {
+    public int busyStudent(int[] startTime, int[] endTime, int queryTime) {
+        int n = startTime.length;
+        int maxEndTime = Arrays.stream(endTime).max().getAsInt();
+        if (queryTime > maxEndTime) {
+            return 0;
+        }
+        int[] cnt = new int[maxEndTime + 2];
+        for (int i = 0; i < n; i++) {
+            cnt[startTime[i]]++;
+            cnt[endTime[i] + 1]--;
+        }
+        int ans = 0;
+        for (int i = 0; i <= queryTime; i++) {
+            ans += cnt[i];
+        }
+        return ans;
+    }
+}
+
+// 方法三：二分查找
+class Solution {
+    public int busyStudent(int[] startTime, int[] endTime, int queryTime) {
+        Arrays.sort(startTime);
+        Arrays.sort(endTime);
+        int lessStart = upperbound(startTime, 0, startTime.length - 1, queryTime);
+        int lessEnd = lowerbound(endTime, 0, endTime.length - 1, queryTime);
+        return lessStart - lessEnd;
+    }
+
+    public static int upperbound(int[] arr, int l, int r, int target) {
+        int ans = r + 1;
+        while (l <= r) {
+            int mid = l + ((r - l) >> 1);
+            if (arr[mid] > target) {
+                ans = mid;
+                r = mid - 1;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return ans;
+    }
+
+    public static int lowerbound(int[] arr, int l, int r, int target) {
+        int ans = r + 1;
+        while (l <= r) {
+            int mid = l + ((r - l) >> 1);
+            if (arr[mid] >= target) {
+                ans = mid;
+                r = mid - 1;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return ans;
+    }
+}
+```
+
+
+
+### [673. 最长递增子序列的个数](https://leetcode.cn/problems/number-of-longest-increasing-subsequence/)
+
+中等
+
+给定一个未排序的整数数组 `nums` ， *返回最长递增子序列的个数* 。
+
+**注意** 这个数列必须是 **严格** 递增的。
+
+**示例 1:**
+
+```
+输入: [1,3,5,4,7]
+输出: 2
+解释: 有两个最长递增子序列，分别是 [1, 3, 4, 7] 和[1, 3, 5, 7]。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int findNumberOfLIS(vector<int> &nums) {
+        int n = nums.size(), maxLen = 0, ans = 0;
+        vector<int> dp(n), cnt(n);
+        for (int i = 0; i < n; ++i) {
+            dp[i] = 1;
+            cnt[i] = 1;
+            for (int j = 0; j < i; ++j) {
+                if (nums[i] > nums[j]) {
+                    if (dp[j] + 1 > dp[i]) {
+                        dp[i] = dp[j] + 1;
+                        cnt[i] = cnt[j]; // 重置计数
+                    } else if (dp[j] + 1 == dp[i]) {
+                        cnt[i] += cnt[j];
+                    }
+                }
+            }
+            if (dp[i] > maxLen) {
+                maxLen = dp[i];
+                ans = cnt[i]; // 重置计数
+            } else if (dp[i] == maxLen) {
+                ans += cnt[i];
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：贪心 + 前缀和 + 二分查找
+class Solution {
+    int binarySearch(int n, function<bool(int)> f) {
+        int l = 0, r = n;
+        while (l < r) {
+            int mid = (l + r) / 2;
+            if (f(mid)) {
+                r = mid;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return l;
+    }
+
+public:
+    int findNumberOfLIS(vector<int> &nums) {
+        vector<vector<int>> d, cnt;
+        for (int v : nums) {
+            int i = binarySearch(d.size(), [&](int i) { return d[i].back() >= v; });
+            int c = 1;
+            if (i > 0) {
+                int k = binarySearch(d[i - 1].size(), [&](int k) { return d[i - 1][k] < v; });
+                c = cnt[i - 1].back() - cnt[i - 1][k];
+            }
+            if (i == d.size()) {
+                d.push_back({v});
+                cnt.push_back({0, c});
+            } else {
+                d[i].push_back(v);
+                cnt[i].push_back(cnt[i].back() + c);
+            }
+        }
+        return cnt.back().back();
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int findNumberOfLIS(int[] nums) {
+        int n = nums.length, maxLen = 0, ans = 0;
+        int[] dp = new int[n];
+        int[] cnt = new int[n];
+        for (int i = 0; i < n; ++i) {
+            dp[i] = 1;
+            cnt[i] = 1;
+            for (int j = 0; j < i; ++j) {
+                if (nums[i] > nums[j]) {
+                    if (dp[j] + 1 > dp[i]) {
+                        dp[i] = dp[j] + 1;
+                        cnt[i] = cnt[j]; // 重置计数
+                    } else if (dp[j] + 1 == dp[i]) {
+                        cnt[i] += cnt[j];
+                    }
+                }
+            }
+            if (dp[i] > maxLen) {
+                maxLen = dp[i];
+                ans = cnt[i]; // 重置计数
+            } else if (dp[i] == maxLen) {
+                ans += cnt[i];
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：贪心 + 前缀和 + 二分查找
+class Solution {
+    public int findNumberOfLIS(int[] nums) {
+        List<List<Integer>> d = new ArrayList<List<Integer>>();
+        List<List<Integer>> cnt = new ArrayList<List<Integer>>();
+        for (int v : nums) {
+            int i = binarySearch1(d.size(), d, v);
+            int c = 1;
+            if (i > 0) {
+                int k = binarySearch2(d.get(i - 1).size(), d.get(i - 1), v);
+                c = cnt.get(i - 1).get(cnt.get(i - 1).size() - 1) - cnt.get(i - 1).get(k);
+            }
+            if (i == d.size()) {
+                List<Integer> dList = new ArrayList<Integer>();
+                dList.add(v);
+                d.add(dList);
+                List<Integer> cntList = new ArrayList<Integer>();
+                cntList.add(0);
+                cntList.add(c);
+                cnt.add(cntList);
+            } else {
+                d.get(i).add(v);
+                int cntSize = cnt.get(i).size();
+                cnt.get(i).add(cnt.get(i).get(cntSize - 1) + c);
+            }
+        }
+
+        int size1 = cnt.size(), size2 = cnt.get(size1 - 1).size();
+        return cnt.get(size1 - 1).get(size2 - 1);
+    }
+
+    public int binarySearch1(int n, List<List<Integer>> d, int target) {
+        int l = 0, r = n;
+        while (l < r) {
+            int mid = (l + r) / 2;
+            List<Integer> list = d.get(mid);
+            if (list.get(list.size() - 1) >= target) {
+                r = mid;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return l;
+    }
+
+    public int binarySearch2(int n, List<Integer> list, int target) {
+        int l = 0, r = n;
+        while (l < r) {
+            int mid = (l + r) / 2;
+            if (list.get(mid) < target) {
+                r = mid;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return l;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
