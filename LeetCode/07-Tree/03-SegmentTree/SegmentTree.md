@@ -966,7 +966,170 @@ class Solution {
 
 
 
+### [1310. 子数组异或查询](https://leetcode.cn/problems/xor-queries-of-a-subarray/)
 
+中等
+
+有一个正整数数组 `arr`，现给你一个对应的查询数组 `queries`，其中 `queries[i] = [Li, Ri]`。
+
+对于每个查询 `i`，请你计算从 `Li` 到 `Ri` 的 **XOR** 值（即 `arr[Li] **xor** arr[Li+1] **xor** ... **xor** arr[Ri]`）作为本次查询的结果。
+
+并返回一个包含给定查询 `queries` 所有结果的数组。
+
+**示例 1：**
+
+```
+输入：arr = [1,3,4,8], queries = [[0,1],[1,2],[0,3],[3,3]]
+输出：[2,7,14,8] 
+解释：
+数组中元素的二进制表示形式是：
+1 = 0001 
+3 = 0011 
+4 = 0100 
+8 = 1000 
+查询的 XOR 值为：
+[0,1] = 1 xor 3 = 2 
+[1,2] = 3 xor 4 = 7 
+[0,3] = 1 xor 3 xor 4 xor 8 = 14 
+[3,3] = 8
+```
+
+C++版本
+
+```c++
+// 方法一：前缀异或
+class Solution {
+public:
+    vector<int> xorQueries(vector<int>& arr, vector<vector<int>>& queries) {
+        int n = arr.size();
+        vector<int> xors(n + 1);
+        for (int i = 0; i < n; i++) {
+            xors[i + 1] = xors[i] ^ arr[i];
+        }
+        int m = queries.size();
+        vector<int> ans(m);
+        for (int i = 0; i < m; i++) {
+            ans[i] = xors[queries[i][0]] ^ xors[queries[i][1] + 1];
+        }
+        return ans;
+    }
+};
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+```
+
+Java版本
+
+```Java
+// 方法一：前缀异或
+class Solution {
+    public int[] xorQueries(int[] arr, int[][] queries) {
+        int n = arr.length;
+        int[] xors = new int[n + 1];
+        for (int i = 0; i < n; i++) {
+            xors[i + 1] = xors[i] ^ arr[i];
+        }
+        int m = queries.length;
+        int[] ans = new int[m];
+        for (int i = 0; i < m; i++) {
+            ans[i] = xors[queries[i][0]] ^ xors[queries[i][1] + 1];
+        }
+        return ans;
+    }
+}
+```
+
+
+
+### [1851. 包含每个查询的最小区间](https://leetcode.cn/problems/minimum-interval-to-include-each-query/)
+
+困难
+
+给你一个二维整数数组 `intervals` ，其中 `intervals[i] = [lefti, righti]` 表示第 `i` 个区间开始于 `lefti` 、结束于 `righti`（包含两侧取值，**闭区间**）。区间的 **长度** 定义为区间中包含的整数数目，更正式地表达是 `righti - lefti + 1` 。
+
+再给你一个整数数组 `queries` 。第 `j` 个查询的答案是满足 `lefti <= queries[j] <= righti` 的 **长度最小区间 `i` 的长度** 。如果不存在这样的区间，那么答案是 `-1` 。
+
+以数组形式返回对应查询的所有答案。
+
+**示例 1：**
+
+```
+输入：intervals = [[1,4],[2,4],[3,6],[4,4]], queries = [2,3,4,5]
+输出：[3,3,1,4]
+解释：查询处理如下：
+- Query = 2 ：区间 [2,4] 是包含 2 的最小区间，答案为 4 - 2 + 1 = 3 。
+- Query = 3 ：区间 [2,4] 是包含 3 的最小区间，答案为 4 - 2 + 1 = 3 。
+- Query = 4 ：区间 [4,4] 是包含 4 的最小区间，答案为 4 - 4 + 1 = 1 。
+- Query = 5 ：区间 [3,6] 是包含 5 的最小区间，答案为 6 - 3 + 1 = 4 。
+```
+
+C++版本
+
+```c++
+// 方法一：离线算法 + 优先队列
+class Solution {
+public:
+    vector<int> minInterval(vector<vector<int>>& intervals, vector<int>& queries) {
+        vector<int> qindex(queries.size());
+        iota(qindex.begin(), qindex.end(), 0);
+        sort(qindex.begin(), qindex.end(), [&](int i, int j) -> bool {
+            return queries[i] < queries[j];
+        });
+        sort(intervals.begin(), intervals.end(), [](const vector<int> &it1, const vector<int> &it2) -> bool {
+            return it1[0] < it2[0];
+        });
+        priority_queue<vector<int>> pq;
+        vector<int> res(queries.size(), -1);
+        int i = 0;
+        for (auto qi : qindex) {
+            while (i < intervals.size() && intervals[i][0] <= queries[qi]) {
+                int l = intervals[i][1] - intervals[i][0] + 1;
+                pq.push({-l, intervals[i][0], intervals[i][1]});
+                i++;
+            }
+            while (!pq.empty() && pq.top()[2] < queries[qi]) {
+                pq.pop();
+            }
+            if (!pq.empty()) {
+                res[qi] = -pq.top()[0];
+            }
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```Java
+// 方法一：离线算法 + 优先队列
+class Solution {
+    public int[] minInterval(int[][] intervals, int[] queries) {
+        Integer[] qindex = new Integer[queries.length];
+        for (int i = 0; i < queries.length; i++) {
+            qindex[i] = i;
+        }
+        Arrays.sort(qindex, (i, j) -> queries[i] - queries[j]);
+        Arrays.sort(intervals, (i, j) -> i[0] - j[0]);
+        PriorityQueue<int[]> pq = new PriorityQueue<int[]>((a, b) -> a[0] - b[0]);
+        int[] res = new int[queries.length];
+        Arrays.fill(res, -1);
+        int i = 0;
+        for (int qi : qindex) {
+            while (i < intervals.length && intervals[i][0] <= queries[qi]) {
+                pq.offer(new int[]{intervals[i][1] - intervals[i][0] + 1, intervals[i][0], intervals[i][1]});
+                i++;
+            }
+            while (!pq.isEmpty() && pq.peek()[2] < queries[qi]) {
+                pq.poll();
+            }
+            if (!pq.isEmpty()) {
+                res[qi] = pq.peek()[0];
+            }
+        }
+        return res;
+    }
+}
+```
 
 
 
