@@ -1133,7 +1133,444 @@ class Solution {
 
 
 
+### [729. 我的日程安排表 I](https://leetcode.cn/problems/my-calendar-i/)
 
+中等
+
+实现一个 `MyCalendar` 类来存放你的日程安排。如果要添加的日程安排不会造成 **重复预订** ，则可以存储这个新的日程安排。
+
+当两个日程安排有一些时间上的交叉时（例如两个日程安排都在同一时间内），就会产生 **重复预订** 。
+
+日程可以用一对整数 `start` 和 `end` 表示，这里的时间是半开区间，即 `[start, end)`, 实数 `x` 的范围为，  `start <= x < end` 。
+
+实现 `MyCalendar` 类：
+
+- `MyCalendar()` 初始化日历对象。
+- `boolean book(int start, int end)` 如果可以将日程安排成功添加到日历中而不会导致重复预订，返回 `true` 。否则，返回 `false` 并且不要将该日程安排添加到日历中。
+
+**示例：**
+
+```
+输入：
+["MyCalendar", "book", "book", "book"]
+[[], [10, 20], [15, 25], [20, 30]]
+输出：
+[null, true, false, true]
+
+解释：
+MyCalendar myCalendar = new MyCalendar();
+myCalendar.book(10, 20); // return True
+myCalendar.book(15, 25); // return False ，这个日程安排不能添加到日历中，因为时间 15 已经被另一个日程安排预订了。
+myCalendar.book(20, 30); // return True ，这个日程安排可以添加到日历中，因为第一个日程安排预订的每个时间都小于 20 ，且不包含时间 20 。
+```
+
+C++版本
+
+```c++
+// 方法一：直接遍历
+class MyCalendar {
+    vector<pair<int, int>> booked;
+
+public:
+    bool book(int start, int end) {
+        for (auto &[l, r] : booked) {
+            if (l < end && start < r) {
+                return false;
+            }
+        }
+        booked.emplace_back(start, end);
+        return true;
+    }
+};
+
+// 方法二：二分查找
+class MyCalendar {
+    set<pair<int, int>> booked;
+
+public:
+    bool book(int start, int end) {
+        auto it = booked.lower_bound({end, 0});
+        if (it == booked.begin() || (--it)->second <= start) {
+            booked.emplace(start, end);
+            return true;
+        }
+        return false;
+    }
+};
+
+// 方法三：线段树
+class MyCalendar {
+    unordered_set<int> tree, lazy;
+
+public:
+    bool query(int start, int end, int l, int r, int idx) {
+        if (r < start || end < l) {
+            return false;
+        }
+        /* 如果该区间已被预订，则直接返回 */
+        if (lazy.count(idx)) {
+            return true;
+        }
+        if (start <= l && r <= end) {
+            return tree.count(idx);
+        }
+        int mid = (l + r) >> 1;
+        return query(start, end, l, mid, 2 * idx) ||
+               query(start, end, mid + 1, r, 2 * idx + 1);
+    }
+
+    void update(int start, int end, int l, int r, int idx) {
+        if (r < start || end < l) {
+            return;
+        }
+        if (start <= l && r <= end) {
+            tree.emplace(idx);
+            lazy.emplace(idx);
+        } else {
+            int mid = (l + r) >> 1;
+            update(start, end, l, mid, 2 * idx);
+            update(start, end, mid + 1, r, 2 * idx + 1);
+            tree.emplace(idx);
+            if (lazy.count(2 * idx) && lazy.count(2 * idx + 1)) {
+                lazy.emplace(idx);
+            }
+        }
+    }
+
+    bool book(int start, int end) {
+        if (query(start, end - 1, 0, 1e9, 1)) {
+            return false;
+        }
+        update(start, end - 1, 0, 1e9, 1);
+        return true;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：直接遍历
+class MyCalendar {
+    List<int[]> booked;
+
+    public MyCalendar() {
+        booked = new ArrayList<int[]>();
+    }
+
+    public boolean book(int start, int end) {
+        for (int[] arr : booked) {
+            int l = arr[0], r = arr[1];
+            if (l < end && start < r) {
+                return false;
+            }
+        }
+        booked.add(new int[]{start, end});
+        return true;
+    }
+}
+
+// 方法二：二分查找
+class MyCalendar {
+    TreeSet<int[]> booked;
+
+    public MyCalendar() {
+        booked = new TreeSet<int[]>((a, b) -> a[0] - b[0]);
+    }
+
+    public boolean book(int start, int end) {
+        if (booked.isEmpty()) {
+            booked.add(new int[]{start, end});
+            return true;
+        }
+        int[] tmp = {end, 0};
+        int[] arr = booked.ceiling(tmp);
+        int[] prev = arr == null ? booked.last() : booked.lower(arr);
+        if (arr == booked.first() || booked.lower(tmp)[1] <= start) {
+            booked.add(new int[]{start, end});
+            return true;
+        }
+        return false;
+    }
+}
+
+// 方法三：线段树
+class MyCalendar {
+    Set<Integer> tree;
+    Set<Integer> lazy;
+
+    public MyCalendar() {
+        tree = new HashSet<Integer>();
+        lazy = new HashSet<Integer>();
+    }
+
+    public boolean book(int start, int end) {
+        if (query(start, end - 1, 0, 1000000000, 1)) {
+            return false;
+        }
+        update(start, end - 1, 0, 1000000000, 1);
+        return true;
+    }
+
+    public boolean query(int start, int end, int l, int r, int idx) {
+        if (start > r || end < l) {
+            return false;
+        }
+        /* 如果该区间已被预订，则直接返回 */
+        if (lazy.contains(idx)) {
+            return true;
+        }
+        if (start <= l && r <= end) {
+            return tree.contains(idx);
+        } else {
+            int mid = (l + r) >> 1;
+            if (end <= mid) {
+                return query(start, end, l, mid, 2 * idx);
+            } else if (start > mid) {
+                return query(start, end, mid + 1, r, 2 * idx + 1);
+            } else {
+                return query(start, end, l, mid, 2 * idx) | query(start, end, mid + 1, r, 2 * idx + 1);
+            }
+        }
+    }
+
+    public void update(int start, int end, int l, int r, int idx) {
+        if (r < start || end < l) {
+            return;
+        } 
+        if (start <= l && r <= end) {
+            tree.add(idx);
+            lazy.add(idx);
+        } else {
+            int mid = (l + r) >> 1;
+            update(start, end, l, mid, 2 * idx);
+            update(start, end, mid + 1, r, 2 * idx + 1);
+            tree.add(idx);
+        }
+    }
+}
+```
+
+
+
+### [731. 我的日程安排表 II](https://leetcode.cn/problems/my-calendar-ii/)
+
+中等
+
+实现一个 `MyCalendar` 类来存放你的日程安排。如果要添加的时间内不会导致三重预订时，则可以存储这个新的日程安排。
+
+`MyCalendar` 有一个 `book(int start, int end)`方法。它意味着在 `start` 到 `end` 时间内增加一个日程安排，注意，这里的时间是半开区间，即 `[start, end)`, 实数 `x` 的范围为，  `start <= x < end`。
+
+当三个日程安排有一些时间上的交叉时（例如三个日程安排都在同一时间内），就会产生三重预订。
+
+每次调用 `MyCalendar.book`方法时，如果可以将日程安排成功添加到日历中而不会导致三重预订，返回 `true`。否则，返回 `false` 并且不要将该日程安排添加到日历中。
+
+请按照以下步骤调用`MyCalendar` 类: `MyCalendar cal = new MyCalendar();` `MyCalendar.book(start, end)`
+
+**示例：**
+
+```
+MyCalendar();
+MyCalendar.book(10, 20); // returns true
+MyCalendar.book(50, 60); // returns true
+MyCalendar.book(10, 40); // returns true
+MyCalendar.book(5, 15); // returns false
+MyCalendar.book(5, 10); // returns true
+MyCalendar.book(25, 55); // returns true
+解释： 
+前两个日程安排可以添加至日历中。 第三个日程安排会导致双重预订，但可以添加至日历中。
+第四个日程安排活动（5,15）不能添加至日历中，因为它会导致三重预订。
+第五个日程安排（5,10）可以添加至日历中，因为它未使用已经双重预订的时间10。
+第六个日程安排（25,55）可以添加至日历中，因为时间 [25,40] 将和第三个日程安排双重预订；
+时间 [40,50] 将单独预订，时间 [50,55）将和第二个日程安排双重预订。
+```
+
+ C++版本
+
+```c++
+// 方法一：直接遍历
+class MyCalendarTwo {
+public:
+    MyCalendarTwo() {
+
+    }
+
+    bool book(int start, int end) {
+        for (auto &[l, r] : overlaps) {
+            if (l < end && start < r) {
+                return false;
+            }
+        }
+        for (auto &[l, r] : booked) {
+            if (l < end && start < r) {
+                overlaps.emplace_back(max(l, start), min(r, end));
+            }
+        }
+        booked.emplace_back(start, end);
+        return true;
+    }
+private:
+    vector<pair<int, int>> booked;
+    vector<pair<int, int>> overlaps;
+};
+
+// 方法二：差分数组
+class MyCalendarTwo {
+public:
+    MyCalendarTwo() {
+
+    }
+
+    bool book(int start, int end) {
+        int ans = 0;
+        int maxBook = 0;
+        cnt[start]++;
+        cnt[end]--;
+        for (auto &[_, freq] : cnt) {
+            maxBook += freq;
+            ans = max(maxBook, ans);
+            if (maxBook > 2) {
+                cnt[start]--;
+                cnt[end]++;
+                return false;
+            }
+        }
+        return true;
+    }
+private:
+    map<int, int> cnt;
+};
+
+// 方法三：线段树
+class MyCalendarTwo {
+public:
+    MyCalendarTwo() {
+
+    }
+
+    void update(int start, int end, int val, int l, int r, int idx) {
+        if (r < start || end < l) {
+            return;
+        } 
+        if (start <= l && r <= end) {
+            tree[idx].first += val;
+            tree[idx].second += val;
+        } else {
+            int mid = (l + r) >> 1;
+            update(start, end, val, l, mid, 2 * idx);
+            update(start, end, val, mid + 1, r, 2 * idx + 1);
+            tree[idx].first = tree[idx].second + max(tree[2 * idx].first, tree[2 * idx + 1].first);
+        }
+    }
+
+    bool book(int start, int end) {            
+        update(start, end - 1, 1, 0, 1e9, 1);
+        if (tree[1].first > 2) {
+            update(start, end - 1, -1, 0, 1e9, 1);
+            return false;
+        }
+        return true;
+    }
+private:
+    unordered_map<int, pair<int, int>> tree;
+};
+```
+
+Java版本
+
+```java
+// 方法一：直接遍历
+class MyCalendarTwo {
+    List<int[]> booked;
+    List<int[]> overlaps;
+
+    public MyCalendarTwo() {
+        booked = new ArrayList<int[]>();
+        overlaps = new ArrayList<int[]>();
+    }
+
+    public boolean book(int start, int end) {
+        for (int[] arr : overlaps) {
+            int l = arr[0], r = arr[1];
+            if (l < end && start < r) {
+                return false;
+            }
+        }
+        for (int[] arr : booked) {
+            int l = arr[0], r = arr[1];
+            if (l < end && start < r) {
+                overlaps.add(new int[]{Math.max(l, start), Math.min(r, end)});
+            }
+        }
+        booked.add(new int[]{start, end});
+        return true;
+    }
+}
+
+// 方法二：差分数组
+class MyCalendarTwo {
+    TreeMap<Integer, Integer> cnt;
+
+    public MyCalendarTwo() {
+        cnt = new TreeMap<Integer, Integer>();
+    }
+
+    public boolean book(int start, int end) {
+        int ans = 0;
+        int maxBook = 0;
+        cnt.put(start, cnt.getOrDefault(start, 0) + 1);
+        cnt.put(end, cnt.getOrDefault(end, 0) - 1);
+        for (Map.Entry<Integer, Integer> entry : cnt.entrySet()) {
+            int freq = entry.getValue();
+            maxBook += freq;
+            ans = Math.max(maxBook, ans);
+            if (maxBook > 2) {
+                cnt.put(start, cnt.getOrDefault(start, 0) - 1);
+                cnt.put(end, cnt.getOrDefault(end, 0) + 1);
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+// 方法三：线段树
+class MyCalendarTwo {
+    Map<Integer, int[]> tree;
+
+    public MyCalendarTwo() {
+        tree = new HashMap<Integer, int[]>();
+    }
+
+    public boolean book(int start, int end) {
+        update(start, end - 1, 1, 0, 1000000000, 1);
+        tree.putIfAbsent(1, new int[2]);
+        if (tree.get(1)[0] > 2) {
+            update(start, end - 1, -1, 0, 1000000000, 1);
+            return false;
+        }
+        return true;
+    }
+
+    public void update(int start, int end, int val, int l, int r, int idx) {
+        if (r < start || end < l) {
+            return;
+        } 
+        tree.putIfAbsent(idx, new int[2]);
+        if (start <= l && r <= end) {
+            tree.get(idx)[0] += val;
+            tree.get(idx)[1] += val;
+        } else {
+            int mid = (l + r) >> 1;
+            update(start, end, val, l, mid, 2 * idx);
+            update(start, end, val, mid + 1, r, 2 * idx + 1);
+            tree.putIfAbsent(2 * idx, new int[2]);
+            tree.putIfAbsent(2 * idx + 1, new int[2]);
+            tree.get(idx)[0] = tree.get(idx)[1] + Math.max(tree.get(2 * idx)[0], tree.get(2 * idx + 1)[0]);
+        }
+    }
+}
+```
 
 
 
