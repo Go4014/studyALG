@@ -1574,6 +1574,260 @@ class MyCalendarTwo {
 
 
 
+### [732. 我的日程安排表 III](https://leetcode.cn/problems/my-calendar-iii/)
+
+困难
+
+当 `k` 个日程安排有一些时间上的交叉时（例如 `k` 个日程安排都在同一时间内），就会产生 `k` 次预订。
+
+给你一些日程安排 `[start, end)` ，请你在每个日程安排添加后，返回一个整数 `k` ，表示所有先前日程安排会产生的最大 `k` 次预订。
+
+实现一个 `MyCalendarThree` 类来存放你的日程安排，你可以一直添加新的日程安排。
+
+- `MyCalendarThree()` 初始化对象。
+- `int book(int start, int end)` 返回一个整数 `k` ，表示日历中存在的 `k` 次预订的最大值。
+
+**示例：**
+
+```
+输入：
+["MyCalendarThree", "book", "book", "book", "book", "book", "book"]
+[[], [10, 20], [50, 60], [10, 40], [5, 15], [5, 10], [25, 55]]
+输出：
+[null, 1, 1, 2, 3, 3, 3]
+
+解释：
+MyCalendarThree myCalendarThree = new MyCalendarThree();
+myCalendarThree.book(10, 20); // 返回 1 ，第一个日程安排可以预订并且不存在相交，所以最大 k 次预订是 1 次预订。
+myCalendarThree.book(50, 60); // 返回 1 ，第二个日程安排可以预订并且不存在相交，所以最大 k 次预订是 1 次预订。
+myCalendarThree.book(10, 40); // 返回 2 ，第三个日程安排 [10, 40) 与第一个日程安排相交，所以最大 k 次预订是 2 次预订。
+myCalendarThree.book(5, 15); // 返回 3 ，剩下的日程安排的最大 k 次预订是 3 次预订。
+myCalendarThree.book(5, 10); // 返回 3
+myCalendarThree.book(25, 55); // 返回 3
+```
+
+C++版本
+
+```c++
+// 方法一：差分数组
+class MyCalendarThree {
+public:
+    MyCalendarThree() {
+        
+    }
+    
+    int book(int start, int end) {
+        int ans = 0;
+        int maxBook = 0;
+        cnt[start]++;
+        cnt[end]--;
+        for (auto &[_, freq] : cnt) {
+            maxBook += freq;
+            ans = max(maxBook, ans);
+        }
+        return ans;
+    }
+private:
+    map<int, int> cnt;
+};
+
+// 方法二：线段树
+class MyCalendarThree {
+public:
+    unordered_map<int, pair<int, int>> tree;
+
+    MyCalendarThree() {
+
+    }
+    
+    void update(int start, int end, int l, int r, int idx) {
+        if (r < start || end < l) {
+            return;
+        } 
+        if (start <= l && r <= end) {
+            tree[idx].first++;
+            tree[idx].second++;
+        } else {
+            int mid = (l + r) >> 1;
+            update(start, end, l, mid, 2 * idx);
+            update(start, end, mid + 1, r, 2 * idx + 1);
+            tree[idx].first = tree[idx].second + max(tree[2 * idx].first, tree[2 * idx + 1].first);
+        }
+    }
+
+    int book(int start, int end) {            
+        update(start, end - 1, 0, 1e9, 1);
+        return tree[1].first;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：差分数组
+class MyCalendarThree {
+    private TreeMap<Integer, Integer> cnt;
+
+    public MyCalendarThree() {
+        cnt = new TreeMap<Integer, Integer>();
+    }
+    
+    public int book(int start, int end) {
+        int ans = 0;
+        int maxBook = 0;
+        cnt.put(start, cnt.getOrDefault(start, 0) + 1);
+        cnt.put(end, cnt.getOrDefault(end, 0) - 1);
+        for (Map.Entry<Integer, Integer> entry : cnt.entrySet()) {
+            int freq = entry.getValue();
+            maxBook += freq;
+            ans = Math.max(maxBook, ans);
+        }
+        return ans;
+    }
+}
+
+// 方法二：线段树
+class MyCalendarThree {
+    private Map<Integer, Integer> tree;
+    private Map<Integer, Integer> lazy;
+
+    public MyCalendarThree() {
+        tree = new HashMap<Integer, Integer>();
+        lazy = new HashMap<Integer, Integer>();
+    }
+    
+    public int book(int start, int end) {
+        update(start, end - 1, 0, 1000000000, 1);
+        return tree.getOrDefault(1, 0);
+    }
+
+    public void update(int start, int end, int l, int r, int idx) {
+        if (r < start || end < l) {
+            return;
+        } 
+        if (start <= l && r <= end) {
+            tree.put(idx, tree.getOrDefault(idx, 0) + 1);
+            lazy.put(idx, lazy.getOrDefault(idx, 0) + 1);
+        } else {
+            int mid = (l + r) >> 1;
+            update(start, end, l, mid, 2 * idx);
+            update(start, end, mid + 1, r, 2 * idx + 1);
+            tree.put(idx, lazy.getOrDefault(idx, 0) + Math.max(tree.getOrDefault(2 * idx, 0), tree.getOrDefault(2 * idx + 1, 0)));
+        }
+    }
+}
+```
+
+
+
+[218. 天际线问题](https://leetcode.cn/problems/the-skyline-problem/)
+
+困难
+
+城市的 **天际线** 是从远处观看该城市中所有建筑物形成的轮廓的外部轮廓。给你所有建筑物的位置和高度，请返回 *由这些建筑物形成的 **天际线*** 。
+
+每个建筑物的几何信息由数组 `buildings` 表示，其中三元组 `buildings[i] = [lefti, righti, heighti]` 表示：
+
+- `lefti` 是第 `i` 座建筑物左边缘的 `x` 坐标。
+- `righti` 是第 `i` 座建筑物右边缘的 `x` 坐标。
+- `heighti` 是第 `i` 座建筑物的高度。
+
+你可以假设所有的建筑都是完美的长方形，在高度为 `0` 的绝对平坦的表面上。
+
+**天际线** 应该表示为由 “关键点” 组成的列表，格式 `[[x1,y1],[x2,y2],...]` ，并按 **x 坐标** 进行 **排序** 。**关键点是水平线段的左端点**。列表中最后一个点是最右侧建筑物的终点，`y` 坐标始终为 `0` ，仅用于标记天际线的终点。此外，任何两个相邻建筑物之间的地面都应被视为天际线轮廓的一部分。
+
+**注意：**输出天际线中不得有连续的相同高度的水平线。例如 `[...[2 3], [4 5], [7 5], [11 5], [12 7]...]` 是不正确的答案；三条高度为 5 的线应该在最终输出中合并为一个：`[...[2 3], [4 5], [12 7], ...]`
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/12/01/merged.jpg)
+
+```
+输入：buildings = [[2,9,10],[3,7,15],[5,12,12],[15,20,10],[19,24,8]]
+输出：[[2,10],[3,15],[7,12],[12,0],[15,10],[20,8],[24,0]]
+解释：
+图 A 显示输入的所有建筑物的位置和高度，
+图 B 显示由这些建筑物形成的天际线。图 B 中的红点表示输出列表中的关键点。
+```
+
+C++版本
+
+```c++
+// 方法一：扫描线 + 优先队列
+class Solution {
+public:
+    vector<vector<int>> getSkyline(vector<vector<int>>& buildings) {
+        auto cmp = [](const pair<int, int>& a, const pair<int, int>& b) -> bool { return a.second < b.second; };
+        priority_queue<pair<int, int>, vector<pair<int, int>>, decltype(cmp)> que(cmp);
+
+        vector<int> boundaries;
+        for (auto& building : buildings) {
+            boundaries.emplace_back(building[0]);
+            boundaries.emplace_back(building[1]);
+        }
+        sort(boundaries.begin(), boundaries.end());
+
+        vector<vector<int>> ret;
+        int n = buildings.size(), idx = 0;
+        for (auto& boundary : boundaries) {
+            while (idx < n && buildings[idx][0] <= boundary) {
+                que.emplace(buildings[idx][1], buildings[idx][2]);
+                idx++;
+            }
+            while (!que.empty() && que.top().first <= boundary) {
+                que.pop();
+            }
+
+            int maxn = que.empty() ? 0 : que.top().second;
+            if (ret.size() == 0 || maxn != ret.back()[1]) {
+                ret.push_back({boundary, maxn});
+            }
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：扫描线 + 优先队列
+class Solution {
+    public List<List<Integer>> getSkyline(int[][] buildings) {
+        PriorityQueue<int[]> pq = new PriorityQueue<int[]>((a, b) -> b[1] - a[1]);
+        List<Integer> boundaries = new ArrayList<Integer>();
+        for (int[] building : buildings) {
+            boundaries.add(building[0]);
+            boundaries.add(building[1]);
+        }
+        Collections.sort(boundaries);
+
+        List<List<Integer>> ret = new ArrayList<List<Integer>>();
+        int n = buildings.length, idx = 0;
+        for (int boundary : boundaries) {
+            while (idx < n && buildings[idx][0] <= boundary) {
+                pq.offer(new int[]{buildings[idx][1], buildings[idx][2]});
+                idx++;
+            }
+            while (!pq.isEmpty() && pq.peek()[0] <= boundary) {
+                pq.poll();
+            }
+
+            int maxn = pq.isEmpty() ? 0 : pq.peek()[1];
+            if (ret.size() == 0 || maxn != ret.get(ret.size() - 1).get(1)) {
+                ret.add(Arrays.asList(boundary, maxn));
+            }
+        }
+        return ret;
+    }
+}
+```
+
+
+
+
+
 
 
 
