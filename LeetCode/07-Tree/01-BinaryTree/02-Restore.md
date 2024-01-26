@@ -406,14 +406,68 @@ class Solution {
 C++版本
 
 ```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
 // 方法一：递归
+class Solution {
+public:
+    TreeNode* constructFromPrePost(vector<int>& preorder, vector<int>& postorder) {
+        int n = preorder.size();
+        return make(preorder, postorder, 0, n-1, 0, n-1);
+    }
+
+    TreeNode* make(vector<int>& preorder, vector<int>& postorder, int preLeft, int preRight, 
+                   int postLeft, int postRight){
+        if (preLeft>preRight){
+            return nullptr;
+        }
+        TreeNode* root = new TreeNode(preorder[preLeft]);
+        if (preLeft == preRight){
+            return root;
+        }
+        int L = 0;
+        for (int i = postLeft; i <= postRight; i++){
+            if (postorder[i] == preorder[preLeft + 1]){
+                L = i - postLeft + 1;
+            }
+        }
+        root->left = make(preorder, postorder, preLeft + 1, preLeft + L, postLeft, postLeft + L - 1);
+        root->right = make(preorder, postorder, preLeft + L + 1, preRight, postLeft + L, postRight - 1);
+        return root;
+    }
+
+};
 ```
 
 Java版本
 
 ```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
 // 方法一：递归
-    class Solution {
+class Solution {
     public TreeNode constructFromPrePost(int[] pre, int[] post) {
         int N = pre.length;
         if (N == 0) return null;
