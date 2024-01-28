@@ -905,17 +905,1046 @@ class Solution {
 
 
 
+### [494. 目标和](https://leetcode.cn/problems/target-sum/)
+
+中等
+
+给你一个非负整数数组 `nums` 和一个整数 `target` 。
+
+向数组中的每个整数前添加 `'+'` 或 `'-'` ，然后串联起所有整数，可以构造一个 **表达式** ：
+
+- 例如，`nums = [2, 1]` ，可以在 `2` 之前添加 `'+'` ，在 `1` 之前添加 `'-'` ，然后串联起来得到表达式 `"+2-1"` 。
+
+返回可以通过上述方法构造的、运算结果等于 `target` 的不同 **表达式** 的数目。
+
+**示例 1：**
+
+```
+输入：nums = [1,1,1,1,1], target = 3
+输出：5
+解释：一共有 5 种方法让最终目标和为 3 。
+-1 + 1 + 1 + 1 + 1 = 3
++1 - 1 + 1 + 1 + 1 = 3
++1 + 1 - 1 + 1 + 1 = 3
++1 + 1 + 1 - 1 + 1 = 3
++1 + 1 + 1 + 1 - 1 = 3
+```
+
+C++版本
+
+```c++
+// 方法一：回溯
+class Solution {
+public:
+    int count = 0;
+
+    int findTargetSumWays(vector<int>& nums, int target) {
+        backtrack(nums, target, 0, 0);
+        return count;
+    }
+
+    void backtrack(vector<int>& nums, int target, int index, int sum) {
+        if (index == nums.size()) {
+            if (sum == target) {
+                count++;
+            }
+        } else {
+            backtrack(nums, target, index + 1, sum + nums[index]);
+            backtrack(nums, target, index + 1, sum - nums[index]);
+        }
+    }
+};
+
+// 方法二：动态规划
+// 二维数组
+class Solution {
+public:
+    int findTargetSumWays(vector<int>& nums, int target) {
+        int sum = 0;
+        for (int& num : nums) {
+            sum += num;
+        }
+        int diff = sum - target;
+        if (diff < 0 || diff % 2 != 0) {
+            return 0;
+        }
+        int n = nums.size(), neg = diff / 2;
+        vector<vector<int>> dp(n + 1, vector<int>(neg + 1));
+        dp[0][0] = 1;
+        for (int i = 1; i <= n; i++) {
+            int num = nums[i - 1];
+            for (int j = 0; j <= neg; j++) {
+                dp[i][j] = dp[i - 1][j];
+                if (j >= num) {
+                    dp[i][j] += dp[i - 1][j - num];
+                }
+            }
+        }
+        return dp[n][neg];
+    }
+};
+// 一维数组
+class Solution {
+public:
+    int findTargetSumWays(vector<int>& nums, int target) {
+        int sum = 0;
+        for (int& num : nums) {
+            sum += num;
+        }
+        int diff = sum - target;
+        if (diff < 0 || diff % 2 != 0) {
+            return 0;
+        }
+        int neg = diff / 2;
+        vector<int> dp(neg + 1);
+        dp[0] = 1;
+        for (int& num : nums) {
+            for (int j = neg; j >= num; j--) {
+                dp[j] += dp[j - num];
+            }
+        }
+        return dp[neg];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：回溯
+class Solution {
+    int count = 0;
+
+    public int findTargetSumWays(int[] nums, int target) {
+        backtrack(nums, target, 0, 0);
+        return count;
+    }
+
+    public void backtrack(int[] nums, int target, int index, int sum) {
+        if (index == nums.length) {
+            if (sum == target) {
+                count++;
+            }
+        } else {
+            backtrack(nums, target, index + 1, sum + nums[index]);
+            backtrack(nums, target, index + 1, sum - nums[index]);
+        }
+    }
+}
+
+// 方法二：动态规划
+// 二维数组
+class Solution {
+    public int findTargetSumWays(int[] nums, int target) {
+        int sum = 0;
+        for (int num : nums) {
+            sum += num;
+        }
+        int diff = sum - target;
+        if (diff < 0 || diff % 2 != 0) {
+            return 0;
+        }
+        int n = nums.length, neg = diff / 2;
+        int[][] dp = new int[n + 1][neg + 1];
+        dp[0][0] = 1;
+        for (int i = 1; i <= n; i++) {
+            int num = nums[i - 1];
+            for (int j = 0; j <= neg; j++) {
+                dp[i][j] = dp[i - 1][j];
+                if (j >= num) {
+                    dp[i][j] += dp[i - 1][j - num];
+                }
+            }
+        }
+        return dp[n][neg];
+    }
+}
+// 一维数组
+class Solution {
+    public int findTargetSumWays(int[] nums, int target) {
+        int sum = 0;
+        for (int num : nums) {
+            sum += num;
+        }
+        int diff = sum - target;
+        if (diff < 0 || diff % 2 != 0) {
+            return 0;
+        }
+        int neg = diff / 2;
+        int[] dp = new int[neg + 1];
+        dp[0] = 1;
+        for (int num : nums) {
+            for (int j = neg; j >= num; j--) {
+                dp[j] += dp[j - num];
+            }
+        }
+        return dp[neg];
+    }
+}
+```
 
 
 
+### [144. 二叉树的前序遍历](https://leetcode.cn/problems/binary-tree-preorder-traversal/)
+
+简单
+
+给你二叉树的根节点 `root` ，返回它节点值的 **前序** 遍历。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/15/inorder_1.jpg)
+
+```
+输入：root = [1,null,2,3]
+输出：[1,2,3]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：递归
+class Solution {
+public:
+    void preorder(TreeNode *root, vector<int> &res) {
+        if (root == nullptr) {
+            return;
+        }
+        res.push_back(root->val);
+        preorder(root->left, res);
+        preorder(root->right, res);
+    }
+
+    vector<int> preorderTraversal(TreeNode *root) {
+        vector<int> res;
+        preorder(root, res);
+        return res;
+    }
+};
+
+// 方法二：迭代
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root) {
+        vector<int> res;
+        if (root == nullptr) {
+            return res;
+        }
+
+        stack<TreeNode*> stk;
+        TreeNode* node = root;
+        while (!stk.empty() || node != nullptr) {
+            while (node != nullptr) {
+                res.emplace_back(node->val);
+                stk.emplace(node);
+                node = node->left;
+            }
+            node = stk.top();
+            stk.pop();
+            node = node->right;
+        }
+        return res;
+    }
+};
+
+// 方法三：Morris 遍历
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode *root) {
+        vector<int> res;
+        if (root == nullptr) {
+            return res;
+        }
+
+        TreeNode *p1 = root, *p2 = nullptr;
+
+        while (p1 != nullptr) {
+            p2 = p1->left;
+            if (p2 != nullptr) {
+                while (p2->right != nullptr && p2->right != p1) {
+                    p2 = p2->right;
+                }
+                if (p2->right == nullptr) {
+                    res.emplace_back(p1->val);
+                    p2->right = p1;
+                    p1 = p1->left;
+                    continue;
+                } else {
+                    p2->right = nullptr;
+                }
+            } else {
+                res.emplace_back(p1->val);
+            }
+            p1 = p1->right;
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：递归
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<Integer>();
+        preorder(root, res);
+        return res;
+    }
+
+    public void preorder(TreeNode root, List<Integer> res) {
+        if (root == null) {
+            return;
+        }
+        res.add(root.val);
+        preorder(root.left, res);
+        preorder(root.right, res);
+    }
+}
+
+// 方法二：迭代
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<Integer>();
+        if (root == null) {
+            return res;
+        }
+
+        Deque<TreeNode> stack = new LinkedList<TreeNode>();
+        TreeNode node = root;
+        while (!stack.isEmpty() || node != null) {
+            while (node != null) {
+                res.add(node.val);
+                stack.push(node);
+                node = node.left;
+            }
+            node = stack.pop();
+            node = node.right;
+        }
+        return res;
+    }
+}
+
+// 方法三：Morris 遍历
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<Integer>();
+        if (root == null) {
+            return res;
+        }
+
+        TreeNode p1 = root, p2 = null;
+
+        while (p1 != null) {
+            p2 = p1.left;
+            if (p2 != null) {
+                while (p2.right != null && p2.right != p1) {
+                    p2 = p2.right;
+                }
+                if (p2.right == null) {
+                    res.add(p1.val);
+                    p2.right = p1;
+                    p1 = p1.left;
+                    continue;
+                } else {
+                    p2.right = null;
+                }
+            } else {
+                res.add(p1.val);
+            }
+            p1 = p1.right;
+        }
+        return res;
+    }
+}
+```
 
 
 
+### [94. 二叉树的中序遍历](https://leetcode.cn/problems/binary-tree-inorder-traversal/)
+
+简单
+
+给定一个二叉树的根节点 `root` ，返回 *它的 **中序** 遍历* 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/15/inorder_1.jpg)
+
+```
+输入：root = [1,null,2,3]
+输出：[1,3,2]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：递归
+class Solution {
+public:
+    void inorder(TreeNode* root, vector<int>& res) {
+        if (!root) {
+            return;
+        }
+        inorder(root->left, res);
+        res.push_back(root->val);
+        inorder(root->right, res);
+    }
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        inorder(root, res);
+        return res;
+    }
+};
+
+// 方法二：迭代
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        stack<TreeNode*> stk;
+        while (root != nullptr || !stk.empty()) {
+            while (root != nullptr) {
+                stk.push(root);
+                root = root->left;
+            }
+            root = stk.top();
+            stk.pop();
+            res.push_back(root->val);
+            root = root->right;
+        }
+        return res;
+    }
+};
+
+// 方法三：Morris 中序遍历
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        TreeNode *predecessor = nullptr;
+
+        while (root != nullptr) {
+            if (root->left != nullptr) {
+                // predecessor 节点就是当前 root 节点向左走一步，然后一直向右走至无法走为止
+                predecessor = root->left;
+                while (predecessor->right != nullptr && predecessor->right != root) {
+                    predecessor = predecessor->right;
+                }
+                
+                // 让 predecessor 的右指针指向 root，继续遍历左子树
+                if (predecessor->right == nullptr) {
+                    predecessor->right = root;
+                    root = root->left;
+                }
+                // 说明左子树已经访问完了，我们需要断开链接
+                else {
+                    res.push_back(root->val);
+                    predecessor->right = nullptr;
+                    root = root->right;
+                }
+            }
+            // 如果没有左孩子，则直接访问右孩子
+            else {
+                res.push_back(root->val);
+                root = root->right;
+            }
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：递归
+class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<Integer>();
+        inorder(root, res);
+        return res;
+    }
+
+    public void inorder(TreeNode root, List<Integer> res) {
+        if (root == null) {
+            return;
+        }
+        inorder(root.left, res);
+        res.add(root.val);
+        inorder(root.right, res);
+    }
+}
+
+// 方法二：迭代
+class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<Integer>();
+        Deque<TreeNode> stk = new LinkedList<TreeNode>();
+        while (root != null || !stk.isEmpty()) {
+            while (root != null) {
+                stk.push(root);
+                root = root.left;
+            }
+            root = stk.pop();
+            res.add(root.val);
+            root = root.right;
+        }
+        return res;
+    }
+}
+
+// 方法三：Morris 中序遍历
+class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<Integer>();
+        TreeNode predecessor = null;
+
+        while (root != null) {
+            if (root.left != null) {
+                // predecessor 节点就是当前 root 节点向左走一步，然后一直向右走至无法走为止
+                predecessor = root.left;
+                while (predecessor.right != null && predecessor.right != root) {
+                    predecessor = predecessor.right;
+                }
+                
+                // 让 predecessor 的右指针指向 root，继续遍历左子树
+                if (predecessor.right == null) {
+                    predecessor.right = root;
+                    root = root.left;
+                }
+                // 说明左子树已经访问完了，我们需要断开链接
+                else {
+                    res.add(root.val);
+                    predecessor.right = null;
+                    root = root.right;
+                }
+            }
+            // 如果没有左孩子，则直接访问右孩子
+            else {
+                res.add(root.val);
+                root = root.right;
+            }
+        }
+        return res;
+    }
+}
+```
 
 
 
+### [145. 二叉树的后序遍历](https://leetcode.cn/problems/binary-tree-postorder-traversal/)
+
+简单
+
+给你一棵二叉树的根节点 `root` ，返回其节点值的 **后序遍历** 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/08/28/pre1.jpg)
+
+```
+输入：root = [1,null,2,3]
+输出：[3,2,1]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：递归
+class Solution {
+public:
+    void postorder(TreeNode *root, vector<int> &res) {
+        if (root == nullptr) {
+            return;
+        }
+        postorder(root->left, res);
+        postorder(root->right, res);
+        res.push_back(root->val);
+    }
+
+    vector<int> postorderTraversal(TreeNode *root) {
+        vector<int> res;
+        postorder(root, res);
+        return res;
+    }
+};
+
+// 方法二：迭代
+class Solution {
+public:
+    vector<int> postorderTraversal(TreeNode *root) {
+        vector<int> res;
+        if (root == nullptr) {
+            return res;
+        }
+
+        stack<TreeNode *> stk;
+        TreeNode *prev = nullptr;
+        while (root != nullptr || !stk.empty()) {
+            while (root != nullptr) {
+                stk.emplace(root);
+                root = root->left;
+            }
+            root = stk.top();
+            stk.pop();
+            if (root->right == nullptr || root->right == prev) {
+                res.emplace_back(root->val);
+                prev = root;
+                root = nullptr;
+            } else {
+                stk.emplace(root);
+                root = root->right;
+            }
+        }
+        return res;
+    }
+};
+
+// 方法三：Morris 遍历
+class Solution {
+public:
+    void addPath(vector<int> &vec, TreeNode *node) {
+        int count = 0;
+        while (node != nullptr) {
+            ++count;
+            vec.emplace_back(node->val);
+            node = node->right;
+        }
+        reverse(vec.end() - count, vec.end());
+    }
+
+    vector<int> postorderTraversal(TreeNode *root) {
+        vector<int> res;
+        if (root == nullptr) {
+            return res;
+        }
+
+        TreeNode *p1 = root, *p2 = nullptr;
+
+        while (p1 != nullptr) {
+            p2 = p1->left;
+            if (p2 != nullptr) {
+                while (p2->right != nullptr && p2->right != p1) {
+                    p2 = p2->right;
+                }
+                if (p2->right == nullptr) {
+                    p2->right = p1;
+                    p1 = p1->left;
+                    continue;
+                } else {
+                    p2->right = nullptr;
+                    addPath(res, p1->left);
+                }
+            }
+            p1 = p1->right;
+        }
+        addPath(res, root);
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：递归
+class Solution {
+    public List<Integer> postorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<Integer>();
+        postorder(root, res);
+        return res;
+    }
+
+    public void postorder(TreeNode root, List<Integer> res) {
+        if (root == null) {
+            return;
+        }
+        postorder(root.left, res);
+        postorder(root.right, res);
+        res.add(root.val);
+    }
+}
+
+// 方法二：迭代
+class Solution {
+    public List<Integer> postorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<Integer>();
+        if (root == null) {
+            return res;
+        }
+
+        Deque<TreeNode> stack = new LinkedList<TreeNode>();
+        TreeNode prev = null;
+        while (root != null || !stack.isEmpty()) {
+            while (root != null) {
+                stack.push(root);
+                root = root.left;
+            }
+            root = stack.pop();
+            if (root.right == null || root.right == prev) {
+                res.add(root.val);
+                prev = root;
+                root = null;
+            } else {
+                stack.push(root);
+                root = root.right;
+            }
+        }
+        return res;
+    }
+}
+
+// 方法三：Morris 遍历
+class Solution {
+    public List<Integer> postorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<Integer>();
+        if (root == null) {
+            return res;
+        }
+
+        TreeNode p1 = root, p2 = null;
+
+        while (p1 != null) {
+            p2 = p1.left;
+            if (p2 != null) {
+                while (p2.right != null && p2.right != p1) {
+                    p2 = p2.right;
+                }
+                if (p2.right == null) {
+                    p2.right = p1;
+                    p1 = p1.left;
+                    continue;
+                } else {
+                    p2.right = null;
+                    addPath(res, p1.left);
+                }
+            }
+            p1 = p1.right;
+        }
+        addPath(res, root);
+        return res;
+    }
+
+    public void addPath(List<Integer> res, TreeNode node) {
+        int count = 0;
+        while (node != null) {
+            ++count;
+            res.add(node.val);
+            node = node.right;
+        }
+        int left = res.size() - count, right = res.size() - 1;
+        while (left < right) {
+            int temp = res.get(left);
+            res.set(left, res.get(right));
+            res.set(right, temp);
+            left++;
+            right--;
+        }
+    }
+}
+```
 
 
+
+### [589. N 叉树的前序遍历](https://leetcode.cn/problems/n-ary-tree-preorder-traversal/)
+
+简单
+
+给定一个 n 叉树的根节点 `root` ，返回 *其节点值的 **前序遍历*** 。
+
+n 叉树 在输入中按层序遍历进行序列化表示，每组子节点由空值 `null` 分隔（请参见示例）。
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2018/10/12/narytreeexample.png)
+
+```
+输入：root = [1,null,3,2,4,null,5,6]
+输出：[1,3,5,6,2,4]
+```
+
+C++版本
+
+```c++
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    vector<Node*> children;
+
+    Node() {}
+
+    Node(int _val) {
+        val = _val;
+    }
+
+    Node(int _val, vector<Node*> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+// 方法一：递归
+class Solution {
+public:
+    void helper(const Node* root, vector<int> & res) {
+        if (root == nullptr) {
+            return;
+        }
+        res.emplace_back(root->val);
+        for (auto & ch : root->children) {
+            helper(ch, res);
+        }
+    }
+
+    vector<int> preorder(Node* root) {
+        vector<int> res;
+        helper(root, res);
+        return res;
+    }
+};
+
+// 方法二：迭代
+class Solution {
+public:
+    vector<int> preorder(Node* root) {
+        vector<int> res;
+        if (root == nullptr) {
+            return res;
+        }
+        
+        unordered_map<Node *, int> cnt;
+        stack<Node *> st;
+        Node * node = root;
+        while (!st.empty() || node != nullptr) {
+            while (node != nullptr) {
+                res.emplace_back(node->val);
+                st.emplace(node);
+                if (node->children.size() > 0) {
+                    cnt[node] = 0;
+                    node = node->children[0];
+                } else {
+                    node = nullptr;
+                }         
+            }
+            node = st.top();
+            int index = (cnt.count(node) ? cnt[node] : -1) + 1;
+            if (index < node->children.size()) {
+                cnt[node] = index;
+                node = node->children[index];
+            } else {
+                st.pop();
+                cnt.erase(node);
+                node = nullptr;
+            }
+        }
+        return res;
+    }
+};
+
+// 方法三：迭代优化
+class Solution {
+public:
+    vector<int> preorder(Node* root) {
+        vector<int> res;
+        if (root == nullptr) {
+            return res;
+        }
+
+        stack<Node *> st;
+        st.emplace(root);
+        while(!st.empty()) {
+            Node * node = st.top();
+            st.pop();
+            res.emplace_back(node->val);
+            for (auto it = node->children.rbegin(); it != node->children.rend(); it++) {
+                st.emplace(*it);
+            }
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public List<Node> children;
+
+    public Node() {}
+
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, List<Node> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+// 方法一：递归
+class Solution {
+    public List<Integer> preorder(Node root) {
+        List<Integer> res = new ArrayList<>();
+        helper(root, res);
+        return res;
+    }
+
+    public void helper(Node root, List<Integer> res) {
+        if (root == null) {
+            return;
+        }
+        res.add(root.val);
+        for (Node ch : root.children) {
+            helper(ch, res);
+        }
+    }
+}
+
+// 方法二：迭代
+class Solution {
+    public List<Integer> preorder(Node root) {
+        List<Integer> res = new ArrayList<Integer>();
+        if (root == null) {
+            return res;
+        }
+        Map<Node, Integer> map = new HashMap<Node, Integer>();
+        Deque<Node> stack = new ArrayDeque<Node>();
+        Node node = root;
+        while (!stack.isEmpty() || node != null) {
+            while (node != null) {
+                res.add(node.val);
+                stack.push(node);
+                List<Node> children = node.children;
+                if (children != null && children.size() > 0) {
+                    map.put(node, 0);
+                    node = children.get(0);
+                } else {
+                    node = null;
+                }
+            }
+            node = stack.peek();
+            int index = map.getOrDefault(node, -1) + 1;
+            List<Node> children = node.children;
+            if (children != null && children.size() > index) {
+                map.put(node, index);
+                node = children.get(index);
+            } else {
+                stack.pop();
+                map.remove(node);
+                node = null;
+            }
+        }
+        return res;
+    }
+}
+
+// 方法三：迭代优化
+class Solution {
+    public List<Integer> preorder(Node root) {
+        List<Integer> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+
+        Deque<Node> stack = new ArrayDeque<Node>();
+        stack.push(root);
+        while (!stack.isEmpty()) {
+            Node node = stack.pop();
+            res.add(node.val);
+            for (int i = node.children.size() - 1; i >= 0; --i) {
+                stack.push(node.children.get(i));
+            }
+        }
+        return res;
+    }
+}
+```
 
 
 
