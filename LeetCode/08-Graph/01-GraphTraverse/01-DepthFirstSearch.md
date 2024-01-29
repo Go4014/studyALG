@@ -1948,3 +1948,425 @@ class Solution {
 
 
 
+### [590. N 叉树的后序遍历](https://leetcode.cn/problems/n-ary-tree-postorder-traversal/)
+
+简单
+
+给定一个 n 叉树的根节点 `root` ，返回 *其节点值的 **后序遍历*** 。
+
+n 叉树 在输入中按层序遍历进行序列化表示，每组子节点由空值 `null` 分隔（请参见示例）。
+
+ 
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2018/10/12/narytreeexample.png)
+
+```
+输入：root = [1,null,3,2,4,null,5,6]
+输出：[5,6,3,2,4,1]
+```
+
+C++版本
+
+```c++
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    vector<Node*> children;
+
+    Node() {}
+
+    Node(int _val) {
+        val = _val;
+    }
+
+    Node(int _val, vector<Node*> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+// 方法一：递归
+class Solution {
+public:
+    void helper(const Node* root, vector<int> & res) {
+        if (root == nullptr) {
+            return;
+        }
+        for (auto & ch : root->children) {
+            helper(ch, res);
+        }
+        res.emplace_back(root->val);
+    }
+
+    vector<int> postorder(Node* root) {
+        vector<int> res;
+        helper(root, res);
+        return res;
+    }
+};
+
+// 方法二：迭代
+class Solution {
+public:
+    vector<int> postorder(Node* root) {
+        vector<int> res;
+        if (root == nullptr) {
+            return res;
+        }
+        
+        unordered_map<Node *, int> cnt;
+        stack<Node *> st;
+        Node * node = root;
+        while (!st.empty() || node != nullptr) {
+            while (node != nullptr) {
+                st.emplace(node);
+                if (node->children.size() > 0) {
+                    cnt[node] = 0;
+                    node = node->children[0];
+                } else {
+                    node = nullptr;
+                }         
+            }
+            node = st.top();
+            int index = cnt.count(node) ? (cnt[node] + 1) : 0;
+            if (index < node->children.size()) {
+                cnt[node] = index;
+                node = node->children[index];
+            } else {
+                res.emplace_back(node->val);
+                st.pop();
+                cnt.erase(node);
+                node = nullptr;
+            }
+        }
+        return res;
+    }
+};
+
+// 方法三：迭代优化
+class Solution {
+public:
+    vector<int> postorder(Node* root) {
+        vector<int> res;
+        if (root == nullptr) {
+            return res;
+        }
+
+        stack<Node *> st;
+        unordered_set<Node *> visited;
+        st.emplace(root);
+        while (!st.empty()) {
+            Node * node = st.top();
+            /* 如果当前节点为叶子节点或者当前节点的子节点已经遍历过 */
+            if (node->children.size() == 0 || visited.count(node)) {
+                res.emplace_back(node->val);
+                st.pop();
+                continue;
+            }
+            for (auto it = node->children.rbegin(); it != node->children.rend(); it++) {
+                st.emplace(*it);
+            }
+            visited.emplace(node);
+        }       
+        return res;
+    }
+};
+
+// 方法四：利用前序遍历反转
+class Solution {
+public:
+    vector<int> postorder(Node* root) {
+        vector<int> res;
+        if (root == nullptr) {
+            return res;
+        }
+
+        stack<Node *> st;
+        st.emplace(root);
+        while (!st.empty()) {
+            Node * node = st.top();
+            st.pop();
+            res.emplace_back(node->val);
+            for (auto &item : node->children) {
+                st.emplace(item);
+            }
+        }       
+        reverse(res.begin(), res.end()); 
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public List<Node> children;
+
+    public Node() {}
+
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, List<Node> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+// 方法一：递归
+class Solution {
+    public List<Integer> postorder(Node root) {
+        List<Integer> res = new ArrayList<>();
+        helper(root, res);
+        return res;
+    }
+
+    public void helper(Node root, List<Integer> res) {
+        if (root == null) {
+            return;
+        }
+        for (Node ch : root.children) {
+            helper(ch, res);
+        }
+        res.add(root.val);
+    }
+}
+
+// 方法二：迭代
+class Solution {
+    public List<Integer> postorder(Node root) {
+        List<Integer> res = new ArrayList<Integer>();
+        if (root == null) {
+            return res;
+        }
+        Map<Node, Integer> map = new HashMap<Node, Integer>();
+        Deque<Node> stack = new ArrayDeque<Node>();
+        Node node = root;
+        while (!stack.isEmpty() || node != null) {
+            while (node != null) {
+                stack.push(node);
+                List<Node> children = node.children;
+                if (children != null && children.size() > 0) {
+                    map.put(node, 0);
+                    node = children.get(0);
+                } else {
+                    node = null;
+                }
+            }
+            node = stack.peek();
+            int index = map.getOrDefault(node, -1) + 1;
+            List<Node> children = node.children;
+            if (children != null && children.size() > index) {
+                map.put(node, index);
+                node = children.get(index);
+            } else {
+                res.add(node.val);
+                stack.pop();
+                map.remove(node);
+                node = null;
+            }
+        }
+        return res;
+    }
+}
+
+// 方法三：迭代优化
+class Solution {
+    public List<Integer> postorder(Node root) {
+        List<Integer> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+
+        Deque<Node> stack = new ArrayDeque<Node>();
+        Set<Node> visited = new HashSet<Node>();
+        stack.push(root);
+        while (!stack.isEmpty()) {
+            Node node = stack.peek();
+            /* 如果当前节点为叶子节点或者当前节点的子节点已经遍历过 */
+            if (node.children.size() == 0 || visited.contains(node)) {
+                stack.pop();
+                res.add(node.val);
+                continue;
+            }
+            for (int i = node.children.size() - 1; i >= 0; --i) {
+                stack.push(node.children.get(i));
+            }
+            visited.add(node);
+        }
+        return res;
+    }
+}
+
+// 方法四：利用前序遍历反转
+class Solution {
+    public List<Integer> postorder(Node root) {
+        List<Integer> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+
+        Deque<Node> stack = new ArrayDeque<Node>();
+        stack.push(root);
+        while (!stack.isEmpty()) {
+            Node node = stack.pop();
+            res.add(node.val);
+            for (Node item : node.children) {
+                stack.push(item);
+            }
+        }
+        Collections.reverse(res);
+        return res;
+    }
+}
+```
+
+
+
+### [124. 二叉树中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
+
+困难
+
+二叉树中的 **路径** 被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中 **至多出现一次** 。该路径 **至少包含一个** 节点，且不一定经过根节点。
+
+**路径和** 是路径中各节点值的总和。
+
+给你一个二叉树的根节点 `root` ，返回其 **最大路径和** 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/13/exx1.jpg)
+
+```
+输入：root = [1,2,3]
+输出：6
+解释：最优路径是 2 -> 1 -> 3 ，路径和为 2 + 1 + 3 = 6
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：递归
+class Solution {
+private:
+    int maxSum = INT_MIN;
+
+public:
+    int maxGain(TreeNode* node) {
+        if (node == nullptr) {
+            return 0;
+        }
+        
+        // 递归计算左右子节点的最大贡献值
+        // 只有在最大贡献值大于 0 时，才会选取对应子节点
+        int leftGain = max(maxGain(node->left), 0);
+        int rightGain = max(maxGain(node->right), 0);
+
+        // 节点的最大路径和取决于该节点的值与该节点的左右子节点的最大贡献值
+        int priceNewpath = node->val + leftGain + rightGain;
+
+        // 更新答案
+        maxSum = max(maxSum, priceNewpath);
+
+        // 返回节点的最大贡献值
+        return node->val + max(leftGain, rightGain);
+    }
+
+    int maxPathSum(TreeNode* root) {
+        maxGain(root);
+        return maxSum;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：递归
+class Solution {
+    int maxSum = Integer.MIN_VALUE;
+
+    public int maxPathSum(TreeNode root) {
+        maxGain(root);
+        return maxSum;
+    }
+
+    public int maxGain(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        
+        // 递归计算左右子节点的最大贡献值
+        // 只有在最大贡献值大于 0 时，才会选取对应子节点
+        int leftGain = Math.max(maxGain(node.left), 0);
+        int rightGain = Math.max(maxGain(node.right), 0);
+
+        // 节点的最大路径和取决于该节点的值与该节点的左右子节点的最大贡献值
+        int priceNewpath = node.val + leftGain + rightGain;
+
+        // 更新答案
+        maxSum = Math.max(maxSum, priceNewpath);
+
+        // 返回节点的最大贡献值
+        return node.val + Math.max(leftGain, rightGain);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
