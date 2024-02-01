@@ -3390,6 +3390,301 @@ class Solution {
 
 
 
+### [841. 钥匙和房间](https://leetcode.cn/problems/keys-and-rooms/)
+
+中等
+
+有 `n` 个房间，房间按从 `0` 到 `n - 1` 编号。最初，除 `0` 号房间外的其余所有房间都被锁住。你的目标是进入所有的房间。然而，你不能在没有获得钥匙的时候进入锁住的房间。
+
+当你进入一个房间，你可能会在里面找到一套不同的钥匙，每把钥匙上都有对应的房间号，即表示钥匙可以打开的房间。你可以拿上所有钥匙去解锁其他房间。
+
+给你一个数组 `rooms` 其中 `rooms[i]` 是你进入 `i` 号房间可以获得的钥匙集合。如果能进入 **所有** 房间返回 `true`，否则返回 `false`。
+
+**示例 1：**
+
+```
+输入：rooms = [[1],[2],[3],[]]
+输出：true
+解释：
+我们从 0 号房间开始，拿到钥匙 1。
+之后我们去 1 号房间，拿到钥匙 2。
+然后我们去 2 号房间，拿到钥匙 3。
+最后我们去了 3 号房间。
+由于我们能够进入每个房间，我们返回 true。
+```
+
+C++版本
+
+```c++
+// 方法一：深度优先搜索
+class Solution {
+public:
+    vector<int> vis;
+    int num;
+
+    void dfs(vector<vector<int>>& rooms, int x) {
+        vis[x] = true;
+        num++;
+        for (auto& it : rooms[x]) {
+            if (!vis[it]) {
+                dfs(rooms, it);
+            }
+        }
+    }
+
+    bool canVisitAllRooms(vector<vector<int>>& rooms) {
+        int n = rooms.size();
+        num = 0;
+        vis.resize(n);
+        dfs(rooms, 0);
+        return num == n;
+    }
+};
+
+// 方法二：广度优先搜索
+class Solution {
+public:
+    bool canVisitAllRooms(vector<vector<int>>& rooms) {
+        int n = rooms.size(), num = 0;
+        vector<int> vis(n);
+        queue<int> que;
+        vis[0] = true;
+        que.emplace(0);
+        while (!que.empty()) {
+            int x = que.front();
+            que.pop();
+            num++;
+            for (auto& it : rooms[x]) {
+                if (!vis[it]) {
+                    vis[it] = true;
+                    que.emplace(it);
+                }
+            }
+        }
+        return num == n;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：深度优先搜索
+class Solution {
+    boolean[] vis;
+    int num;
+
+    public boolean canVisitAllRooms(List<List<Integer>> rooms) {
+        int n = rooms.size();
+        num = 0;
+        vis = new boolean[n];
+        dfs(rooms, 0);
+        return num == n;
+    }
+
+    public void dfs(List<List<Integer>> rooms, int x) {
+        vis[x] = true;
+        num++;
+        for (int it : rooms.get(x)) {
+            if (!vis[it]) {
+                dfs(rooms, it);
+            }
+        }
+    }
+}
+
+// 方法二：广度优先搜索
+class Solution {
+    public boolean canVisitAllRooms(List<List<Integer>> rooms) {
+        int n = rooms.size(), num = 0;
+        boolean[] vis = new boolean[n];
+        Queue<Integer> que = new LinkedList<Integer>();
+        vis[0] = true;
+        que.offer(0);
+        while (!que.isEmpty()) {
+            int x = que.poll();
+            num++;
+            for (int it : rooms.get(x)) {
+                if (!vis[it]) {
+                    vis[it] = true;
+                    que.offer(it);
+                }
+            }
+        }
+        return num == n;
+    }
+}
+```
+
+
+
+### [129. 求根节点到叶节点数字之和](https://leetcode.cn/problems/sum-root-to-leaf-numbers/)
+
+中等
+
+给你一个二叉树的根节点 `root` ，树中每个节点都存放有一个 `0` 到 `9` 之间的数字。
+
+每条从根节点到叶节点的路径都代表一个数字：
+
+- 例如，从根节点到叶节点的路径 `1 -> 2 -> 3` 表示数字 `123` 。
+
+计算从根节点到叶节点生成的 **所有数字之和** 。
+
+**叶节点** 是指没有子节点的节点。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/num1tree.jpg)
+
+```
+输入：root = [1,2,3]
+输出：25
+解释：
+从根到叶子节点路径 1->2 代表数字 12
+从根到叶子节点路径 1->3 代表数字 13
+因此，数字总和 = 12 + 13 = 25
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：深度优先搜索
+class Solution {
+public:
+    int dfs(TreeNode* root, int prevSum) {
+        if (root == nullptr) {
+            return 0;
+        }
+        int sum = prevSum * 10 + root->val;
+        if (root->left == nullptr && root->right == nullptr) {
+            return sum;
+        } else {
+            return dfs(root->left, sum) + dfs(root->right, sum);
+        }
+    }
+    int sumNumbers(TreeNode* root) {
+        return dfs(root, 0);
+    }
+};
+
+// 方法二：广度优先搜索
+class Solution {
+public:
+    int sumNumbers(TreeNode* root) {
+        if (root == nullptr) {
+            return 0;
+        }
+        int sum = 0;
+        queue<TreeNode*> nodeQueue;
+        queue<int> numQueue;
+        nodeQueue.push(root);
+        numQueue.push(root->val);
+        while (!nodeQueue.empty()) {
+            TreeNode* node = nodeQueue.front();
+            int num = numQueue.front();
+            nodeQueue.pop();
+            numQueue.pop();
+            TreeNode* left = node->left;
+            TreeNode* right = node->right;
+            if (left == nullptr && right == nullptr) {
+                sum += num;
+            } else {
+                if (left != nullptr) {
+                    nodeQueue.push(left);
+                    numQueue.push(num * 10 + left->val);
+                }
+                if (right != nullptr) {
+                    nodeQueue.push(right);
+                    numQueue.push(num * 10 + right->val);
+                }
+            }
+        }
+        return sum;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：深度优先搜索
+class Solution {
+    public int sumNumbers(TreeNode root) {
+        return dfs(root, 0);
+    }
+
+    public int dfs(TreeNode root, int prevSum) {
+        if (root == null) {
+            return 0;
+        }
+        int sum = prevSum * 10 + root.val;
+        if (root.left == null && root.right == null) {
+            return sum;
+        } else {
+            return dfs(root.left, sum) + dfs(root.right, sum);
+        }
+    }
+}
+
+// 方法二：广度优先搜索
+class Solution {
+    public int sumNumbers(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        int sum = 0;
+        Queue<TreeNode> nodeQueue = new LinkedList<TreeNode>();
+        Queue<Integer> numQueue = new LinkedList<Integer>();
+        nodeQueue.offer(root);
+        numQueue.offer(root.val);
+        while (!nodeQueue.isEmpty()) {
+            TreeNode node = nodeQueue.poll();
+            int num = numQueue.poll();
+            TreeNode left = node.left, right = node.right;
+            if (left == null && right == null) {
+                sum += num;
+            } else {
+                if (left != null) {
+                    nodeQueue.offer(left);
+                    numQueue.offer(num * 10 + left.val);
+                }
+                if (right != null) {
+                    nodeQueue.offer(right);
+                    numQueue.offer(num * 10 + right.val);
+                }
+            }
+        }
+        return sum;
+    }
+}
+```
+
 
 
 
