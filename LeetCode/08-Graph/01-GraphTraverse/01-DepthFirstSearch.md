@@ -3687,6 +3687,291 @@ class Solution {
 
 
 
+### [684. 冗余连接](https://leetcode.cn/problems/redundant-connection/)
+
+中等
+
+树可以看成是一个连通且 **无环** 的 **无向** 图。
+
+给定往一棵 `n` 个节点 (节点值 `1～n`) 的树中添加一条边后的图。添加的边的两个顶点包含在 `1` 到 `n` 中间，且这条附加的边不属于树中已存在的边。图的信息记录于长度为 `n` 的二维数组 `edges` ，`edges[i] = [ai, bi]` 表示图中在 `ai` 和 `bi` 之间存在一条边。
+
+请找出一条可以删去的边，删除后可使得剩余部分是一个有着 `n` 个节点的树。如果有多个答案，则返回数组 `edges` 中最后出现的那个。
+
+**示例 1：**
+
+![img](https://pic.leetcode-cn.com/1626676174-hOEVUL-image.png)
+
+```
+输入: edges = [[1,2], [1,3], [2,3]]
+输出: [2,3]
+```
+
+C++版本
+
+```c++
+// 方法一：并查集
+class Solution {
+public:
+    int Find(vector<int>& parent, int index) {
+        if (parent[index] != index) {
+            parent[index] = Find(parent, parent[index]);
+        }
+        return parent[index];
+    }
+
+    void Union(vector<int>& parent, int index1, int index2) {
+        parent[Find(parent, index1)] = Find(parent, index2);
+    }
+
+    vector<int> findRedundantConnection(vector<vector<int>>& edges) {
+        int n = edges.size();
+        vector<int> parent(n + 1);
+        for (int i = 1; i <= n; ++i) {
+            parent[i] = i;
+        }
+        for (auto& edge: edges) {
+            int node1 = edge[0], node2 = edge[1];
+            if (Find(parent, node1) != Find(parent, node2)) {
+                Union(parent, node1, node2);
+            } else {
+                return edge;
+            }
+        }
+        return vector<int>{};
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：并查集
+class Solution {
+    public int[] findRedundantConnection(int[][] edges) {
+        int n = edges.length;
+        int[] parent = new int[n + 1];
+        
+        // 初始化每个节点的父节点为节点本身
+        for (int i = 1; i <= n; i++) {
+            parent[i] = i;
+        }
+        
+        for (int i = 0; i < n; i++) {
+            int[] edge = edges[i];
+            int node1 = edge[0], node2 = edge[1];
+            
+            // 判断两个节点是否属于同一个连通分量
+            if (find(parent, node1) != find(parent, node2)) {
+                // 如果不属于同一个连通分量，则合并它们
+                union(parent, node1, node2);
+            } else {
+                // 如果属于同一个连通分量，则该边是多余的，返回该边
+                return edge;
+            }
+        }
+        
+        // 如果所有边都被遍历，仍未找到多余的边，则返回空数组
+        return new int[0];
+    }
+
+    // 合并两个节点所在的连通分量
+    public void union(int[] parent, int index1, int index2) {
+        parent[find(parent, index1)] = find(parent, index2);
+    }
+
+    // 查找节点所在连通分量的根节点
+    public int find(int[] parent, int index) {
+        // 如果当前节点的父节点不是自己，递归找到根节点并路径压缩
+        if (parent[index] != index) {
+            parent[index] = find(parent, parent[index]);
+        }
+        return parent[index];
+    }
+}
+
+```
+
+
+
+### [802. 找到最终的安全状态](https://leetcode.cn/problems/find-eventual-safe-states/)
+
+中等
+
+有一个有 `n` 个节点的有向图，节点按 `0` 到 `n - 1` 编号。图由一个 **索引从 0 开始** 的 2D 整数数组 `graph`表示， `graph[i]`是与节点 `i` 相邻的节点的整数数组，这意味着从节点 `i` 到 `graph[i]`中的每个节点都有一条边。
+
+如果一个节点没有连出的有向边，则该节点是 **终端节点** 。如果从该节点开始的所有可能路径都通向 **终端节点** ，则该节点为 **安全节点** 。
+
+返回一个由图中所有 **安全节点** 组成的数组作为答案。答案数组中的元素应当按 **升序** 排列。
+
+**示例 1：**
+
+![Illustration of graph](https://s3-lc-upload.s3.amazonaws.com/uploads/2018/03/17/picture1.png)
+
+```
+输入：graph = [[1,2],[2,3],[5],[0],[5],[],[]]
+输出：[2,4,5,6]
+解释：示意图如上。
+节点 5 和节点 6 是终端节点，因为它们都没有出边。
+从节点 2、4、5 和 6 开始的所有路径都指向节点 5 或 6 。
+```
+
+C++版本
+
+```c++
+// 方法一：深度优先搜索 + 三色标记法
+class Solution {
+public:
+    vector<int> eventualSafeNodes(vector<vector<int>> &graph) {
+        int n = graph.size();
+        vector<int> color(n);
+
+        function<bool(int)> safe = [&](int x) {
+            if (color[x] > 0) {
+                return color[x] == 2;
+            }
+            color[x] = 1;
+            for (int y : graph[x]) {
+                if (!safe(y)) {
+                    return false;
+                }
+            }
+            color[x] = 2;
+            return true;
+        };
+
+        vector<int> ans;
+        for (int i = 0; i < n; ++i) {
+            if (safe(i)) {
+                ans.push_back(i);
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：拓扑排序
+class Solution {
+public:
+    vector<int> eventualSafeNodes(vector<vector<int>> &graph) {
+        int n = graph.size();
+        vector<vector<int>> rg(n);
+        vector<int> inDeg(n);
+        for (int x = 0; x < n; ++x) {
+            for (int y : graph[x]) {
+                rg[y].push_back(x);
+            }
+            inDeg[x] = graph[x].size();
+        }
+
+        queue<int> q;
+        for (int i = 0; i < n; ++i) {
+            if (inDeg[i] == 0) {
+                q.push(i);
+            }
+        }
+        while (!q.empty()) {
+            int y = q.front();
+            q.pop();
+            for (int x : rg[y]) {
+                if (--inDeg[x] == 0) {
+                    q.push(x);
+                }
+            }
+        }
+
+        vector<int> ans;
+        for (int i = 0; i < n; ++i) {
+            if (inDeg[i] == 0) {
+                ans.push_back(i);
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：深度优先搜索 + 三色标记法
+class Solution {
+    public List<Integer> eventualSafeNodes(int[][] graph) {
+        int n = graph.length;
+        int[] color = new int[n];
+        List<Integer> ans = new ArrayList<Integer>();
+        for (int i = 0; i < n; ++i) {
+            if (safe(graph, color, i)) {
+                ans.add(i);
+            }
+        }
+        return ans;
+    }
+
+    public boolean safe(int[][] graph, int[] color, int x) {
+        if (color[x] > 0) {
+            return color[x] == 2;
+        }
+        color[x] = 1;
+        for (int y : graph[x]) {
+            if (!safe(graph, color, y)) {
+                return false;
+            }
+        }
+        color[x] = 2;
+        return true;
+    }
+}
+
+// 方法二：拓扑排序
+class Solution {
+    public List<Integer> eventualSafeNodes(int[][] graph) {
+        int n = graph.length;
+        List<List<Integer>> rg = new ArrayList<List<Integer>>();
+        for (int i = 0; i < n; ++i) {
+            rg.add(new ArrayList<Integer>());
+        }
+        int[] inDeg = new int[n];
+        for (int x = 0; x < n; ++x) {
+            for (int y : graph[x]) {
+                rg.get(y).add(x);
+            }
+            inDeg[x] = graph[x].length;
+        }
+
+        Queue<Integer> queue = new LinkedList<Integer>();
+        for (int i = 0; i < n; ++i) {
+            if (inDeg[i] == 0) {
+                queue.offer(i);
+            }
+        }
+        while (!queue.isEmpty()) {
+            int y = queue.poll();
+            for (int x : rg.get(y)) {
+                if (--inDeg[x] == 0) {
+                    queue.offer(x);
+                }
+            }
+        }
+
+        List<Integer> ans = new ArrayList<Integer>();
+        for (int i = 0; i < n; ++i) {
+            if (inDeg[i] == 0) {
+                ans.add(i);
+            }
+        }
+        return ans;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
 
 
 
