@@ -4406,13 +4406,868 @@ class Solution {
 
 
 
+### [130. 被围绕的区域](https://leetcode.cn/problems/surrounded-regions/)
+
+中等
+
+给你一个 `m x n` 的矩阵 `board` ，由若干字符 `'X'` 和 `'O'` ，找到所有被 `'X'` 围绕的区域，并将这些区域里所有的 `'O'` 用 `'X'` 填充。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/xogrid.jpg)
+
+```
+输入：board = [["X","X","X","X"],["X","O","O","X"],["X","X","O","X"],["X","O","X","X"]]
+输出：[["X","X","X","X"],["X","X","X","X"],["X","X","X","X"],["X","O","X","X"]]
+解释：被围绕的区间不会存在于边界上，换句话说，任何边界上的 'O' 都不会被填充为 'X'。 任何不在边界上，或不与边界上的 'O' 相连的 'O' 最终都会被填充为 'X'。如果两个元素在水平或垂直方向相邻，则称它们是“相连”的。
+```
+
+C++版本
+
+```c++
+// 方法一：深度优先搜索
+class Solution {
+public:
+    int n, m;
+
+    void dfs(vector<vector<char>>& board, int x, int y) {
+        if (x < 0 || x >= n || y < 0 || y >= m || board[x][y] != 'O') {
+            return;
+        }
+        board[x][y] = 'A';
+        dfs(board, x + 1, y);
+        dfs(board, x - 1, y);
+        dfs(board, x, y + 1);
+        dfs(board, x, y - 1);
+    }
+
+    void solve(vector<vector<char>>& board) {
+        n = board.size();
+        if (n == 0) {
+            return;
+        }
+        m = board[0].size();
+        for (int i = 0; i < n; i++) {
+            dfs(board, i, 0);
+            dfs(board, i, m - 1);
+        }
+        for (int i = 1; i < m - 1; i++) {
+            dfs(board, 0, i);
+            dfs(board, n - 1, i);
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (board[i][j] == 'A') {
+                    board[i][j] = 'O';
+                } else if (board[i][j] == 'O') {
+                    board[i][j] = 'X';
+                }
+            }
+        }
+    }
+};
+
+// 方法二：广度优先搜索
+class Solution {
+public:
+    const int dx[4] = {1, -1, 0, 0};
+    const int dy[4] = {0, 0, 1, -1};
+
+    void solve(vector<vector<char>>& board) {
+        int n = board.size();
+        if (n == 0) {
+            return;
+        }
+        int m = board[0].size();
+        queue<pair<int, int>> que;
+        for (int i = 0; i < n; i++) {
+            if (board[i][0] == 'O') {
+                que.emplace(i, 0);
+                board[i][0] = 'A';
+            }
+            if (board[i][m - 1] == 'O') {
+                que.emplace(i, m - 1);
+                board[i][m - 1] = 'A';
+            }
+        }
+        for (int i = 1; i < m - 1; i++) {
+            if (board[0][i] == 'O') {
+                que.emplace(0, i);
+                board[0][i] = 'A';
+            }
+            if (board[n - 1][i] == 'O') {
+                que.emplace(n - 1, i);
+                board[n - 1][i] = 'A';
+            }
+        }
+        while (!que.empty()) {
+            int x = que.front().first, y = que.front().second;
+            que.pop();
+            for (int i = 0; i < 4; i++) {
+                int mx = x + dx[i], my = y + dy[i];
+                if (mx < 0 || my < 0 || mx >= n || my >= m || board[mx][my] != 'O') {
+                    continue;
+                }
+                que.emplace(mx, my);
+                board[mx][my] = 'A';
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (board[i][j] == 'A') {
+                    board[i][j] = 'O';
+                } else if (board[i][j] == 'O') {
+                    board[i][j] = 'X';
+                }
+            }
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：深度优先搜索
+class Solution {
+    int n, m;
+
+    public void solve(char[][] board) {
+        n = board.length;
+        if (n == 0) {
+            return;
+        }
+        m = board[0].length;
+        for (int i = 0; i < n; i++) {
+            dfs(board, i, 0);
+            dfs(board, i, m - 1);
+        }
+        for (int i = 1; i < m - 1; i++) {
+            dfs(board, 0, i);
+            dfs(board, n - 1, i);
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (board[i][j] == 'A') {
+                    board[i][j] = 'O';
+                } else if (board[i][j] == 'O') {
+                    board[i][j] = 'X';
+                }
+            }
+        }
+    }
+
+    public void dfs(char[][] board, int x, int y) {
+        if (x < 0 || x >= n || y < 0 || y >= m || board[x][y] != 'O') {
+            return;
+        }
+        board[x][y] = 'A';
+        dfs(board, x + 1, y);
+        dfs(board, x - 1, y);
+        dfs(board, x, y + 1);
+        dfs(board, x, y - 1);
+    }
+}
+
+// 方法二：广度优先搜索
+class Solution {
+    int[] dx = {1, -1, 0, 0};
+    int[] dy = {0, 0, 1, -1};
+
+    public void solve(char[][] board) {
+        int n = board.length;
+        if (n == 0) {
+            return;
+        }
+        int m = board[0].length;
+        Queue<int[]> queue = new LinkedList<int[]>();
+        for (int i = 0; i < n; i++) {
+            if (board[i][0] == 'O') {
+                queue.offer(new int[]{i, 0});
+                board[i][0] = 'A';
+            }
+            if (board[i][m - 1] == 'O') {
+                queue.offer(new int[]{i, m - 1});
+                board[i][m - 1] = 'A';
+            }
+        }
+        for (int i = 1; i < m - 1; i++) {
+            if (board[0][i] == 'O') {
+                queue.offer(new int[]{0, i});
+                board[0][i] = 'A';
+            }
+            if (board[n - 1][i] == 'O') {
+                queue.offer(new int[]{n - 1, i});
+                board[n - 1][i] = 'A';
+            }
+        }
+        while (!queue.isEmpty()) {
+            int[] cell = queue.poll();
+            int x = cell[0], y = cell[1];
+            for (int i = 0; i < 4; i++) {
+                int mx = x + dx[i], my = y + dy[i];
+                if (mx < 0 || my < 0 || mx >= n || my >= m || board[mx][my] != 'O') {
+                    continue;
+                }
+                queue.offer(new int[]{mx, my});
+                board[mx][my] = 'A';
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (board[i][j] == 'A') {
+                    board[i][j] = 'O';
+                } else if (board[i][j] == 'O') {
+                    board[i][j] = 'X';
+                }
+            }
+        }
+    }
+}
+```
 
 
 
+### [417. 太平洋大西洋水流问题](https://leetcode.cn/problems/pacific-atlantic-water-flow/)
+
+中等
+
+有一个 `m × n` 的矩形岛屿，与 **太平洋** 和 **大西洋** 相邻。 **“太平洋”** 处于大陆的左边界和上边界，而 **“大西洋”** 处于大陆的右边界和下边界。
+
+这个岛被分割成一个由若干方形单元格组成的网格。给定一个 `m x n` 的整数矩阵 `heights` ， `heights[r][c]` 表示坐标 `(r, c)` 上单元格 **高于海平面的高度** 。
+
+岛上雨水较多，如果相邻单元格的高度 **小于或等于** 当前单元格的高度，雨水可以直接向北、南、东、西流向相邻单元格。水可以从海洋附近的任何单元格流入海洋。
+
+返回网格坐标 `result` 的 **2D 列表** ，其中 `result[i] = [ri, ci]` 表示雨水从单元格 `(ri, ci)` 流动 **既可流向太平洋也可流向大西洋** 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/06/08/waterflow-grid.jpg)
+
+```
+输入: heights = [[1,2,2,3,5],[3,2,3,4,4],[2,4,5,3,1],[6,7,1,4,5],[5,1,1,2,4]]
+输出: [[0,4],[1,3],[1,4],[2,2],[3,0],[3,1],[4,0]]
+```
+
+C++版本
+
+```c++
+// 方法一：深度优先搜索
+static const int dirs[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+class Solution {
+public:
+    vector<vector<int>> heights;
+
+    void dfs(int row, int col, vector<vector<bool>> & ocean) {
+        int m = ocean.size();
+        int n = ocean[0].size();
+        if (ocean[row][col]) {
+            return;
+        }
+        ocean[row][col] = true;
+        for (int i = 0; i < 4; i++) {
+            int newRow = row + dirs[i][0], newCol = col + dirs[i][1];
+            if (newRow >= 0 && newRow < m && newCol >= 0 && newCol < n && heights[newRow][newCol] >= heights[row][col]) {
+                dfs(newRow, newCol, ocean);
+            }
+        }
+    }
+
+    vector<vector<int>> pacificAtlantic(vector<vector<int>>& heights) {
+        this->heights = heights;
+        int m = heights.size();
+        int n = heights[0].size();
+        vector<vector<bool>> pacific(m, vector<bool>(n, false));
+        vector<vector<bool>> atlantic(m, vector<bool>(n, false));
+
+        for (int i = 0; i < m; i++) {
+            dfs(i, 0, pacific);
+        }
+        for (int j = 1; j < n; j++) {
+            dfs(0, j, pacific);
+        }
+        for (int i = 0; i < m; i++) {
+            dfs(i, n - 1, atlantic);
+        }
+        for (int j = 0; j < n - 1; j++) {
+            dfs(m - 1, j, atlantic);
+        }
+        vector<vector<int>> result;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (pacific[i][j] && atlantic[i][j]) {
+                    vector<int> cell;
+                    cell.emplace_back(i);
+                    cell.emplace_back(j);
+                    result.emplace_back(cell);
+                }
+            }
+        }
+        return result;
+    }
+};
+
+// 方法二：广度优先搜索
+static const int dirs[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+class Solution {
+public:
+    vector<vector<int>> heights;
+
+    void bfs(int row, int col, vector<vector<bool>> & ocean) {
+        if (ocean[row][col]) {
+            return;
+        }
+        int m = heights.size();
+        int n = heights[0].size();
+        ocean[row][col] = true;
+        queue<pair<int, int>> qu;
+        qu.emplace(row, col);
+        while (!qu.empty()) {
+            auto [row, col] = qu.front();
+            qu.pop();
+            for (int i = 0; i < 4; i++) {
+                int newRow = row + dirs[i][0], newCol = col + dirs[i][1];
+                if (newRow >= 0 && newRow < m && newCol >= 0 && newCol < n && heights[newRow][newCol] >= heights[row][col] && !ocean[newRow][newCol]) {
+                    ocean[newRow][newCol] = true;
+                    qu.emplace(newRow, newCol);
+                }
+            }
+        }
+    }
+
+    vector<vector<int>> pacificAtlantic(vector<vector<int>>& heights) {
+        this->heights = heights;
+        int m = heights.size();
+        int n = heights[0].size();
+        vector<vector<bool>> pacific(m, vector<bool>(n, false));
+        vector<vector<bool>> atlantic(m, vector<bool>(n, false));
+
+        for (int i = 0; i < m; i++) {
+            bfs(i, 0, pacific);
+        }
+        for (int j = 1; j < n; j++) {
+            bfs(0, j, pacific);
+        }
+        for (int i = 0; i < m; i++) {
+            bfs(i, n - 1, atlantic);
+        }
+        for (int j = 0; j < n - 1; j++) {
+            bfs(m - 1, j, atlantic);
+        }
+        vector<vector<int>> result;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (pacific[i][j] && atlantic[i][j]) {
+                    vector<int> cell;
+                    cell.emplace_back(i);
+                    cell.emplace_back(j);
+                    result.emplace_back(cell);
+                }
+            }
+        }
+        return result;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：深度优先搜索
+class Solution {
+    static int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    int[][] heights;
+    int m, n;
+
+    public List<List<Integer>> pacificAtlantic(int[][] heights) {
+        this.heights = heights;
+        this.m = heights.length;
+        this.n = heights[0].length;
+        boolean[][] pacific = new boolean[m][n];
+        boolean[][] atlantic = new boolean[m][n];
+        for (int i = 0; i < m; i++) {
+            dfs(i, 0, pacific);
+        }
+        for (int j = 1; j < n; j++) {
+            dfs(0, j, pacific);
+        }
+        for (int i = 0; i < m; i++) {
+            dfs(i, n - 1, atlantic);
+        }
+        for (int j = 0; j < n - 1; j++) {
+            dfs(m - 1, j, atlantic);
+        }
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (pacific[i][j] && atlantic[i][j]) {
+                    List<Integer> cell = new ArrayList<Integer>();
+                    cell.add(i);
+                    cell.add(j);
+                    result.add(cell);
+                }
+            }
+        }
+        return result;
+    }
+
+    public void dfs(int row, int col, boolean[][] ocean) {
+        if (ocean[row][col]) {
+            return;
+        }
+        ocean[row][col] = true;
+        for (int[] dir : dirs) {
+            int newRow = row + dir[0], newCol = col + dir[1];
+            if (newRow >= 0 && newRow < m && newCol >= 0 && newCol < n && heights[newRow][newCol] >= heights[row][col]) {
+                dfs(newRow, newCol, ocean);
+            }
+        }
+    }
+}
+
+// 方法二：广度优先搜索
+class Solution {
+    static int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    int[][] heights;
+    int m, n;
+
+    public List<List<Integer>> pacificAtlantic(int[][] heights) {
+        this.heights = heights;
+        this.m = heights.length;
+        this.n = heights[0].length;
+        boolean[][] pacific = new boolean[m][n];
+        boolean[][] atlantic = new boolean[m][n];
+        for (int i = 0; i < m; i++) {
+            bfs(i, 0, pacific);
+        }
+        for (int j = 1; j < n; j++) {
+            bfs(0, j, pacific);
+        }
+        for (int i = 0; i < m; i++) {
+            bfs(i, n - 1, atlantic);
+        }
+        for (int j = 0; j < n - 1; j++) {
+            bfs(m - 1, j, atlantic);
+        }
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (pacific[i][j] && atlantic[i][j]) {
+                    List<Integer> cell = new ArrayList<Integer>();
+                    cell.add(i);
+                    cell.add(j);
+                    result.add(cell);
+                }
+            }
+        }
+        return result;
+    }
+
+    public void bfs(int row, int col, boolean[][] ocean) {
+        if (ocean[row][col]) {
+            return;
+        }
+        ocean[row][col] = true;
+        Queue<int[]> queue = new ArrayDeque<int[]>();
+        queue.offer(new int[]{row, col});
+        while (!queue.isEmpty()) {
+            int[] cell = queue.poll();
+            for (int[] dir : dirs) {
+                int newRow = cell[0] + dir[0], newCol = cell[1] + dir[1];
+                if (newRow >= 0 && newRow < m && newCol >= 0 && newCol < n && heights[newRow][newCol] >= heights[cell[0]][cell[1]] && !ocean[newRow][newCol]) {
+                    ocean[newRow][newCol] = true;
+                    queue.offer(new int[]{newRow, newCol});
+                }
+            }
+        }
+    }
+}
+```
 
 
 
+### [1020. 飞地的数量](https://leetcode.cn/problems/number-of-enclaves/)
 
+中等
+
+给你一个大小为 `m x n` 的二进制矩阵 `grid` ，其中 `0` 表示一个海洋单元格、`1` 表示一个陆地单元格。
+
+一次 **移动** 是指从一个陆地单元格走到另一个相邻（**上、下、左、右**）的陆地单元格或跨过 `grid` 的边界。
+
+返回网格中 **无法** 在任意次数的移动中离开网格边界的陆地单元格的数量。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/18/enclaves1.jpg)
+
+```
+输入：grid = [[0,0,0,0],[1,0,1,0],[0,1,1,0],[0,0,0,0]]
+输出：3
+解释：有三个 1 被 0 包围。一个 1 没有被包围，因为它在边界上。
+```
+
+C++版本
+
+```c++
+// 方法一：深度优先搜索
+class Solution {
+public:
+    vector<vector<int>> dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    int numEnclaves(vector<vector<int>>& grid) {
+        this->m = grid.size();
+        this->n = grid[0].size();
+        this->visited = vector<vector<bool>>(m, vector<bool>(n, false));
+        for (int i = 0; i < m; i++) {
+            dfs(grid, i, 0);
+            dfs(grid, i, n - 1);
+        }
+        for (int j = 1; j < n - 1; j++) {
+            dfs(grid, 0, j);
+            dfs(grid, m - 1, j);
+        }
+        int enclaves = 0;
+        for (int i = 1; i < m - 1; i++) {
+            for (int j = 1; j < n - 1; j++) {
+                if (grid[i][j] == 1 && !visited[i][j]) {
+                    enclaves++;
+                }
+            }
+        }
+        return enclaves;
+    }
+
+    void dfs(const vector<vector<int>> & grid, int row, int col) {
+        if (row < 0 || row >= m || col < 0 || col >= n || grid[row][col] == 0 || visited[row][col]) {
+            return;
+        }
+        visited[row][col] = true;
+        for (auto & dir : dirs) {
+            dfs(grid, row + dir[0], col + dir[1]);
+        }
+    }
+private:
+    int m, n;
+    vector<vector<bool>> visited;
+};
+
+// 方法二：广度优先搜索
+class Solution {
+public:
+    vector<vector<int>> dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    int numEnclaves(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        vector<vector<bool>> visited = vector<vector<bool>>(m, vector<bool>(n, false));
+        queue<pair<int,int>> qu;
+        for (int i = 0; i < m; i++) {
+            if (grid[i][0] == 1) {
+                visited[i][0] = true;
+                qu.emplace(i, 0);
+            }
+            if (grid[i][n - 1] == 1) {
+                visited[i][n - 1] = true;
+                qu.emplace(i, n - 1);
+            }
+        }
+        for (int j = 1; j < n - 1; j++) {
+            if (grid[0][j] == 1) {
+                visited[0][j] = true;
+                qu.emplace(0, j);
+            }
+            if (grid[m - 1][j] == 1) {
+                visited[m - 1][j] = true;
+                qu.emplace(m - 1, j);
+            }
+        }
+        while (!qu.empty()) {
+            auto [currRow, currCol] = qu.front();
+            qu.pop();
+            for (auto & dir : dirs) {
+                int nextRow = currRow + dir[0], nextCol = currCol + dir[1];
+                if (nextRow >= 0 && nextRow < m && nextCol >= 0 && nextCol < n && grid[nextRow][nextCol] == 1 && !visited[nextRow][nextCol]) {
+                    visited[nextRow][nextCol] = true;
+                    qu.emplace(nextRow, nextCol);
+                }
+            }
+        }
+        int enclaves = 0;
+        for (int i = 1; i < m - 1; i++) {
+            for (int j = 1; j < n - 1; j++) {
+                if (grid[i][j] == 1 && !visited[i][j]) {
+                    enclaves++;
+                }
+            }
+        }
+        return enclaves;
+    }
+};
+
+// 方法三：并查集
+class UnionFind {
+public:
+    UnionFind(const vector<vector<int>> & grid) {
+        int m = grid.size(), n = grid[0].size();
+        this->parent = vector<int>(m * n);
+        this->onEdge = vector<bool>(m * n, false);
+        this->rank = vector<int>(m * n);
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 1) {
+                    int index = i * n + j;
+                    parent[index] = index;
+                    if (i == 0 || i == m - 1 || j == 0 || j == n - 1) {
+                        onEdge[index] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    int find(int i) {
+        if (parent[i] != i) {
+            parent[i] = find(parent[i]);
+        }
+        return parent[i];
+    }
+
+    void uni(int x, int y) {
+        int rootx = find(x);
+        int rooty = find(y);
+        if (rootx != rooty) {
+            if (rank[rootx] > rank[rooty]) {
+                parent[rooty] = rootx;
+                onEdge[rootx] = onEdge[rootx] | onEdge[rooty];
+            } else if (rank[rootx] < rank[rooty]) {
+                parent[rootx] = rooty;
+                onEdge[rooty] = onEdge[rooty] | onEdge[rootx];
+            } else {
+                parent[rooty] = rootx;
+                onEdge[rootx] = onEdge[rootx] | onEdge[rooty];
+                rank[rootx]++;
+            }
+        }
+    }
+
+    bool isOnEdge(int i) {
+        return onEdge[find(i)];
+    }
+private:
+    vector<int> parent;
+    vector<bool> onEdge;
+    vector<int> rank;    
+};
+
+class Solution {
+public:
+    int numEnclaves(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        UnionFind uf(grid);
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 1) {
+                    int index = i * n + j;
+                    if (j + 1 < n && grid[i][j + 1] == 1) {
+                        uf.uni(index, index + 1);
+                    }
+                    if (i + 1 < m && grid[i + 1][j] == 1) {
+                        uf.uni(index, index + n);
+                    }
+                }
+            }
+        }
+        int enclaves = 0;
+        for (int i = 1; i < m - 1; i++) {
+            for (int j = 1; j < n - 1; j++) {
+                if (grid[i][j] == 1 && !uf.isOnEdge(i * n + j)) {
+                    enclaves++;
+                }
+            }
+        }
+        return enclaves;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：深度优先搜索
+class Solution {
+    public static int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    private int m, n;
+    private boolean[][] visited;
+
+    public int numEnclaves(int[][] grid) {
+        m = grid.length;
+        n = grid[0].length;
+        visited = new boolean[m][n];
+        for (int i = 0; i < m; i++) {
+            dfs(grid, i, 0);
+            dfs(grid, i, n - 1);
+        }
+        for (int j = 1; j < n - 1; j++) {
+            dfs(grid, 0, j);
+            dfs(grid, m - 1, j);
+        }
+        int enclaves = 0;
+        for (int i = 1; i < m - 1; i++) {
+            for (int j = 1; j < n - 1; j++) {
+                if (grid[i][j] == 1 && !visited[i][j]) {
+                    enclaves++;
+                }
+            }
+        }
+        return enclaves;
+    }
+
+    public void dfs(int[][] grid, int row, int col) {
+        if (row < 0 || row >= m || col < 0 || col >= n || grid[row][col] == 0 || visited[row][col]) {
+            return;
+        }
+        visited[row][col] = true;
+        for (int[] dir : dirs) {
+            dfs(grid, row + dir[0], col + dir[1]);
+        }
+    }
+}
+
+// 方法二：广度优先搜索
+class Solution {
+    public static int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    public int numEnclaves(int[][] grid) {
+        int m = grid.length, n = grid[0].length;
+        boolean[][] visited = new boolean[m][n];
+        Queue<int[]> queue = new ArrayDeque<int[]>();
+        for (int i = 0; i < m; i++) {
+            if (grid[i][0] == 1) {
+                visited[i][0] = true;
+                queue.offer(new int[]{i, 0});
+            }
+            if (grid[i][n - 1] == 1) {
+                visited[i][n - 1] = true;
+                queue.offer(new int[]{i, n - 1});
+            }
+        }
+        for (int j = 1; j < n - 1; j++) {
+            if (grid[0][j] == 1) {
+                visited[0][j] = true;
+                queue.offer(new int[]{0, j});
+            }
+            if (grid[m - 1][j] == 1) {
+                visited[m - 1][j] = true;
+                queue.offer(new int[]{m - 1, j});
+            }
+        }
+        while (!queue.isEmpty()) {
+            int[] cell = queue.poll();
+            int currRow = cell[0], currCol = cell[1];
+            for (int[] dir : dirs) {
+                int nextRow = currRow + dir[0], nextCol = currCol + dir[1];
+                if (nextRow >= 0 && nextRow < m && nextCol >= 0 && nextCol < n && grid[nextRow][nextCol] == 1 && !visited[nextRow][nextCol]) {
+                    visited[nextRow][nextCol] = true;
+                    queue.offer(new int[]{nextRow, nextCol});
+                }
+            }
+        }
+        int enclaves = 0;
+        for (int i = 1; i < m - 1; i++) {
+            for (int j = 1; j < n - 1; j++) {
+                if (grid[i][j] == 1 && !visited[i][j]) {
+                    enclaves++;
+                }
+            }
+        }
+        return enclaves;
+    }
+}
+
+// 方法三：并查集
+class Solution {
+    public int numEnclaves(int[][] grid) {
+        int m = grid.length, n = grid[0].length;
+        UnionFind uf = new UnionFind(grid);
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 1) {
+                    int index = i * n + j;
+                    if (j + 1 < n && grid[i][j + 1] == 1) {
+                        uf.union(index, index + 1);
+                    }
+                    if (i + 1 < m && grid[i + 1][j] == 1) {
+                        uf.union(index, index + n);
+                    }
+                }
+            }
+        }
+        int enclaves = 0;
+        for (int i = 1; i < m - 1; i++) {
+            for (int j = 1; j < n - 1; j++) {
+                if (grid[i][j] == 1 && !uf.isOnEdge(i * n + j)) {
+                    enclaves++;
+                }
+            }
+        }
+        return enclaves;
+    }
+}
+
+class UnionFind {
+    private int[] parent;
+    private boolean[] onEdge;
+    private int[] rank;
+
+    public UnionFind(int[][] grid) {
+        int m = grid.length, n = grid[0].length;
+        parent = new int[m * n];
+        onEdge = new boolean[m * n];
+        rank = new int[m * n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 1) {
+                    int index = i * n + j;
+                    parent[index] = index;
+                    if (i == 0 || i == m - 1 || j == 0 || j == n - 1) {
+                        onEdge[index] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    public int find(int i) {
+        if (parent[i] != i) {
+            parent[i] = find(parent[i]);
+        }
+        return parent[i];
+    }
+
+    public void union(int x, int y) {
+        int rootx = find(x);
+        int rooty = find(y);
+        if (rootx != rooty) {
+            if (rank[rootx] > rank[rooty]) {
+                parent[rooty] = rootx;
+                onEdge[rootx] |= onEdge[rooty];
+            } else if (rank[rootx] < rank[rooty]) {
+                parent[rootx] = rooty;
+                onEdge[rooty] |= onEdge[rootx];
+            } else {
+                parent[rooty] = rootx;
+                onEdge[rootx] |= onEdge[rooty];
+                rank[rootx]++;
+            }
+        }
+    }
+
+    public boolean isOnEdge(int i) {
+        return onEdge[find(i)];
+    }
+}
+```
 
 
 
