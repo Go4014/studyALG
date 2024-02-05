@@ -5271,6 +5271,973 @@ class UnionFind {
 
 
 
+### [1254. 统计封闭岛屿的数目](https://leetcode.cn/problems/number-of-closed-islands/)
+
+中等
+
+二维矩阵 `grid` 由 `0` （土地）和 `1` （水）组成。岛是由最大的4个方向连通的 `0` 组成的群，封闭岛是一个 `完全` 由1包围（左、上、右、下）的岛。
+
+请返回 *封闭岛屿* 的数目。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2019/10/31/sample_3_1610.png)
+
+```
+输入：grid = [[1,1,1,1,1,1,1,0],[1,0,0,0,0,1,1,0],[1,0,1,0,1,1,1,0],[1,0,0,0,0,1,0,1],[1,1,1,1,1,1,1,0]]
+输出：2
+解释：
+灰色区域的岛屿是封闭岛屿，因为这座岛屿完全被水域包围（即被 1 区域包围）。
+```
+
+C++版本
+
+```C++
+// 方法一：广度优先搜索
+class Solution {
+public:
+    static constexpr int dir[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    int closedIsland(vector<vector<int>>& grid) {
+        int m = grid.size();
+        int n = grid[0].size();
+        int ans = 0;
+                
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 0) {
+                    queue<pair<int,int>> qu;
+                    grid[i][j] = 1;
+                    bool closed = true;
+
+                    qu.push(make_pair(i, j));
+                    while (!qu.empty()) {
+                        auto [cx, cy] = qu.front();
+                        qu.pop();
+                        if (cx == 0 || cy == 0 || cx == m - 1 || cy == n - 1) {
+                            closed = false;
+                        }
+                        for (int i = 0; i < 4; i++) {
+                            int nx = cx + dir[i][0];
+                            int ny = cy + dir[i][1];
+                            if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 0) {
+                                grid[nx][ny] = 1;
+                                qu.emplace(nx, ny);
+                            }
+                        }
+                    }
+                    if (closed) {
+                        ans++;
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：深度优先搜索
+class Solution {
+public:
+    int closedIsland(vector<vector<int>>& grid) {
+        int ans = 0;
+        int m = grid.size();
+        int n = grid[0].size();
+
+        function<bool(int, int)> dfs = [&](int x, int y) -> bool {
+            if (x < 0 || y < 0 || x >= m || y >= n) {
+                return false;
+            }
+            if (grid[x][y] != 0) {
+                return true;
+            }
+            grid[x][y] = -1;
+            bool ret1 = dfs(x - 1, y);
+            bool ret2 = dfs(x + 1, y);
+            bool ret3 = dfs(x, y - 1);
+            bool ret4 = dfs(x, y + 1);
+            return ret1 && ret2 && ret3 && ret4;
+        };
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 0 && dfs(i, j)) {
+                    ans++;
+                }
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法三：并查集
+class UnionFind {
+public:
+    UnionFind(int n) {
+        this->parent = vector<int>(n);
+        iota(parent.begin(), parent.end(), 0);
+        this->rank = vector<int>(n);
+    }
+
+    void uni(int x, int y) {
+        int rootx = find(x);
+        int rooty = find(y);
+        if (rootx != rooty) {
+            if (rank[rootx] > rank[rooty]) {
+                parent[rooty] = rootx;
+            } else if (rank[rootx] < rank[rooty]) {
+                parent[rootx] = rooty;
+            } else {
+                parent[rooty] = rootx;
+                rank[rootx]++;
+            }
+        }
+    }
+
+    int find(int x) {
+        if (parent[x] != x) {
+            parent[x] = find(parent[x]);
+        }
+        return parent[x];
+    }
+private:
+    vector<int> parent;
+    vector<int> rank;
+};
+
+class Solution {
+public:
+    int closedIsland(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        UnionFind uf(m * n);
+
+        for (int i = 0; i < m; i++) {
+            if (grid[i][0] == 0) {
+                uf.uni(i * n, 0);
+            }
+            if (grid[i][n - 1] == 0) {
+                uf.uni(i * n + n - 1, 0);
+            }
+        }
+        for (int j = 1; j < n - 1; j++) {
+            if (grid[0][j] == 0) {
+                uf.uni(j, 0);
+            }
+            if (grid[m - 1][j] == 0) {
+                uf.uni((m - 1) * n + j, 0);
+            }
+        }
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 0) {
+                    if (i > 0 && grid[i - 1][j] == 0) {
+                        uf.uni(i * n + j, (i - 1) * n + j);
+                    }
+                    if (j > 0 && grid[i][j - 1] == 0) {
+                        uf.uni(i * n + j, i * n + j - 1);
+                    }
+                }
+            }
+        }
+
+        unordered_set<int> cnt;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 0) {
+                    cnt.emplace(uf.find(i * n + j));
+                }
+            }
+        }
+        int total = cnt.size();
+        if (cnt.count(uf.find(0))) {
+            total--;
+        }
+        return total;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：广度优先搜索
+class Solution {
+    static int[][] dir = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    public int closedIsland(int[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+        int ans = 0;
+                
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 0) {
+                    Queue<int[]> qu = new ArrayDeque<int[]>();
+                    grid[i][j] = 1;
+                    boolean closed = true;
+
+                    qu.offer(new int[]{i, j});
+                    while (!qu.isEmpty()) {
+                        int[] arr = qu.poll();
+                        int cx = arr[0], cy = arr[1];
+                        if (cx == 0 || cy == 0 || cx == m - 1 || cy == n - 1) {
+                            closed = false;
+                        }
+                        for (int d = 0; d < 4; d++) {
+                            int nx = cx + dir[d][0];
+                            int ny = cy + dir[d][1];
+                            if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == 0) {
+                                grid[nx][ny] = 1;
+                                qu.offer(new int[]{nx, ny});
+                            }
+                        }
+                    }
+                    if (closed) {
+                        ans++;
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：深度优先搜索
+class Solution {
+    public int closedIsland(int[][] grid) {
+        int ans = 0;
+        int m = grid.length;
+        int n = grid[0].length;
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 0 && dfs(i, j, grid, m, n)) {
+                    ans++;
+                }
+            }
+        }
+        return ans;
+    }
+
+    public boolean dfs(int x, int y, int[][] grid, int m, int n) {
+        if (x < 0 || y < 0 || x >= m || y >= n) {
+            return false;
+        }
+        if (grid[x][y] != 0) {
+            return true;
+        }
+        grid[x][y] = -1;
+        boolean ret1 = dfs(x - 1, y, grid, m, n);
+        boolean ret2 = dfs(x + 1, y, grid, m, n);
+        boolean ret3 = dfs(x, y - 1, grid, m, n);
+        boolean ret4 = dfs(x, y + 1, grid, m, n);
+        return ret1 && ret2 && ret3 && ret4;
+    }
+}
+
+// 方法三：并查集
+class Solution {
+    public int closedIsland(int[][] grid) {
+        int m = grid.length, n = grid[0].length;
+        UnionFind uf = new UnionFind(m * n);
+
+        for (int i = 0; i < m; i++) {
+            if (grid[i][0] == 0) {
+                uf.uni(i * n, 0);
+            }
+            if (grid[i][n - 1] == 0) {
+                uf.uni(i * n + n - 1, 0);
+            }
+        }
+        for (int j = 1; j < n - 1; j++) {
+            if (grid[0][j] == 0) {
+                uf.uni(j, 0);
+            }
+            if (grid[m - 1][j] == 0) {
+                uf.uni((m - 1) * n + j, 0);
+            }
+        }
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 0) {
+                    if (i > 0 && grid[i - 1][j] == 0) {
+                        uf.uni(i * n + j, (i - 1) * n + j);
+                    }
+                    if (j > 0 && grid[i][j - 1] == 0) {
+                        uf.uni(i * n + j, i * n + j - 1);
+                    }
+                }
+            }
+        }
+
+        Set<Integer> cnt = new HashSet<Integer>();
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 0) {
+                    cnt.add(uf.find(i * n + j));
+                }
+            }
+        }
+        int total = cnt.size();
+        if (cnt.contains(uf.find(0))) {
+            total--;
+        }
+        return total;
+    }
+}
+
+class UnionFind {
+    private int[] parent;
+    private int[] rank;
+
+    public UnionFind(int n) {
+        this.parent = new int[n];
+        for (int i = 0; i < n; i++) {
+            parent[i] = i;
+        }
+        this.rank = new int[n];
+    }
+
+    public void uni(int x, int y) {
+        int rootx = find(x);
+        int rooty = find(y);
+        if (rootx != rooty) {
+            if (rank[rootx] > rank[rooty]) {
+                parent[rooty] = rootx;
+            } else if (rank[rootx] < rank[rooty]) {
+                parent[rootx] = rooty;
+            } else {
+                parent[rooty] = rootx;
+                rank[rootx]++;
+            }
+        }
+    }
+
+    public int find(int x) {
+        if (parent[x] != x) {
+            parent[x] = find(parent[x]);
+        }
+        return parent[x];
+    }
+}
+```
+
+
+
+### [1034. 边界着色](https://leetcode.cn/problems/coloring-a-border/)
+
+中等
+
+给你一个大小为 `m x n` 的整数矩阵 `grid` ，表示一个网格。另给你三个整数 `row`、`col` 和 `color` 。网格中的每个值表示该位置处的网格块的颜色。
+
+如果两个方块在任意 4 个方向上相邻，则称它们 **相邻** 。
+
+如果两个方块具有相同的颜色且相邻，它们则属于同一个 **连通分量** 。
+
+**连通分量的边界** 是指连通分量中满足下述条件之一的所有网格块：
+
+- 在上、下、左、右任意一个方向上与不属于同一连通分量的网格块相邻
+- 在网格的边界上（第一行/列或最后一行/列）
+
+请你使用指定颜色 `color` 为所有包含网格块 `grid[row][col]` 的 **连通分量的边界** 进行着色。
+
+并返回最终的网格 `grid` 。
+
+**示例 1：**
+
+```
+输入：grid = [[1,1],[1,2]], row = 0, col = 0, color = 3
+输出：[[3,3],[3,2]]
+```
+
+C++版本
+
+```C++
+// 方法一：深度优先搜索
+typedef pair<int, int> pii;
+
+class Solution {
+public:
+    vector<vector<int>> colorBorder(vector<vector<int>>& grid, int row, int col, int color) {
+        int m = grid.size(), n = grid[0].size();
+        vector<vector<bool>> visited(m, vector<bool>(n, false));
+        vector<pii> borders;
+        int originalColor = grid[row][col];
+        visited[row][col] = true;
+        dfs(grid, row, col, visited, borders, originalColor);
+        for (auto & [x, y] : borders) {
+            grid[x][y] = color;
+        }
+        return grid;
+    }
+
+    void dfs(vector<vector<int>>& grid, int x, int y, vector<vector<bool>> & visited, vector<pii> & borders, int originalColor) {
+        int m = grid.size(), n = grid[0].size();
+        bool isBorder = false;
+        int direc[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+        for (int i = 0; i < 4; i++) {
+            int nx = direc[i][0] + x, ny = direc[i][1] + y;
+            if (!(nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == originalColor)) {
+                isBorder = true;
+            } else if (!visited[nx][ny]) {
+                visited[nx][ny] = true;
+                dfs(grid, nx, ny, visited, borders, originalColor);
+            }                
+        }
+        if (isBorder) {
+            borders.emplace_back(x, y);
+        }
+    }
+};
+
+// 方法二：广度优先搜索
+typedef pair<int,int> pii;
+
+class Solution {
+public:
+    vector<vector<int>> colorBorder(vector<vector<int>>& grid, int row, int col, int color) {
+        int m = grid.size(), n = grid[0].size();
+        vector<vector<bool>> visited(m, vector<bool>(n, false));
+        vector<pii> borders;
+        int originalColor = grid[row][col];
+        int direc[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+        queue<pii> q;
+        q.emplace(row, col);
+        visited[row][col] = true;
+        while (!q.empty()) {
+            pii & node = q.front();
+            q.pop();
+            int x = node.first, y = node.second;
+
+            bool isBorder = false;
+            for (int i = 0; i < 4; i++) {
+                int nx = direc[i][0] + x, ny = direc[i][1] + y;
+                if (!(nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == originalColor)) {
+                    isBorder = true;
+                } else if (!visited[nx][ny]) {
+                    visited[nx][ny] = true;
+                    q.emplace(nx, ny);
+                }         
+            }
+            if (isBorder) {
+                borders.emplace_back(x, y);
+            }
+        }
+        for (auto & [x, y] : borders) {
+            grid[x][y] = color;
+        }
+        return grid;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：深度优先搜索
+class Solution {
+    public int[][] colorBorder(int[][] grid, int row, int col, int color) {
+        int m = grid.length, n = grid[0].length;
+        boolean[][] visited = new boolean[m][n];
+        List<int[]> borders = new ArrayList<>();
+        int originalColor = grid[row][col];
+        visited[row][col] = true;
+        dfs(grid, row, col, visited, borders, originalColor);
+        for (int i = 0; i < borders.size(); i++) {
+            int x = borders.get(i)[0], y = borders.get(i)[1];
+            grid[x][y] = color;
+        }
+        return grid;
+    }
+
+    private void dfs(int[][] grid, int x, int y, boolean[][] visited, List<int[]> borders, int originalColor) {
+        int m = grid.length, n = grid[0].length;
+        boolean isBorder = false;
+        int[][] direc = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+        for (int i = 0; i < 4; i++) {
+            int nx = direc[i][0] + x, ny = direc[i][1] + y;
+            if (!(nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == originalColor)) {
+                isBorder = true;
+            } else if (!visited[nx][ny]){
+                visited[nx][ny] = true;
+                dfs(grid, nx, ny, visited, borders, originalColor);
+            }                
+        }
+        if (isBorder) {
+            borders.add(new int[]{x, y});
+        }
+    }
+}
+
+// 方法二：广度优先搜索
+class Solution {
+    public int[][] colorBorder(int[][] grid, int row, int col, int color) {
+        int m = grid.length, n = grid[0].length;
+        boolean[][] visited = new boolean[m][n];
+        List<int[]> borders = new ArrayList<>();
+        int originalColor = grid[row][col];
+        int[][] direc = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+        Deque<int[]> q = new ArrayDeque<>();
+        q.offer(new int[]{row, col});
+        visited[row][col] = true;
+        while (!q.isEmpty()) {
+            int[] node = q.poll();
+            int x = node[0], y = node[1];
+
+            boolean isBorder = false;
+            for (int i = 0; i < 4; i++) {
+                int nx = direc[i][0] + x, ny = direc[i][1] + y;
+                if (!(nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == originalColor)) {
+                    isBorder = true;
+                } else if (!visited[nx][ny]) {
+                    visited[nx][ny] = true;
+                    q.offer(new int[]{nx, ny});
+                }         
+            }
+            if (isBorder) {
+                borders.add(new int[]{x, y});
+            }
+        }
+        for (int i = 0; i < borders.size(); i++) {
+            int x = borders.get(i)[0], y = borders.get(i)[1];
+            grid[x][y] = color;
+        }
+        return grid;
+    }
+}
+```
+
+
+
+### [LCR 130. 衣橱整理](https://leetcode.cn/problems/ji-qi-ren-de-yun-dong-fan-wei-lcof/)
+
+中等
+
+家居整理师将待整理衣橱划分为 `m x n` 的二维矩阵 `grid`，其中 `grid[i][j]` 代表一个需要整理的格子。整理师自 `grid[0][0]` 开始 **逐行逐列** 地整理每个格子。
+
+整理规则为：在整理过程中，可以选择 **向右移动一格** 或 **向下移动一格**，但不能移动到衣柜之外。同时，不需要整理 `digit(i) + digit(j) > cnt` 的格子，其中 `digit(x)` 表示数字 `x` 的各数位之和。
+
+请返回整理师 **总共需要整理多少个格子**。
+
+**示例 1：**
+
+```
+输入：m = 4, n = 7, cnt = 5
+输出：18
+```
+
+C++版本
+
+```C++
+// 方法一：广度优先搜索
+class Solution {
+    // 计算 x 的数位之和
+    int get(int x) {
+        int res=0;
+        for (; x; x /= 10) {
+            res += x % 10;
+        }
+        return res;
+    }
+public:
+    int wardrobeFinishing(int m, int n, int cnt) {
+        if (!cnt) return 1;
+        queue<pair<int,int> > Q;
+        // 向右和向下的方向数组
+        int dx[2] = {0, 1};
+        int dy[2] = {1, 0};
+        vector<vector<int> > vis(m, vector<int>(n, 0));
+        Q.push(make_pair(0, 0));
+        vis[0][0] = 1;
+        int ans = 1;
+        while (!Q.empty()) {
+            auto [x, y] = Q.front();
+            Q.pop();
+            for (int i = 0; i < 2; ++i) {
+                int tx = dx[i] + x;
+                int ty = dy[i] + y;
+                if (tx < 0 || tx >= m || ty < 0 || ty >= n || vis[tx][ty] || get(tx) + get(ty) > cnt) continue;
+                Q.push(make_pair(tx, ty));
+                vis[tx][ty] = 1;
+                ans++;
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：递推
+class Solution {
+    int get(int x) {
+        int res=0;
+        for (; x; x /= 10){
+            res += x % 10;
+        }
+        return res;
+    }
+public:
+    int wardrobeFinishing(int m, int n, int cnt) {
+        if (!cnt) return 1;
+        vector<vector<int> > vis(m, vector<int>(n, 0));
+        int ans = 1;
+        vis[0][0] = 1;
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if ((i == 0 && j == 0) || get(i) + get(j) > cnt) continue;
+                // 边界判断
+                if (i - 1 >= 0) vis[i][j] |= vis[i - 1][j];
+                if (j - 1 >= 0) vis[i][j] |= vis[i][j - 1];
+                ans += vis[i][j];
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：广度优先搜索
+class Solution {
+    public int wardrobeFinishing(int m, int n, int cnt) {
+        if (cnt == 0) {
+            return 1;
+        }
+        Queue<int[]> queue = new LinkedList<int[]>();
+        // 向右和向下的方向数组
+        int[] dx = {0, 1};
+        int[] dy = {1, 0};
+        boolean[][] vis = new boolean[m][n];
+        queue.offer(new int[]{0, 0});
+        vis[0][0] = true;
+        int ans = 1;
+        while (!queue.isEmpty()) {
+            int[] cell = queue.poll();
+            int x = cell[0], y = cell[1];
+            for (int i = 0; i < 2; ++i) {
+                int tx = dx[i] + x;
+                int ty = dy[i] + y;
+                if (tx < 0 || tx >= m || ty < 0 || ty >= n || vis[tx][ty] || get(tx) + get(ty) > cnt) {
+                    continue;
+                }
+                queue.offer(new int[]{tx, ty});
+                vis[tx][ty] = true;
+                ans++;
+            }
+        }
+        return ans;
+    }
+
+    private int get(int x) {
+        int res = 0;
+        while (x != 0) {
+            res += x % 10;
+            x /= 10;
+        }
+        return res;
+    }
+}
+
+// 方法二：递推
+class Solution {
+    public int wardrobeFinishing(int m, int n, int cnt) {
+        if (cnt == 0) {
+            return 1;
+        }
+        boolean[][] vis = new boolean[m][n];
+        int ans = 1;
+        vis[0][0] = true;
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if ((i == 0 && j == 0) || get(i) + get(j) > cnt) {
+                    continue;
+                }
+                // 边界判断
+                if (i - 1 >= 0) {
+                    vis[i][j] |= vis[i - 1][j];
+                }
+                if (j - 1 >= 0) {
+                    vis[i][j] |= vis[i][j - 1];
+                }
+                ans += vis[i][j] ? 1 : 0;
+            }
+        }
+        return ans;
+    }
+
+    private int get(int x) {
+        int res = 0;
+        while (x != 0) {
+            res += x % 10;
+            x /= 10;
+        }
+        return res;
+    }
+}
+```
+
+
+
+### [529. 扫雷游戏](https://leetcode.cn/problems/minesweeper/)
+
+中等
+
+让我们一起来玩扫雷游戏！
+
+给你一个大小为 `m x n` 二维字符矩阵 `board` ，表示扫雷游戏的盘面，其中：
+
+- `'M'` 代表一个 **未挖出的** 地雷，
+- `'E'` 代表一个 **未挖出的** 空方块，
+- `'B'` 代表没有相邻（上，下，左，右，和所有4个对角线）地雷的 **已挖出的** 空白方块，
+- **数字**（`'1'` 到 `'8'`）表示有多少地雷与这块 **已挖出的** 方块相邻，
+- `'X'` 则表示一个 **已挖出的** 地雷。
+
+给你一个整数数组 `click` ，其中 `click = [clickr, clickc]` 表示在所有 **未挖出的** 方块（`'M'` 或者 `'E'`）中的下一个点击位置（`clickr` 是行下标，`clickc` 是列下标）。
+
+根据以下规则，返回相应位置被点击后对应的盘面：
+
+1. 如果一个地雷（`'M'`）被挖出，游戏就结束了- 把它改为 `'X'` 。
+2. 如果一个 **没有相邻地雷** 的空方块（`'E'`）被挖出，修改它为（`'B'`），并且所有和其相邻的 **未挖出** 方块都应该被递归地揭露。
+3. 如果一个 **至少与一个地雷相邻** 的空方块（`'E'`）被挖出，修改它为数字（`'1'` 到 `'8'` ），表示相邻地雷的数量。
+4. 如果在此次点击中，若无更多方块可被揭露，则返回盘面。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2023/08/09/untitled.jpeg)
+
+```
+输入：board = [
+	["E","E","E","E","E"],
+	["E","E","M","E","E"],
+	["E","E","E","E","E"],
+	["E","E","E","E","E"]
+], 
+click = [3,0]
+输出：[
+	["B","1","E","1","B"],
+	["B","1","M","1","B"],
+	["B","1","1","1","B"],
+	["B","B","B","B","B"]
+]
+```
+
+C++版本
+
+```C++
+// 方法一：深度优先搜索 + 模拟
+class Solution {
+public:
+    int dir_x[8] = {0, 1, 0, -1, 1, 1, -1, -1};
+    int dir_y[8] = {1, 0, -1, 0, 1, -1, 1, -1};
+
+    void dfs(vector<vector<char>>& board, int x, int y) {
+        int cnt = 0;
+        for (int i = 0; i < 8; ++i) {
+            int tx = x + dir_x[i];
+            int ty = y + dir_y[i];
+            if (tx < 0 || tx >= board.size() || ty < 0 || ty >= board[0].size()) {
+                continue;
+            }
+            // 不用判断 M，因为如果有 M 的话游戏已经结束了
+            cnt += board[tx][ty] == 'M';
+        }
+        if (cnt > 0) {
+            // 规则 3
+            board[x][y] = cnt + '0';
+        } else {
+            // 规则 2
+            board[x][y] = 'B';
+            for (int i = 0; i < 8; ++i) {
+                int tx = x + dir_x[i];
+                int ty = y + dir_y[i];
+                // 这里不需要在存在 B 的时候继续扩展，因为 B 之前被点击的时候已经被扩展过了
+                if (tx < 0 || tx >= board.size() || ty < 0 || ty >= board[0].size() || board[tx][ty] != 'E') {
+                    continue;
+                }
+                dfs(board, tx, ty);
+            }
+        }
+    }
+
+    vector<vector<char>> updateBoard(vector<vector<char>>& board, vector<int>& click) {
+        int x = click[0], y = click[1];
+        if (board[x][y] == 'M') {
+            // 规则 1
+            board[x][y] = 'X';
+        } else {
+            dfs(board, x, y);
+        }
+        return board;
+    }
+};
+
+// 方法二：广度优先搜索 + 模拟
+class Solution {
+public:
+    int dir_x[8] = {0, 1, 0, -1, 1, 1, -1, -1};
+    int dir_y[8] = {1, 0, -1, 0, 1, -1, 1, -1};
+
+    void bfs(vector<vector<char>>& board, int sx, int sy) {
+        queue<pair<int, int>> Q;
+        vector<vector<int>> vis(board.size(), vector<int>(board[0].size(), 0));
+        Q.push({sx, sy});
+        vis[sx][sy] = true;
+        while (!Q.empty()) {
+            auto pos = Q.front();
+            Q.pop();
+            int cnt = 0, x = pos.first, y = pos.second;
+            for (int i = 0; i < 8; ++i) {
+                int tx = x + dir_x[i];
+                int ty = y + dir_y[i];
+                if (tx < 0 || tx >= board.size() || ty < 0 || ty >= board[0].size()) {
+                    continue;
+                }
+                // 不用判断 M，因为如果有 M 的话游戏已经结束了
+                cnt += board[tx][ty] == 'M';
+            }
+            if (cnt > 0) {
+                // 规则 3
+                board[x][y] = cnt + '0';
+            } else {
+                // 规则 2
+                board[x][y] = 'B';
+                for (int i = 0; i < 8; ++i) {
+                    int tx = x + dir_x[i];
+                    int ty = y + dir_y[i];
+                    // 这里不需要在存在 B 的时候继续扩展，因为 B 之前被点击的时候已经被扩展过了
+                    if (tx < 0 || tx >= board.size() || ty < 0 || ty >= board[0].size() || board[tx][ty] != 'E' || vis[tx][ty]) {
+                        continue;
+                    }
+                    Q.push(make_pair(tx, ty));
+                    vis[tx][ty] = true;
+                }
+            }
+        }
+    }
+
+    vector<vector<char>> updateBoard(vector<vector<char>>& board, vector<int>& click) {
+        int x = click[0], y = click[1];
+        if (board[x][y] == 'M') {
+            // 规则 1
+            board[x][y] = 'X';
+        } else {
+            bfs(board, x, y);
+        }
+        return board;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：深度优先搜索 + 模拟
+class Solution {
+    int[] dirX = {0, 1, 0, -1, 1, 1, -1, -1};
+    int[] dirY = {1, 0, -1, 0, 1, -1, 1, -1};
+
+    public char[][] updateBoard(char[][] board, int[] click) {
+        int x = click[0], y = click[1];
+        if (board[x][y] == 'M') {
+            // 规则 1
+            board[x][y] = 'X';
+        } else{
+            dfs(board, x, y);
+        }
+        return board;
+    }
+
+    public void dfs(char[][] board, int x, int y) {
+        int cnt = 0;
+        for (int i = 0; i < 8; ++i) {
+            int tx = x + dirX[i];
+            int ty = y + dirY[i];
+            if (tx < 0 || tx >= board.length || ty < 0 || ty >= board[0].length) {
+                continue;
+            }
+            // 不用判断 M，因为如果有 M 的话游戏已经结束了
+            if (board[tx][ty] == 'M') {
+                ++cnt;
+            }
+        }
+        if (cnt > 0) {
+            // 规则 3
+            board[x][y] = (char) (cnt + '0');
+        } else {
+            // 规则 2
+            board[x][y] = 'B';
+            for (int i = 0; i < 8; ++i) {
+                int tx = x + dirX[i];
+                int ty = y + dirY[i];
+                // 这里不需要在存在 B 的时候继续扩展，因为 B 之前被点击的时候已经被扩展过了
+                if (tx < 0 || tx >= board.length || ty < 0 || ty >= board[0].length || board[tx][ty] != 'E') {
+                    continue;
+                }
+                dfs(board, tx, ty);
+            }
+        }
+    }
+}
+
+// 方法二：广度优先搜索 + 模拟
+class Solution {
+    int[] dirX = {0, 1, 0, -1, 1, 1, -1, -1};
+    int[] dirY = {1, 0, -1, 0, 1, -1, 1, -1};
+
+    public char[][] updateBoard(char[][] board, int[] click) {
+        int x = click[0], y = click[1];
+        if (board[x][y] == 'M') {
+            // 规则 1
+            board[x][y] = 'X';
+        } else{
+            bfs(board, x, y);
+        }
+        return board;
+    }
+
+    public void bfs(char[][] board, int sx, int sy) {
+        Queue<int[]> queue = new LinkedList<int[]>();
+        boolean[][] vis = new boolean[board.length][board[0].length];
+        queue.offer(new int[]{sx, sy});
+        vis[sx][sy] = true;
+        while (!queue.isEmpty()) {
+            int[] pos = queue.poll();
+            int cnt = 0, x = pos[0], y = pos[1];
+            for (int i = 0; i < 8; ++i) {
+                int tx = x + dirX[i];
+                int ty = y + dirY[i];
+                if (tx < 0 || tx >= board.length || ty < 0 || ty >= board[0].length) {
+                    continue;
+                }
+                // 不用判断 M，因为如果有 M 的话游戏已经结束了
+                if (board[tx][ty] == 'M') {
+                    ++cnt;
+                }
+            }
+            if (cnt > 0) {
+                // 规则 3
+                board[x][y] = (char) (cnt + '0');
+            } else {
+                // 规则 2
+                board[x][y] = 'B';
+                for (int i = 0; i < 8; ++i) {
+                    int tx = x + dirX[i];
+                    int ty = y + dirY[i];
+                    // 这里不需要在存在 B 的时候继续扩展，因为 B 之前被点击的时候已经被扩展过了
+                    if (tx < 0 || tx >= board.length || ty < 0 || ty >= board[0].length || board[tx][ty] != 'E' || vis[tx][ty]) {
+                        continue;
+                    }
+                    queue.offer(new int[]{tx, ty});
+                    vis[tx][ty] = true;
+                }
+            }
+        }
+    }
+}
+```
+
+
+
 
 
 
