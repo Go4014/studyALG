@@ -177,29 +177,34 @@ class Solution {
 // 方法二：广度优先搜索
 class Solution {
 	public List<List<Integer>> allPathsSourceTarget(int[][] graph) {
-		List<List<Integer>> res = new ArrayList<>();
-		int size = graph.length;
-		Queue<List<Integer>> queue = new LinkedList<>();
-		queue.offer(List.of(0));
-		while (!queue.isEmpty()) {
-			int n = queue.size();
-			for (int i = 0; i < n; i++) {
-				List<Integer> cul = queue.poll();
-				int last = cul.get(cul.size() - 1);
-				if (last == size - 1) {
-					res.add(cul);
-					continue;
-				}
-				int[] dist = graph[last];
-				for (int num : dist) {
-					List<Integer> list = new ArrayList<>(cul);
-					list.add(num);
-					queue.offer(list);
-				}
-			}
-		}
-		return res;
-	}
+        List<List<Integer>> res = new ArrayList<>();
+        int size = graph.length;
+        // 每一个队列元素都是可能路径，故将List<Integer>作为队列元素
+	    Queue<List<Integer>> queue = new LinkedList<>();
+        // 以零顶点作为起点
+        queue.offer(List.of(0));
+        while (!queue.isEmpty()) {
+            int n = queue.size();
+            // 广度搜索
+            for (int i = 0; i < n; i++) {
+                List<Integer> cul = queue.poll();
+                int last = cul.get(cul.size() - 1);
+                // 判断是否到达终点
+                if (last == size - 1) {
+                    res.add(cul);  // 添加该路径为可行路径
+                    continue;
+                }
+                int[] dist = graph[last]; // 取当前顶点的所有出度
+                for (int num : dist) {
+                    // 以当前所走路径为基础并以当前点为起点遍历（添加出度指向的顶点）
+                    List<Integer> list = new ArrayList<>(cul);
+                    list.add(num);
+                    queue.offer(list);
+                }
+            }
+        }
+        return res;
+    }
 }
 ```
 
