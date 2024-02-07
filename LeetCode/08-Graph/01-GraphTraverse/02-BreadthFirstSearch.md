@@ -565,5 +565,441 @@ class Solution {
 
 
 
+### [752. 打开转盘锁](https://leetcode.cn/problems/open-the-lock/)
+
+中等
+
+你有一个带有四个圆形拨轮的转盘锁。每个拨轮都有10个数字： `'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'` 。每个拨轮可以自由旋转：例如把 `'9'` 变为 `'0'`，`'0'` 变为 `'9'` 。每次旋转都只能旋转一个拨轮的一位数字。
+
+锁的初始数字为 `'0000'` ，一个代表四个拨轮的数字的字符串。
+
+列表 `deadends` 包含了一组死亡数字，一旦拨轮的数字和列表里的任何一个元素相同，这个锁将会被永久锁定，无法再被旋转。
+
+字符串 `target` 代表可以解锁的数字，你需要给出解锁需要的最小旋转次数，如果无论如何不能解锁，返回 `-1` 。
+
+**示例 1:**
+
+```
+输入：deadends = ["0201","0101","0102","1212","2002"], target = "0202"
+输出：6
+解释：
+可能的移动序列为 "0000" -> "1000" -> "1100" -> "1200" -> "1201" -> "1202" -> "0202"。
+注意 "0000" -> "0001" -> "0002" -> "0102" -> "0202" 这样的序列是不能解锁的，
+因为当拨动到 "0102" 时这个锁就会被锁定。
+```
+
+C++版本
+
+```c++
+// 方法一：广度优先搜索
+class Solution {
+public:
+    int openLock(vector<string>& deadends, string target) {
+        if (target == "0000") {
+            return 0;
+        }
+
+        unordered_set<string> dead(deadends.begin(), deadends.end());
+        if (dead.count("0000")) {
+            return -1;
+        }
+
+        auto num_prev = [](char x) -> char {
+            return (x == '0' ? '9' : x - 1);
+        };
+        auto num_succ = [](char x) -> char {
+            return (x == '9' ? '0' : x + 1);
+        };
+
+        // 枚举 status 通过一次旋转得到的数字
+        auto get = [&](string& status) -> vector<string> {
+            vector<string> ret;
+            for (int i = 0; i < 4; ++i) {
+                char num = status[i];
+                status[i] = num_prev(num);
+                ret.push_back(status);
+                status[i] = num_succ(num);
+                ret.push_back(status);
+                status[i] = num;
+            }
+            return ret;
+        };
+
+        queue<pair<string, int>> q;
+        q.emplace("0000", 0);
+        unordered_set<string> seen = {"0000"};
+
+        while (!q.empty()) {
+            auto [status, step] = q.front();
+            q.pop();
+            for (auto&& next_status: get(status)) {
+                if (!seen.count(next_status) && !dead.count(next_status)) {
+                    if (next_status == target) {
+                        return step + 1;
+                    }
+                    q.emplace(next_status, step + 1);
+                    seen.insert(move(next_status));
+                }
+            }
+        }
+
+        return -1;
+    }
+};
+
+// 方法二：启发式搜索
+struct AStar {
+    // 计算启发函数
+    static int getH(const string& status, const string& target) {
+        int ret = 0;
+        for (int i = 0; i < 4; ++i) {
+            int dist = abs(int(status[i]) - int(target[i]));
+            ret += min(dist, 10 - dist);
+        }
+        return ret;
+    };
+
+    AStar(const string& status, const string& target, int g): status_{status}, g_{g}, h_{getH(status, target)} {
+        f_ = g_ + h_;
+    }
+
+    bool operator< (const AStar& that) const {
+        return f_ > that.f_;
+    }
+
+    string status_;
+    int f_, g_, h_;
+};
+
+class Solution {
+public:
+    int openLock(vector<string>& deadends, string target) {
+        if (target == "0000") {
+            return 0;
+        }
+
+        unordered_set<string> dead(deadends.begin(), deadends.end());
+        if (dead.count("0000")) {
+            return -1;
+        }
+
+        auto num_prev = [](char x) -> char {
+            return (x == '0' ? '9' : x - 1);
+        };
+        auto num_succ = [](char x) -> char {
+            return (x == '9' ? '0' : x + 1);
+        };
+
+        auto get = [&](string& status) -> vector<string> {
+            vector<string> ret;
+            for (int i = 0; i < 4; ++i) {
+                char num = status[i];
+                status[i] = num_prev(num);
+                ret.push_back(status);
+                status[i] = num_succ(num);
+                ret.push_back(status);
+                status[i] = num;
+            }
+            return ret;
+        };
+
+        priority_queue<AStar> q;
+        q.emplace("0000", target, 0);
+        unordered_set<string> seen = {"0000"};
+
+        while (!q.empty()) {
+            AStar node = q.top();
+            q.pop();
+            for (auto&& next_status: get(node.status_)) {
+                if (!seen.count(next_status) && !dead.count(next_status)) {
+                    if (next_status == target) {
+                        return node.g_ + 1;
+                    }
+                    q.emplace(next_status, target, node.g_ + 1);
+                    seen.insert(move(next_status));
+                }
+            }
+        }
+
+        return -1;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：广度优先搜索
+class Solution {
+    public int openLock(String[] deadends, String target) {
+        if ("0000".equals(target)) {
+            return 0;
+        }
+
+        Set<String> dead = new HashSet<String>();
+        for (String deadend : deadends) {
+            dead.add(deadend);
+        }
+        if (dead.contains("0000")) {
+            return -1;
+        }
+
+        int step = 0;
+        Queue<String> queue = new LinkedList<String>();
+        queue.offer("0000");
+        Set<String> seen = new HashSet<String>();
+        seen.add("0000");
+
+        while (!queue.isEmpty()) {
+            ++step;
+            int size = queue.size();
+            for (int i = 0; i < size; ++i) {
+                String status = queue.poll();
+                for (String nextStatus : get(status)) {
+                    if (!seen.contains(nextStatus) && !dead.contains(nextStatus)) {
+                        if (nextStatus.equals(target)) {
+                            return step;
+                        }
+                        queue.offer(nextStatus);
+                        seen.add(nextStatus);
+                    }
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    public char numPrev(char x) {
+        return x == '0' ? '9' : (char) (x - 1);
+    }
+
+    public char numSucc(char x) {
+        return x == '9' ? '0' : (char) (x + 1);
+    }
+
+    // 枚举 status 通过一次旋转得到的数字
+    public List<String> get(String status) {
+        List<String> ret = new ArrayList<String>();
+        char[] array = status.toCharArray();
+        for (int i = 0; i < 4; ++i) {
+            char num = array[i];
+            array[i] = numPrev(num);
+            ret.add(new String(array));
+            array[i] = numSucc(num);
+            ret.add(new String(array));
+            array[i] = num;
+        }
+        return ret;
+    }
+}
+
+// 方法二：启发式搜索
+class Solution {
+    public int openLock(String[] deadends, String target) {
+        if ("0000".equals(target)) {
+            return 0;
+        }
+
+        Set<String> dead = new HashSet<String>();
+        for (String deadend : deadends) {
+            dead.add(deadend);
+        }
+        if (dead.contains("0000")) {
+            return -1;
+        }
+
+        PriorityQueue<AStar> pq = new PriorityQueue<AStar>((a, b) -> a.f - b.f);
+        pq.offer(new AStar("0000", target, 0));
+        Set<String> seen = new HashSet<String>();
+        seen.add("0000");
+
+        while (!pq.isEmpty()) {
+            AStar node = pq.poll();
+            for (String nextStatus : get(node.status)) {
+                if (!seen.contains(nextStatus) && !dead.contains(nextStatus)) {
+                    if (nextStatus.equals(target)) {
+                        return node.g + 1;
+                    }
+                    pq.offer(new AStar(nextStatus, target, node.g + 1));
+                    seen.add(nextStatus);
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    public char numPrev(char x) {
+        return x == '0' ? '9' : (char) (x - 1);
+    }
+
+    public char numSucc(char x) {
+        return x == '9' ? '0' : (char) (x + 1);
+    }
+
+    // 枚举 status 通过一次旋转得到的数字
+    public List<String> get(String status) {
+        List<String> ret = new ArrayList<String>();
+        char[] array = status.toCharArray();
+        for (int i = 0; i < 4; ++i) {
+            char num = array[i];
+            array[i] = numPrev(num);
+            ret.add(new String(array));
+            array[i] = numSucc(num);
+            ret.add(new String(array));
+            array[i] = num;
+        }
+        return ret;
+    }
+}
+
+class AStar {
+    String status;
+    int f, g, h;
+
+    public AStar(String status, String target, int g) {
+        this.status = status;
+        this.g = g;
+        this.h = getH(status, target);
+        this.f = this.g + this.h;
+    }
+
+    // 计算启发函数
+    public static int getH(String status, String target) {
+        int ret = 0;
+        for (int i = 0; i < 4; ++i) {
+            int dist = Math.abs(status.charAt(i) - target.charAt(i));
+            ret += Math.min(dist, 10 - dist);
+        }
+        return ret;
+    }
+}
+```
+
+
+
+### [279. 完全平方数](https://leetcode.cn/problems/perfect-squares/)
+
+中等
+
+给你一个整数 `n` ，返回 *和为 `n` 的完全平方数的最少数量* 。
+
+**完全平方数** 是一个整数，其值等于另一个整数的平方；换句话说，其值等于一个整数自乘的积。例如，`1`、`4`、`9` 和 `16` 都是完全平方数，而 `3` 和 `11` 不是。
+
+**示例 1：**
+
+```
+输入：n = 12
+输出：3 
+解释：12 = 4 + 4 + 4
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int numSquares(int n) {
+        vector<int> f(n + 1);
+        for (int i = 1; i <= n; i++) {
+            int minn = INT_MAX;
+            for (int j = 1; j * j <= i; j++) {
+                minn = min(minn, f[i - j * j]);
+            }
+            f[i] = minn + 1;
+        }
+        return f[n];
+    }
+};
+
+// 方法二：数学
+class Solution {
+public:
+    // 判断是否为完全平方数
+    bool isPerfectSquare(int x) {
+        int y = sqrt(x);
+        return y * y == x;
+    }
+
+    // 判断是否能表示为 4^k*(8m+7)
+    bool checkAnswer4(int x) {
+        while (x % 4 == 0) {
+            x /= 4;
+        }
+        return x % 8 == 7;
+    }
+
+    int numSquares(int n) {
+        if (isPerfectSquare(n)) {
+            return 1;
+        }
+        if (checkAnswer4(n)) {
+            return 4;
+        }
+        for (int i = 1; i * i <= n; i++) {
+            int j = n - i * i;
+            if (isPerfectSquare(j)) {
+                return 2;
+            }
+        }
+        return 3;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int numSquares(int n) {
+        int[] f = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            int minn = Integer.MAX_VALUE;
+            for (int j = 1; j * j <= i; j++) {
+                minn = Math.min(minn, f[i - j * j]);
+            }
+            f[i] = minn + 1;
+        }
+        return f[n];
+    }
+}
+
+// 方法二：数学
+class Solution {
+    public int numSquares(int n) {
+        if (isPerfectSquare(n)) {
+            return 1;
+        }
+        if (checkAnswer4(n)) {
+            return 4;
+        }
+        for (int i = 1; i * i <= n; i++) {
+            int j = n - i * i;
+            if (isPerfectSquare(j)) {
+                return 2;
+            }
+        }
+        return 3;
+    }
+
+    // 判断是否为完全平方数
+    public boolean isPerfectSquare(int x) {
+        int y = (int) Math.sqrt(x);
+        return y * y == x;
+    }
+
+    // 判断是否能表示为 4^k*(8m+7)
+    public boolean checkAnswer4(int x) {
+        while (x % 4 == 0) {
+            x /= 4;
+        }
+        return x % 8 == 7;
+    }
+}
+```
+
 
 
