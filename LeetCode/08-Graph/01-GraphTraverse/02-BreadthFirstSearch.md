@@ -1003,3 +1003,217 @@ class Solution {
 
 
 
+### [133. 克隆图](https://leetcode.cn/problems/clone-graph/)
+
+中等
+
+给你无向 **[连通](https://baike.baidu.com/item/连通图/6460995?fr=aladdin)** 图中一个节点的引用，请你返回该图的 [**深拷贝**](https://baike.baidu.com/item/深拷贝/22785317?fr=aladdin)（克隆）。
+
+图中的每个节点都包含它的值 `val`（`int`） 和其邻居的列表（`list[Node]`）。
+
+```
+class Node {
+    public int val;
+    public List<Node> neighbors;
+}
+```
+
+**测试用例格式：**
+
+简单起见，每个节点的值都和它的索引相同。例如，第一个节点值为 1（`val = 1`），第二个节点值为 2（`val = 2`），以此类推。该图在测试用例中使用邻接列表表示。
+
+**邻接列表** 是用于表示有限图的无序列表的集合。每个列表都描述了图中节点的邻居集。
+
+给定节点将始终是图中的第一个节点（值为 1）。你必须将 **给定节点的拷贝** 作为对克隆图的引用返回。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/02/01/133_clone_graph_question.png)
+
+```
+输入：adjList = [[2,4],[1,3],[2,4],[1,3]]
+输出：[[2,4],[1,3],[2,4],[1,3]]
+解释：
+图中有 4 个节点。
+节点 1 的值是 1，它有两个邻居：节点 2 和 4 。
+节点 2 的值是 2，它有两个邻居：节点 1 和 3 。
+节点 3 的值是 3，它有两个邻居：节点 2 和 4 。
+节点 4 的值是 4，它有两个邻居：节点 1 和 3 。
+```
+
+C++版本
+
+```c++
+// 方法一：深度优先搜索
+class Solution {
+public:
+    unordered_map<Node*, Node*> visited;
+    Node* cloneGraph(Node* node) {
+        if (node == nullptr) {
+            return node;
+        }
+
+        // 如果该节点已经被访问过了，则直接从哈希表中取出对应的克隆节点返回
+        if (visited.find(node) != visited.end()) {
+            return visited[node];
+        }
+
+        // 克隆节点，注意到为了深拷贝我们不会克隆它的邻居的列表
+        Node* cloneNode = new Node(node->val);
+        // 哈希表存储
+        visited[node] = cloneNode;
+
+        // 遍历该节点的邻居并更新克隆节点的邻居列表
+        for (auto& neighbor: node->neighbors) {
+            cloneNode->neighbors.emplace_back(cloneGraph(neighbor));
+        }
+        return cloneNode;
+    }
+};
+
+// 方法二：广度优先遍历
+class Solution {
+public:
+    Node* cloneGraph(Node* node) {
+        if (node == nullptr) {
+            return node;
+        }
+
+        unordered_map<Node*, Node*> visited;
+
+        // 将题目给定的节点添加到队列
+        queue<Node*> Q;
+        Q.push(node);
+        // 克隆第一个节点并存储到哈希表中
+        visited[node] = new Node(node->val);
+
+        // 广度优先搜索
+        while (!Q.empty()) {
+            // 取出队列的头节点
+            auto n = Q.front();
+            Q.pop();
+            // 遍历该节点的邻居
+            for (auto& neighbor: n->neighbors) {
+                if (visited.find(neighbor) == visited.end()) {
+                    // 如果没有被访问过，就克隆并存储在哈希表中
+                    visited[neighbor] = new Node(neighbor->val);
+                    // 将邻居节点加入队列中
+                    Q.push(neighbor);
+                }
+                // 更新当前节点的邻居列表
+                visited[n]->neighbors.emplace_back(visited[neighbor]);
+            }
+        }
+
+        return visited[node];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：深度优先搜索
+class Solution {
+    private HashMap <Node, Node> visited = new HashMap <> ();
+    public Node cloneGraph(Node node) {
+        if (node == null) {
+            return node;
+        }
+
+        // 如果该节点已经被访问过了，则直接从哈希表中取出对应的克隆节点返回
+        if (visited.containsKey(node)) {
+            return visited.get(node);
+        }
+
+        // 克隆节点，注意到为了深拷贝我们不会克隆它的邻居的列表
+        Node cloneNode = new Node(node.val, new ArrayList());
+        // 哈希表存储
+        visited.put(node, cloneNode);
+
+        // 遍历该节点的邻居并更新克隆节点的邻居列表
+        for (Node neighbor: node.neighbors) {
+            cloneNode.neighbors.add(cloneGraph(neighbor));
+        }
+        return cloneNode;
+    }
+}
+
+// 方法二：广度优先遍历
+class Solution {
+    public Node cloneGraph(Node node) {
+        if (node == null) {
+            return node;
+        }
+
+        HashMap<Node, Node> visited = new HashMap();
+
+        // 将题目给定的节点添加到队列
+        LinkedList<Node> queue = new LinkedList<Node> ();
+        queue.add(node);
+        // 克隆第一个节点并存储到哈希表中
+        visited.put(node, new Node(node.val, new ArrayList()));
+
+        // 广度优先搜索
+        while (!queue.isEmpty()) {
+            // 取出队列的头节点
+            Node n = queue.remove();
+            // 遍历该节点的邻居
+            for (Node neighbor: n.neighbors) {
+                if (!visited.containsKey(neighbor)) {
+                    // 如果没有被访问过，就克隆并存储在哈希表中
+                    visited.put(neighbor, new Node(neighbor.val, new ArrayList()));
+                    // 将邻居节点加入队列中
+                    queue.add(neighbor);
+                }
+                // 更新当前节点的邻居列表
+                visited.get(n).neighbors.add(visited.get(neighbor));
+            }
+        }
+
+        return visited.get(node);
+    }
+}
+```
+
+
+
+### [733. 图像渲染](https://leetcode.cn/problems/flood-fill/)
+
+简单
+
+有一幅以 `m x n` 的二维整数数组表示的图画 `image` ，其中 `image[i][j]` 表示该图画的像素值大小。
+
+你也被给予三个整数 `sr` , `sc` 和 `newColor` 。你应该从像素 `image[sr][sc]` 开始对图像进行 上色**填充** 。
+
+为了完成 **上色工作** ，从初始像素开始，记录初始坐标的 **上下左右四个方向上** 像素值与初始坐标相同的相连像素点，接着再记录这四个方向上符合条件的像素点与他们对应 **四个方向上** 像素值与初始坐标相同的相连像素点，……，重复该过程。将所有有记录的像素点的颜色值改为 `newColor` 。
+
+最后返回 *经过上色渲染后的图像* 。
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2021/06/01/flood1-grid.jpg)
+
+```
+输入: image = [[1,1,1],[1,1,0],[1,0,1]]，sr = 1, sc = 1, newColor = 2
+输出: [[2,2,2],[2,2,0],[2,0,1]]
+解析: 在图像的正中间，(坐标(sr,sc)=(1,1)),在路径上所有符合条件的像素点的颜色都被更改成2。
+注意，右下角的像素没有更改为2，因为它不是在上下左右四个方向上与初始点相连的像素点。
+```
+
+C++版本
+
+```c++
+
+```
+
+Java版本
+
+```java
+
+```
+
+
+
+
+
