@@ -1321,5 +1321,524 @@ class Solution {
 
 
 
+### [542. 01 矩阵](https://leetcode.cn/problems/01-matrix/)
+
+中等
+
+给定一个由 `0` 和 `1` 组成的矩阵 `mat` ，请输出一个大小相同的矩阵，其中每一个格子是 `mat` 中对应位置元素到最近的 `0` 的距离。
+
+两个相邻元素间的距离为 `1` 。
+
+**示例 1：**
+
+![img](https://pic.leetcode-cn.com/1626667201-NCWmuP-image.png)
+
+```
+输入：mat = [[0,0,0],[0,1,0],[0,0,0]]
+输出：[[0,0,0],[0,1,0],[0,0,0]]
+```
+
+C++版本
+
+```c++
+// 方法一：广度优先搜索
+class Solution {
+private:
+    static constexpr int dirs[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+public:
+    vector<vector<int>> updateMatrix(vector<vector<int>>& matrix) {
+        int m = matrix.size(), n = matrix[0].size();
+        vector<vector<int>> dist(m, vector<int>(n));
+        vector<vector<int>> seen(m, vector<int>(n));
+        queue<pair<int, int>> q;
+        // 将所有的 0 添加进初始队列中
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (matrix[i][j] == 0) {
+                    q.emplace(i, j);
+                    seen[i][j] = 1;
+                }
+            }
+        }
+
+        // 广度优先搜索
+        while (!q.empty()) {
+            auto [i, j] = q.front();
+            q.pop();
+            for (int d = 0; d < 4; ++d) {
+                int ni = i + dirs[d][0];
+                int nj = j + dirs[d][1];
+                if (ni >= 0 && ni < m && nj >= 0 && nj < n && !seen[ni][nj]) {
+                    dist[ni][nj] = dist[i][j] + 1;
+                    q.emplace(ni, nj);
+                    seen[ni][nj] = 1;
+                }
+            }
+        }
+
+        return dist;
+    }
+};
+
+// 方法二：动态规划
+class Solution {
+public:
+    vector<vector<int>> updateMatrix(vector<vector<int>>& matrix) {
+        int m = matrix.size(), n = matrix[0].size();
+        // 初始化动态规划的数组，所有的距离值都设置为一个很大的数
+        vector<vector<int>> dist(m, vector<int>(n, INT_MAX / 2));
+        // 如果 (i, j) 的元素为 0，那么距离为 0
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (matrix[i][j] == 0) {
+                    dist[i][j] = 0;
+                }
+            }
+        }
+        // 只有 水平向左移动 和 竖直向上移动，注意动态规划的计算顺序
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (i - 1 >= 0) {
+                    dist[i][j] = min(dist[i][j], dist[i - 1][j] + 1);
+                }
+                if (j - 1 >= 0) {
+                    dist[i][j] = min(dist[i][j], dist[i][j - 1] + 1);
+                }
+            }
+        }
+        // 只有 水平向左移动 和 竖直向下移动，注意动态规划的计算顺序
+        for (int i = m - 1; i >= 0; --i) {
+            for (int j = 0; j < n; ++j) {
+                if (i + 1 < m) {
+                    dist[i][j] = min(dist[i][j], dist[i + 1][j] + 1);
+                }
+                if (j - 1 >= 0) {
+                    dist[i][j] = min(dist[i][j], dist[i][j - 1] + 1);
+                }
+            }
+        }
+        // 只有 水平向右移动 和 竖直向上移动，注意动态规划的计算顺序
+        for (int i = 0; i < m; ++i) {
+            for (int j = n - 1; j >= 0; --j) {
+                if (i - 1 >= 0) {
+                    dist[i][j] = min(dist[i][j], dist[i - 1][j] + 1);
+                }
+                if (j + 1 < n) {
+                    dist[i][j] = min(dist[i][j], dist[i][j + 1] + 1);
+                }
+            }
+        }
+        // 只有 水平向右移动 和 竖直向下移动，注意动态规划的计算顺序
+        for (int i = m - 1; i >= 0; --i) {
+            for (int j = n - 1; j >= 0; --j) {
+                if (i + 1 < m) {
+                    dist[i][j] = min(dist[i][j], dist[i + 1][j] + 1);
+                }
+                if (j + 1 < n) {
+                    dist[i][j] = min(dist[i][j], dist[i][j + 1] + 1);
+                }
+            }
+        }
+        return dist;
+    }
+};
+
+// 方法三：动态规划的常数优化
+class Solution {
+public:
+    vector<vector<int>> updateMatrix(vector<vector<int>>& matrix) {
+        int m = matrix.size(), n = matrix[0].size();
+        // 初始化动态规划的数组，所有的距离值都设置为一个很大的数
+        vector<vector<int>> dist(m, vector<int>(n, INT_MAX / 2));
+        // 如果 (i, j) 的元素为 0，那么距离为 0
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (matrix[i][j] == 0) {
+                    dist[i][j] = 0;
+                }
+            }
+        }
+        // 只有 水平向左移动 和 竖直向上移动，注意动态规划的计算顺序
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (i - 1 >= 0) {
+                    dist[i][j] = min(dist[i][j], dist[i - 1][j] + 1);
+                }
+                if (j - 1 >= 0) {
+                    dist[i][j] = min(dist[i][j], dist[i][j - 1] + 1);
+                }
+            }
+        }
+        // 只有 水平向右移动 和 竖直向下移动，注意动态规划的计算顺序
+        for (int i = m - 1; i >= 0; --i) {
+            for (int j = n - 1; j >= 0; --j) {
+                if (i + 1 < m) {
+                    dist[i][j] = min(dist[i][j], dist[i + 1][j] + 1);
+                }
+                if (j + 1 < n) {
+                    dist[i][j] = min(dist[i][j], dist[i][j + 1] + 1);
+                }
+            }
+        }
+        return dist;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：广度优先搜索
+class Solution {
+    static int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    public int[][] updateMatrix(int[][] matrix) {
+        int m = matrix.length, n = matrix[0].length;
+        int[][] dist = new int[m][n];
+        boolean[][] seen = new boolean[m][n];
+        Queue<int[]> queue = new LinkedList<int[]>();
+        // 将所有的 0 添加进初始队列中
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (matrix[i][j] == 0) {
+                    queue.offer(new int[]{i, j});
+                    seen[i][j] = true;
+                }
+            }
+        }
+
+        // 广度优先搜索
+        while (!queue.isEmpty()) {
+            int[] cell = queue.poll();
+            int i = cell[0], j = cell[1];
+            for (int d = 0; d < 4; ++d) {
+                int ni = i + dirs[d][0];
+                int nj = j + dirs[d][1];
+                if (ni >= 0 && ni < m && nj >= 0 && nj < n && !seen[ni][nj]) {
+                    dist[ni][nj] = dist[i][j] + 1;
+                    queue.offer(new int[]{ni, nj});
+                    seen[ni][nj] = true;
+                }
+            }
+        }
+
+        return dist;
+    }
+}
+
+// 方法二：动态规划
+class Solution {
+    static int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    public int[][] updateMatrix(int[][] matrix) {
+        int m = matrix.length, n = matrix[0].length;
+        // 初始化动态规划的数组，所有的距离值都设置为一个很大的数
+        int[][] dist = new int[m][n];
+        for (int i = 0; i < m; ++i) {
+            Arrays.fill(dist[i], Integer.MAX_VALUE / 2);
+        }
+        // 如果 (i, j) 的元素为 0，那么距离为 0
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (matrix[i][j] == 0) {
+                    dist[i][j] = 0;
+                }
+            }
+        }
+        // 只有 水平向左移动 和 竖直向上移动，注意动态规划的计算顺序
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (i - 1 >= 0) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i - 1][j] + 1);
+                }
+                if (j - 1 >= 0) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i][j - 1] + 1);
+                }
+            }
+        }
+        // 只有 水平向左移动 和 竖直向下移动，注意动态规划的计算顺序
+        for (int i = m - 1; i >= 0; --i) {
+            for (int j = 0; j < n; ++j) {
+                if (i + 1 < m) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i + 1][j] + 1);
+                }
+                if (j - 1 >= 0) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i][j - 1] + 1);
+                }
+            }
+        }
+        // 只有 水平向右移动 和 竖直向上移动，注意动态规划的计算顺序
+        for (int i = 0; i < m; ++i) {
+            for (int j = n - 1; j >= 0; --j) {
+                if (i - 1 >= 0) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i - 1][j] + 1);
+                }
+                if (j + 1 < n) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i][j + 1] + 1);
+                }
+            }
+        }
+        // 只有 水平向右移动 和 竖直向下移动，注意动态规划的计算顺序
+        for (int i = m - 1; i >= 0; --i) {
+            for (int j = n - 1; j >= 0; --j) {
+                if (i + 1 < m) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i + 1][j] + 1);
+                }
+                if (j + 1 < n) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i][j + 1] + 1);
+                }
+            }
+        }
+        return dist;
+    }
+}
+
+// 方法三：动态规划的常数优化
+class Solution {
+    static int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    public int[][] updateMatrix(int[][] matrix) {
+        int m = matrix.length, n = matrix[0].length;
+        // 初始化动态规划的数组，所有的距离值都设置为一个很大的数
+        int[][] dist = new int[m][n];
+        for (int i = 0; i < m; ++i) {
+            Arrays.fill(dist[i], Integer.MAX_VALUE / 2);
+        }
+        // 如果 (i, j) 的元素为 0，那么距离为 0
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (matrix[i][j] == 0) {
+                    dist[i][j] = 0;
+                }
+            }
+        }
+        // 只有 水平向左移动 和 竖直向上移动，注意动态规划的计算顺序
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (i - 1 >= 0) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i - 1][j] + 1);
+                }
+                if (j - 1 >= 0) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i][j - 1] + 1);
+                }
+            }
+        }
+        // 只有 水平向右移动 和 竖直向下移动，注意动态规划的计算顺序
+        for (int i = m - 1; i >= 0; --i) {
+            for (int j = n - 1; j >= 0; --j) {
+                if (i + 1 < m) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i + 1][j] + 1);
+                }
+                if (j + 1 < n) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i][j + 1] + 1);
+                }
+            }
+        }
+        return dist;
+    }
+}
+```
+
+
+
+### [322. 零钱兑换](https://leetcode.cn/problems/coin-change/)
+
+中等
+
+给你一个整数数组 `coins` ，表示不同面额的硬币；以及一个整数 `amount` ，表示总金额。
+
+计算并返回可以凑成总金额所需的 **最少的硬币个数** 。如果没有任何一种硬币组合能组成总金额，返回 `-1` 。
+
+你可以认为每种硬币的数量是无限的。
+
+**示例 1：**
+
+```
+输入：coins = [1, 2, 5], amount = 11
+输出：3 
+解释：11 = 5 + 5 + 1
+```
+
+C++版本
+
+```c++
+// 广度优先搜索
+class Solution {
+public:
+    int coinChange(vector<int>& coins, int amount) {
+        if (amount == 0)
+            return 0;
+
+        unordered_set<int> visited;
+        queue<int> q;
+        q.push(amount);
+        visited.insert(amount);
+
+        int step = 0;
+        while (!q.empty()) {
+            step++;
+            int size = q.size();
+            for (int i = 0; i < size; i++) {
+                int cur = q.front();
+                q.pop();
+                for (int coin : coins) {
+                    if (cur == coin)
+                        return step;
+                    else if (cur > coin && visited.find(cur - coin) == visited.end()) {
+                        q.push(cur - coin);
+                        visited.insert(cur - coin);
+                    }
+                }
+            }
+        }
+
+        return -1;
+    }
+};
+
+// 方法一：记忆化搜索
+class Solution {
+    vector<int>count;
+    int dp(vector<int>& coins, int rem) {
+        if (rem < 0) return -1;
+        if (rem == 0) return 0;
+        if (count[rem - 1] != 0) return count[rem - 1];
+        int Min = INT_MAX;
+        for (int coin:coins) {
+            int res = dp(coins, rem - coin);
+            if (res >= 0 && res < Min) {
+                Min = res + 1;
+            }
+        }
+        count[rem - 1] = Min == INT_MAX ? -1 : Min;
+        return count[rem - 1];
+    }
+public:
+    int coinChange(vector<int>& coins, int amount) {
+        if (amount < 1) return 0;
+        count.resize(amount);
+        return dp(coins, amount);
+    }
+};
+
+// 方法二：动态规划
+class Solution {
+public:
+    int coinChange(vector<int>& coins, int amount) {
+        int Max = amount + 1;
+        vector<int> dp(amount + 1, Max);
+        dp[0] = 0;
+        for (int i = 1; i <= amount; ++i) {
+            for (int j = 0; j < (int)coins.size(); ++j) {
+                if (coins[j] <= i) {
+                    dp[i] = min(dp[i], dp[i - coins[j]] + 1);
+                }
+            }
+        }
+        return dp[amount] > amount ? -1 : dp[amount];
+    }
+};
+```
+
+Java版本
+
+```java
+
+class Solution {
+    public int coinChange(int[] coins, int amount) {
+        if (amount == 0)
+            return 0;
+
+        Set<Integer> visited = new HashSet<>();
+        Queue<Integer> queue = new LinkedList<>();
+        queue.offer(amount);
+        visited.add(amount);
+
+        int step = 0;
+        while (!queue.isEmpty()) {
+            step++;
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                int cur = queue.poll();
+                for (int coin : coins) {
+                    if (cur == coin)
+                        return step;
+                    else if (cur > coin && !visited.contains(cur - coin)) {
+                        queue.offer(cur - coin);
+                        visited.add(cur - coin);
+                    }
+                }
+            }
+        }
+
+        return -1;
+    }
+}
+
+// 方法一：记忆化搜索
+public class Solution {
+    public int coinChange(int[] coins, int amount) {
+        if (amount < 1) {
+            return 0;
+        }
+        return coinChange(coins, amount, new int[amount]);
+    }
+
+    private int coinChange(int[] coins, int rem, int[] count) {
+        if (rem < 0) {
+            return -1;
+        }
+        if (rem == 0) {
+            return 0;
+        }
+        if (count[rem - 1] != 0) {
+            return count[rem - 1];
+        }
+        int min = Integer.MAX_VALUE;
+        for (int coin : coins) {
+            int res = coinChange(coins, rem - coin, count);
+            if (res >= 0 && res < min) {
+                min = 1 + res;
+            }
+        }
+        count[rem - 1] = (min == Integer.MAX_VALUE) ? -1 : min;
+        return count[rem - 1];
+    }
+}
+
+// 方法二：动态规划
+public class Solution {
+    public int coinChange(int[] coins, int amount) {
+        int max = amount + 1;
+        int[] dp = new int[amount + 1];
+        Arrays.fill(dp, max);
+        dp[0] = 0;
+        for (int i = 1; i <= amount; i++) {
+            for (int j = 0; j < coins.length; j++) {
+                if (coins[j] <= i) {
+                    dp[i] = Math.min(dp[i], dp[i - coins[j]] + 1);
+                }
+            }
+        }
+        return dp[amount] > amount ? -1 : dp[amount];
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
