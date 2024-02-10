@@ -1828,9 +1828,357 @@ public class Solution {
 
 
 
+### [LCR 130. 衣橱整理](https://leetcode.cn/problems/ji-qi-ren-de-yun-dong-fan-wei-lcof/)
+
+中等
+
+家居整理师将待整理衣橱划分为 `m x n` 的二维矩阵 `grid`，其中 `grid[i][j]` 代表一个需要整理的格子。整理师自 `grid[0][0]` 开始 **逐行逐列** 地整理每个格子。
+
+整理规则为：在整理过程中，可以选择 **向右移动一格** 或 **向下移动一格**，但不能移动到衣柜之外。同时，不需要整理 `digit(i) + digit(j) > cnt` 的格子，其中 `digit(x)` 表示数字 `x` 的各数位之和。
+
+请返回整理师 **总共需要整理多少个格子**。
+
+**示例 1：**
+
+```
+输入：m = 4, n = 7, cnt = 5
+输出：18
+```
+
+C++版本
+
+```c++
+// 方法一：广度优先搜索
+class Solution {
+    // 计算 x 的数位之和
+    int get(int x) {
+        int res=0;
+        for (; x; x /= 10) {
+            res += x % 10;
+        }
+        return res;
+    }
+public:
+    int wardrobeFinishing(int m, int n, int cnt) {
+        if (!cnt) return 1;
+        queue<pair<int,int> > Q;
+        // 向右和向下的方向数组
+        int dx[2] = {0, 1};
+        int dy[2] = {1, 0};
+        vector<vector<int> > vis(m, vector<int>(n, 0));
+        Q.push(make_pair(0, 0));
+        vis[0][0] = 1;
+        int ans = 1;
+        while (!Q.empty()) {
+            auto [x, y] = Q.front();
+            Q.pop();
+            for (int i = 0; i < 2; ++i) {
+                int tx = dx[i] + x;
+                int ty = dy[i] + y;
+                if (tx < 0 || tx >= m || ty < 0 || ty >= n || vis[tx][ty] || get(tx) + get(ty) > cnt) continue;
+                Q.push(make_pair(tx, ty));
+                vis[tx][ty] = 1;
+                ans++;
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：递推
+class Solution {
+    int get(int x) {
+        int res=0;
+        for (; x; x /= 10){
+            res += x % 10;
+        }
+        return res;
+    }
+public:
+    int wardrobeFinishing(int m, int n, int cnt) {
+        if (!cnt) return 1;
+        vector<vector<int> > vis(m, vector<int>(n, 0));
+        int ans = 1;
+        vis[0][0] = 1;
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if ((i == 0 && j == 0) || get(i) + get(j) > cnt) continue;
+                // 边界判断
+                if (i - 1 >= 0) vis[i][j] |= vis[i - 1][j];
+                if (j - 1 >= 0) vis[i][j] |= vis[i][j - 1];
+                ans += vis[i][j];
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：广度优先搜索
+class Solution {
+    public int wardrobeFinishing(int m, int n, int cnt) {
+        if (cnt == 0) {
+            return 1;
+        }
+        Queue<int[]> queue = new LinkedList<int[]>();
+        // 向右和向下的方向数组
+        int[] dx = {0, 1};
+        int[] dy = {1, 0};
+        boolean[][] vis = new boolean[m][n];
+        queue.offer(new int[]{0, 0});
+        vis[0][0] = true;
+        int ans = 1;
+        while (!queue.isEmpty()) {
+            int[] cell = queue.poll();
+            int x = cell[0], y = cell[1];
+            for (int i = 0; i < 2; ++i) {
+                int tx = dx[i] + x;
+                int ty = dy[i] + y;
+                if (tx < 0 || tx >= m || ty < 0 || ty >= n || vis[tx][ty] || get(tx) + get(ty) > cnt) {
+                    continue;
+                }
+                queue.offer(new int[]{tx, ty});
+                vis[tx][ty] = true;
+                ans++;
+            }
+        }
+        return ans;
+    }
+
+    private int get(int x) {
+        int res = 0;
+        while (x != 0) {
+            res += x % 10;
+            x /= 10;
+        }
+        return res;
+    }
+}
+
+// 方法二：递推
+class Solution {
+    public int wardrobeFinishing(int m, int n, int cnt) {
+        if (cnt == 0) {
+            return 1;
+        }
+        boolean[][] vis = new boolean[m][n];
+        int ans = 1;
+        vis[0][0] = true;
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if ((i == 0 && j == 0) || get(i) + get(j) > cnt) {
+                    continue;
+                }
+                // 边界判断
+                if (i - 1 >= 0) {
+                    vis[i][j] |= vis[i - 1][j];
+                }
+                if (j - 1 >= 0) {
+                    vis[i][j] |= vis[i][j - 1];
+                }
+                ans += vis[i][j] ? 1 : 0;
+            }
+        }
+        return ans;
+    }
+
+    private int get(int x) {
+        int res = 0;
+        while (x != 0) {
+            res += x % 10;
+            x /= 10;
+        }
+        return res;
+    }
+}
+```
 
 
 
+### [199. 二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/)
+
+中等
+
+给定一个二叉树的 **根节点** `root`，想象自己站在它的右侧，按照从顶部到底部的顺序，返回从右侧所能看到的节点值。
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2021/02/14/tree.jpg)
+
+```
+输入: [1,2,3,null,5,null,4]
+输出: [1,3,4]
+```
+
+C++版本
+
+```c++
+// 方法一：深度优先搜索
+class Solution {
+public:
+    vector<int> rightSideView(TreeNode* root) {
+        unordered_map<int, int> rightmostValueAtDepth;
+        int max_depth = -1;
+
+        stack<TreeNode*> nodeStack;
+        stack<int> depthStack;
+        nodeStack.push(root);
+        depthStack.push(0);
+
+        while (!nodeStack.empty()) {
+            TreeNode* node = nodeStack.top();nodeStack.pop();
+            int depth = depthStack.top();depthStack.pop();
+
+            if (node != NULL) {
+            	// 维护二叉树的最大深度
+                max_depth = max(max_depth, depth);
+
+                // 如果不存在对应深度的节点我们才插入
+                if (rightmostValueAtDepth.find(depth) == rightmostValueAtDepth.end()) {
+                    rightmostValueAtDepth[depth] =  node -> val;
+                }
+
+                nodeStack.push(node -> left);
+                nodeStack.push(node -> right);
+                depthStack.push(depth + 1);
+                depthStack.push(depth + 1);
+            }
+        }
+
+        vector<int> rightView;
+        for (int depth = 0; depth <= max_depth; ++depth) {
+            rightView.push_back(rightmostValueAtDepth[depth]);
+        }
+
+        return rightView;
+    }
+};
+
+// 方法二：广度优先搜索
+class Solution {
+public:
+    vector<int> rightSideView(TreeNode* root) {
+        unordered_map<int, int> rightmostValueAtDepth;
+        int max_depth = -1;
+
+        queue<TreeNode*> nodeQueue;
+        queue<int> depthQueue;
+        nodeQueue.push(root);
+        depthQueue.push(0);
+
+        while (!nodeQueue.empty()) {
+            TreeNode* node = nodeQueue.front();nodeQueue.pop();
+            int depth = depthQueue.front();depthQueue.pop();
+
+            if (node != NULL) {
+            	// 维护二叉树的最大深度
+                max_depth = max(max_depth, depth);
+
+                // 由于每一层最后一个访问到的节点才是我们要的答案，因此不断更新对应深度的信息即可
+                rightmostValueAtDepth[depth] =  node -> val;
+
+                nodeQueue.push(node -> left);
+                nodeQueue.push(node -> right);
+                depthQueue.push(depth + 1);
+                depthQueue.push(depth + 1);
+            }
+        }
+
+        vector<int> rightView;
+        for (int depth = 0; depth <= max_depth; ++depth) {
+            rightView.push_back(rightmostValueAtDepth[depth]);
+        }
+
+        return rightView;
+    }
+};
+```
+
+Java版本
+
+```java
+
+// 方法一：深度优先搜索
+class Solution {
+    public List<Integer> rightSideView(TreeNode root) {
+        Map<Integer, Integer> rightmostValueAtDepth = new HashMap<Integer, Integer>();
+        int max_depth = -1;
+
+        Deque<TreeNode> nodeStack = new LinkedList<TreeNode>();
+        Deque<Integer> depthStack = new LinkedList<Integer>();
+        nodeStack.push(root);
+        depthStack.push(0);
+
+        while (!nodeStack.isEmpty()) {
+            TreeNode node = nodeStack.pop();
+            int depth = depthStack.pop();
+
+            if (node != null) {
+            	// 维护二叉树的最大深度
+                max_depth = Math.max(max_depth, depth);
+
+                // 如果不存在对应深度的节点我们才插入
+                if (!rightmostValueAtDepth.containsKey(depth)) {
+                    rightmostValueAtDepth.put(depth, node.val);
+                }
+
+                nodeStack.push(node.left);
+                nodeStack.push(node.right);
+                depthStack.push(depth + 1);
+                depthStack.push(depth + 1);
+            }
+        }
+
+        List<Integer> rightView = new ArrayList<Integer>();
+        for (int depth = 0; depth <= max_depth; depth++) {
+            rightView.add(rightmostValueAtDepth.get(depth));
+        }
+
+        return rightView;
+    }
+}
+
+// 方法二：广度优先搜索
+class Solution {
+    public List<Integer> rightSideView(TreeNode root) {
+        Map<Integer, Integer> rightmostValueAtDepth = new HashMap<Integer, Integer>();
+        int max_depth = -1;
+
+        Queue<TreeNode> nodeQueue = new LinkedList<TreeNode>();
+        Queue<Integer> depthQueue = new LinkedList<Integer>();
+        nodeQueue.add(root);
+        depthQueue.add(0);
+
+        while (!nodeQueue.isEmpty()) {
+            TreeNode node = nodeQueue.remove();
+            int depth = depthQueue.remove();
+
+            if (node != null) {
+            	// 维护二叉树的最大深度
+                max_depth = Math.max(max_depth, depth);
+
+                // 由于每一层最后一个访问到的节点才是我们要的答案，因此不断更新对应深度的信息即可
+                rightmostValueAtDepth.put(depth, node.val);
+
+                nodeQueue.add(node.left);
+                nodeQueue.add(node.right);
+                depthQueue.add(depth + 1);
+                depthQueue.add(depth + 1);
+            }
+        }
+
+        List<Integer> rightView = new ArrayList<Integer>();
+        for (int depth = 0; depth <= max_depth; depth++) {
+            rightView.add(rightmostValueAtDepth.get(depth));
+        }
+
+        return rightView;
+    }
+}
+```
 
 
 
