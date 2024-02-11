@@ -2016,6 +2016,17 @@ class Solution {
 C++版本
 
 ```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
 // 方法一：深度优先搜索
 class Solution {
 public:
@@ -2100,7 +2111,21 @@ public:
 Java版本
 
 ```java
-
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
 // 方法一：深度优先搜索
 class Solution {
     public List<Integer> rightSideView(TreeNode root) {
@@ -2182,11 +2207,1158 @@ class Solution {
 
 
 
+### [662. 二叉树最大宽度](https://leetcode.cn/problems/maximum-width-of-binary-tree/)
+
+中等
+
+给你一棵二叉树的根节点 `root` ，返回树的 **最大宽度** 。
+
+树的 **最大宽度** 是所有层中最大的 **宽度** 。
+
+每一层的 **宽度** 被定义为该层最左和最右的非空节点（即，两个端点）之间的长度。将这个二叉树视作与满二叉树结构相同，两端点间会出现一些延伸到这一层的 `null` 节点，这些 `null` 节点也计入长度。
+
+题目数据保证答案将会在 **32 位** 带符号整数范围内。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/05/03/width1-tree.jpg)
+
+```
+输入：root = [1,3,2,5,3,null,9]
+输出：4
+解释：最大宽度出现在树的第 3 层，宽度为 4 (5,3,null,9) 。
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：广度优先搜索
+class Solution {
+public:
+    int widthOfBinaryTree(TreeNode* root) {
+        unsigned long long res = 1;
+        vector<pair<TreeNode *, unsigned long long>> arr;
+        arr.emplace_back(root, 1L);
+        while (!arr.empty()) {
+            vector<pair<TreeNode *, unsigned long long>> tmp;
+            for (auto &[node, index] : arr) {
+                if (node->left) {
+                    tmp.emplace_back(node->left, index * 2);
+                }
+                if (node->right) {
+                    tmp.emplace_back(node->right, index * 2 + 1);
+                }
+            }
+            res = max(res, arr.back().second - arr[0].second + 1);
+            arr = move(tmp);
+        }
+        return res;
+    }
+};
+
+// 方法二：深度优先搜索
+using ULL = unsigned long long;
+
+class Solution {
+public:
+    int widthOfBinaryTree(TreeNode* root) {
+        unordered_map<int, ULL> levelMin;
+        function<ULL(TreeNode*, int, ULL)> dfs = [&](TreeNode* node, int depth, ULL index)->ULL {
+            if (node == nullptr) {
+                return 0LL;
+            }
+            if (!levelMin.count(depth)) {
+                levelMin[depth] = index; // 每一层最先访问到的节点会是最左边的节点，即每一层编号的最小值
+            }
+            return max({index - levelMin[depth] + 1LL, dfs(node->left, depth + 1, index * 2), dfs(node->right, depth + 1, index * 2 + 1)});
+        };
+        return dfs(root, 1, 1LL);
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：广度优先搜索
+class Solution {
+    public int widthOfBinaryTree(TreeNode root) {
+        int res = 1;
+        List<Pair<TreeNode, Integer>> arr = new ArrayList<Pair<TreeNode, Integer>>();
+        arr.add(new Pair<TreeNode, Integer>(root, 1));
+        while (!arr.isEmpty()) {
+            List<Pair<TreeNode, Integer>> tmp = new ArrayList<Pair<TreeNode, Integer>>();
+            for (Pair<TreeNode, Integer> pair : arr) {
+                TreeNode node = pair.getKey();
+                int index = pair.getValue();
+                if (node.left != null) {
+                    tmp.add(new Pair<TreeNode, Integer>(node.left, index * 2));
+                }
+                if (node.right != null) {
+                    tmp.add(new Pair<TreeNode, Integer>(node.right, index * 2 + 1));
+                }
+            }
+            res = Math.max(res, arr.get(arr.size() - 1).getValue() - arr.get(0).getValue() + 1);
+            arr = tmp;
+        }
+        return res;
+    }
+}
+
+// 方法二：深度优先搜索
+class Solution {
+    Map<Integer, Integer> levelMin = new HashMap<Integer, Integer>();
+
+    public int widthOfBinaryTree(TreeNode root) {
+        return dfs(root, 1, 1);
+    }
+
+    public int dfs(TreeNode node, int depth, int index) {
+        if (node == null) {
+            return 0;
+        }
+        levelMin.putIfAbsent(depth, index); // 每一层最先访问到的节点会是最左边的节点，即每一层编号的最小值
+        return Math.max(index - levelMin.get(depth) + 1, Math.max(dfs(node.left, depth + 1, index * 2), dfs(node.right, depth + 1, index * 2 + 1)));
+    }
+}
+```
 
 
 
+### [958. 二叉树的完全性检验](https://leetcode.cn/problems/check-completeness-of-a-binary-tree/)
+
+中等
+
+给你一棵二叉树的根节点 `root` ，请你判断这棵树是否是一棵 **完全二叉树** 。
+
+在一棵 **[完全二叉树](https://baike.baidu.com/item/完全二叉树/7773232?fr=aladdin)** 中，除了最后一层外，所有层都被完全填满，并且最后一层中的所有节点都尽可能靠左。最后一层（第 `h` 层）中可以包含 `1` 到 `2h` 个节点。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/15/complete-binary-tree-1.png)
+
+```
+输入：root = [1,2,3,4,5,6]
+输出：true
+解释：最后一层前的每一层都是满的（即，节点值为 {1} 和 {2,3} 的两层），且最后一层中的所有节点（{4,5,6}）尽可能靠左。
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法 1：广度优先搜索
+
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法 1：广度优先搜索
+class Solution {
+    public boolean isCompleteTree(TreeNode root) {
+        List<ANode> nodes = new ArrayList();
+        nodes.add(new ANode(root, 1));
+        int i = 0;
+        while (i < nodes.size()) {
+            ANode anode = nodes.get(i++);
+            if (anode.node != null) {
+                nodes.add(new ANode(anode.node.left, anode.code * 2));
+                nodes.add(new ANode(anode.node.right, anode.code * 2 + 1));
+            }
+        }
+
+        return nodes.get(i-1).code == nodes.size();
+    }
+}
+
+class ANode {  // Annotated Node
+    TreeNode node;
+    int code;
+    ANode(TreeNode node, int code) {
+        this.node = node;
+        this.code = code;
+    }
+}
+```
 
 
 
+### [572. 另一棵树的子树](https://leetcode.cn/problems/subtree-of-another-tree/)
 
+简单
+
+给你两棵二叉树 `root` 和 `subRoot` 。检验 `root` 中是否包含和 `subRoot` 具有相同结构和节点值的子树。如果存在，返回 `true` ；否则，返回 `false` 。
+
+二叉树 `tree` 的一棵子树包括 `tree` 的某个节点和这个节点的所有后代节点。`tree` 也可以看做它自身的一棵子树。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/04/28/subtree1-tree.jpg)
+
+```
+输入：root = [3,4,5,1,2], subRoot = [4,1,2]
+输出：true
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：深度优先搜索暴力匹配
+class Solution {
+public:
+    bool check(TreeNode *o, TreeNode *t) {
+        if (!o && !t) {
+            return true;
+        }
+        if ((o && !t) || (!o && t) || (o->val != t->val)) {
+            return false;
+        }
+        return check(o->left, t->left) && check(o->right, t->right);
+    }
+
+    bool dfs(TreeNode *o, TreeNode *t) {
+        if (!o) {
+            return false;
+        }
+        return check(o, t) || dfs(o->left, t) || dfs(o->right, t);
+    }
+
+    bool isSubtree(TreeNode *s, TreeNode *t) {
+        return dfs(s, t);
+    }
+};
+
+// 方法二：深度优先搜索序列上做串匹配
+class Solution {
+public:
+    vector <int> sOrder, tOrder;
+    int maxElement, lNull, rNull;
+
+    void getMaxElement(TreeNode *o) {
+        if (!o) {
+            return;
+        }
+        maxElement = max(maxElement, o->val);
+        getMaxElement(o->left);
+        getMaxElement(o->right);
+    }
+
+    void getDfsOrder(TreeNode *o, vector <int> &tar) {
+        if (!o) {
+            return;
+        }
+        tar.push_back(o->val);
+        if (o->left) {
+            getDfsOrder(o->left, tar);
+        } else {
+            tar.push_back(lNull);
+        }
+        if (o->right) {
+            getDfsOrder(o->right, tar);
+        } else {
+            tar.push_back(rNull);
+        }
+    }
+
+    bool kmp() {
+        int sLen = sOrder.size(), tLen = tOrder.size();
+        vector <int> fail(tOrder.size(), -1);
+        for (int i = 1, j = -1; i < tLen; ++i) {
+            while (j != -1 && tOrder[i] != tOrder[j + 1]) {
+                j = fail[j];
+            }
+            if (tOrder[i] == tOrder[j + 1]) {
+                ++j;
+            }
+            fail[i] = j;
+        }
+        for (int i = 0, j = -1; i < sLen; ++i) {
+            while (j != -1 && sOrder[i] != tOrder[j + 1]) {
+                j = fail[j];
+            }
+            if (sOrder[i] == tOrder[j + 1]) {
+                ++j;
+            }
+            if (j == tLen - 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool isSubtree(TreeNode* s, TreeNode* t) {
+        maxElement = INT_MIN;
+        getMaxElement(s);
+        getMaxElement(t);
+        lNull = maxElement + 1;
+        rNull = maxElement + 2;
+
+        getDfsOrder(s, sOrder);
+        getDfsOrder(t, tOrder);
+
+        return kmp();
+    }
+};
+
+// 方法三：树哈希
+class Solution {
+public:
+    static constexpr int MAX_N = 1000 + 5;
+    static constexpr int MOD = int(1E9) + 7;
+
+    bool vis[MAX_N];
+    int p[MAX_N], tot;
+    void getPrime() {
+        vis[0] = vis[1] = 1; tot = 0;
+        for (int i = 2; i < MAX_N; ++i) {
+            if (!vis[i]) p[++tot] = i;
+            for (int j = 1; j <= tot && i * p[j] < MAX_N; ++j) {
+                vis[i * p[j]] = 1;
+                if (i % p[j] == 0) break;
+            }
+        }
+    }
+
+    struct Status {
+        int f, s; // f 为哈希值 | s 为子树大小
+        Status(int f_ = 0, int s_ = 0) 
+            : f(f_), s(s_) {}
+    };
+
+    unordered_map <TreeNode *, Status> hS, hT;
+
+    void dfs(TreeNode *o, unordered_map <TreeNode *, Status> &h) {
+        h[o] = Status(o->val, 1);
+        if (!o->left && !o->right) return;
+        if (o->left) {
+            dfs(o->left, h);
+            h[o].s += h[o->left].s;
+            h[o].f = (h[o].f + (31LL * h[o->left].f * p[h[o->left].s]) % MOD) % MOD;
+        }
+        if (o->right) {
+            dfs(o->right, h);
+            h[o].s += h[o->right].s;
+            h[o].f = (h[o].f + (179LL * h[o->right].f * p[h[o->right].s]) % MOD) % MOD;
+        }
+    }
+
+    bool isSubtree(TreeNode* s, TreeNode* t) {
+        getPrime();
+        dfs(s, hS);
+        dfs(t, hT);
+
+        int tHash = hT[t].f;
+        for (const auto &[k, v]: hS) {
+            if (v.f == tHash) {
+                return true;
+            }
+        } 
+
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：深度优先搜索暴力匹配
+class Solution {
+    public boolean isSubtree(TreeNode s, TreeNode t) {
+        return dfs(s, t);
+    }
+
+    public boolean dfs(TreeNode s, TreeNode t) {
+        if (s == null) {
+            return false;
+        }
+        return check(s, t) || dfs(s.left, t) || dfs(s.right, t);
+    }
+
+    public boolean check(TreeNode s, TreeNode t) {
+        if (s == null && t == null) {
+            return true;
+        }
+        if (s == null || t == null || s.val != t.val) {
+            return false;
+        }
+        return check(s.left, t.left) && check(s.right, t.right);
+    }
+}
+
+// 方法二：深度优先搜索序列上做串匹配
+class Solution {
+    List<Integer> sOrder = new ArrayList<Integer>();
+    List<Integer> tOrder = new ArrayList<Integer>();
+    int maxElement, lNull, rNull;
+
+    public boolean isSubtree(TreeNode s, TreeNode t) {
+        maxElement = Integer.MIN_VALUE;
+        getMaxElement(s);
+        getMaxElement(t);
+        lNull = maxElement + 1;
+        rNull = maxElement + 2;
+
+        getDfsOrder(s, sOrder);
+        getDfsOrder(t, tOrder);
+
+        return kmp();
+    }
+
+    public void getMaxElement(TreeNode t) {
+        if (t == null) {
+            return;
+        }
+        maxElement = Math.max(maxElement, t.val);
+        getMaxElement(t.left);
+        getMaxElement(t.right);
+    }
+
+    public void getDfsOrder(TreeNode t, List<Integer> tar) {
+        if (t == null) {
+            return;
+        }
+        tar.add(t.val);
+        if (t.left != null) {
+            getDfsOrder(t.left, tar);
+        } else {
+            tar.add(lNull);
+        }
+        if (t.right != null) {
+            getDfsOrder(t.right, tar);
+        } else {
+            tar.add(rNull);
+        }
+    }
+
+    public boolean kmp() {
+        int sLen = sOrder.size(), tLen = tOrder.size();
+        int[] fail = new int[tOrder.size()];
+        Arrays.fill(fail, -1);
+        for (int i = 1, j = -1; i < tLen; ++i) {
+            while (j != -1 && !(tOrder.get(i).equals(tOrder.get(j + 1)))) {
+                j = fail[j];
+            }
+            if (tOrder.get(i).equals(tOrder.get(j + 1))) {
+                ++j;
+            }
+            fail[i] = j;
+        }
+        for (int i = 0, j = -1; i < sLen; ++i) {
+            while (j != -1 && !(sOrder.get(i).equals(tOrder.get(j + 1)))) {
+                j = fail[j];
+            }
+            if (sOrder.get(i).equals(tOrder.get(j + 1))) {
+                ++j;
+            }
+            if (j == tLen - 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+// 方法三：树哈希
+class Solution {
+    static final int MAX_N = 1005;
+    static final int MOD = 1000000007;
+    boolean[] vis = new boolean[MAX_N];
+    int[] p = new int[MAX_N];
+    int tot;
+    Map<TreeNode, int[]> hS = new HashMap<TreeNode, int[]>();
+    Map<TreeNode, int[]> hT = new HashMap<TreeNode, int[]>();
+
+    public boolean isSubtree(TreeNode s, TreeNode t) {
+        getPrime();
+        dfs(s, hS);
+        dfs(t, hT);
+
+        int tHash = hT.get(t)[0];
+        for (Map.Entry<TreeNode, int[]> entry : hS.entrySet()) {
+            if (entry.getValue()[0] == tHash) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void getPrime() {
+        vis[0] = vis[1] = true;
+        tot = 0;
+        for (int i = 2; i < MAX_N; ++i) {
+            if (!vis[i]) {
+                p[++tot] = i;
+            }
+            for (int j = 1; j <= tot && i * p[j] < MAX_N; ++j) {
+                vis[i * p[j]] = true;
+                if (i % p[j] == 0) {
+                    break;
+                }
+            }
+        }
+    }
+
+    public void dfs(TreeNode o, Map<TreeNode, int[]> h) {
+        h.put(o, new int[]{o.val, 1});
+        if (o.left == null && o.right == null) {
+            return;
+        }
+        if (o.left != null) {
+            dfs(o.left, h);
+            int[] val = h.get(o);
+            val[1] += h.get(o.left)[1];
+            val[0] = (int) ((val[0] + (31L * h.get(o.left)[0] * p[h.get(o.left)[1]]) % MOD) % MOD);
+        }
+        if (o.right != null) {
+            dfs(o.right, h);
+            int[] val = h.get(o);
+            val[1] += h.get(o.right)[1];
+            val[0] = (int) ((val[0] + (179L * h.get(o.right)[0] * p[h.get(o.right)[1]]) % MOD) % MOD);
+        }
+    }
+}
+```
+
+
+
+### [100. 相同的树](https://leetcode.cn/problems/same-tree/)
+
+简单
+
+给你两棵二叉树的根节点 `p` 和 `q` ，编写一个函数来检验这两棵树是否相同。
+
+如果两个树在结构上相同，并且节点具有相同的值，则认为它们是相同的。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/12/20/ex1.jpg)
+
+```
+输入：p = [1,2,3], q = [1,2,3]
+输出：true
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：深度优先搜索
+class Solution {
+public:
+    bool isSameTree(TreeNode* p, TreeNode* q) {
+        if (p == nullptr && q == nullptr) {
+            return true;
+        } else if (p == nullptr || q == nullptr) {
+            return false;
+        } else if (p->val != q->val) {
+            return false;
+        } else {
+            return isSameTree(p->left, q->left) && isSameTree(p->right, q->right);
+        }
+    }
+};
+
+// 方法二：广度优先搜索
+class Solution {
+public:
+    bool isSameTree(TreeNode* p, TreeNode* q) {
+        if (p == nullptr && q == nullptr) {
+            return true;
+        } else if (p == nullptr || q == nullptr) {
+            return false;
+        }
+        queue <TreeNode*> queue1, queue2;
+        queue1.push(p);
+        queue2.push(q);
+        while (!queue1.empty() && !queue2.empty()) {
+            auto node1 = queue1.front();
+            queue1.pop();
+            auto node2 = queue2.front();
+            queue2.pop();
+            if (node1->val != node2->val) {
+                return false;
+            }
+            auto left1 = node1->left, right1 = node1->right, left2 = node2->left, right2 = node2->right;
+            if ((left1 == nullptr) ^ (left2 == nullptr)) {
+                return false;
+            }
+            if ((right1 == nullptr) ^ (right2 == nullptr)) {
+                return false;
+            }
+            if (left1 != nullptr) {
+                queue1.push(left1);
+            }
+            if (right1 != nullptr) {
+                queue1.push(right1);
+            }
+            if (left2 != nullptr) {
+                queue2.push(left2);
+            }
+            if (right2 != nullptr) {
+                queue2.push(right2);
+            }
+        }
+        return queue1.empty() && queue2.empty();
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：深度优先搜索
+class Solution {
+    public boolean isSameTree(TreeNode p, TreeNode q) {
+        if (p == null && q == null) {
+            return true;
+        } else if (p == null || q == null) {
+            return false;
+        } else if (p.val != q.val) {
+            return false;
+        } else {
+            return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);
+        }
+    }
+}
+
+// 方法二：广度优先搜索
+class Solution {
+    public boolean isSameTree(TreeNode p, TreeNode q) {
+        if (p == null && q == null) {
+            return true;
+        } else if (p == null || q == null) {
+            return false;
+        }
+        Queue<TreeNode> queue1 = new LinkedList<TreeNode>();
+        Queue<TreeNode> queue2 = new LinkedList<TreeNode>();
+        queue1.offer(p);
+        queue2.offer(q);
+        while (!queue1.isEmpty() && !queue2.isEmpty()) {
+            TreeNode node1 = queue1.poll();
+            TreeNode node2 = queue2.poll();
+            if (node1.val != node2.val) {
+                return false;
+            }
+            TreeNode left1 = node1.left, right1 = node1.right, left2 = node2.left, right2 = node2.right;
+            if (left1 == null ^ left2 == null) {
+                return false;
+            }
+            if (right1 == null ^ right2 == null) {
+                return false;
+            }
+            if (left1 != null) {
+                queue1.offer(left1);
+            }
+            if (right1 != null) {
+                queue1.offer(right1);
+            }
+            if (left2 != null) {
+                queue2.offer(left2);
+            }
+            if (right2 != null) {
+                queue2.offer(right2);
+            }
+        }
+        return queue1.isEmpty() && queue2.isEmpty();
+    }
+}
+```
+
+
+
+### [111. 二叉树的最小深度](https://leetcode.cn/problems/minimum-depth-of-binary-tree/)
+
+简单
+
+给定一个二叉树，找出其最小深度。
+
+最小深度是从根节点到最近叶子节点的最短路径上的节点数量。
+
+**说明：**叶子节点是指没有子节点的节点。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/10/12/ex_depth.jpg)
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：2
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：深度优先搜索
+class Solution {
+public:
+    int minDepth(TreeNode *root) {
+        if (root == nullptr) {
+            return 0;
+        }
+
+        if (root->left == nullptr && root->right == nullptr) {
+            return 1;
+        }
+
+        int min_depth = INT_MAX;
+        if (root->left != nullptr) {
+            min_depth = min(minDepth(root->left), min_depth);
+        }
+        if (root->right != nullptr) {
+            min_depth = min(minDepth(root->right), min_depth);
+        }
+
+        return min_depth + 1;
+    }
+};
+
+// 方法二：广度优先搜索
+class Solution {
+public:
+    int minDepth(TreeNode *root) {
+        if (root == nullptr) {
+            return 0;
+        }
+
+        queue<pair<TreeNode *, int> > que;
+        que.emplace(root, 1);
+        while (!que.empty()) {
+            TreeNode *node = que.front().first;
+            int depth = que.front().second;
+            que.pop();
+            if (node->left == nullptr && node->right == nullptr) {
+                return depth;
+            }
+            if (node->left != nullptr) {
+                que.emplace(node->left, depth + 1);
+            }
+            if (node->right != nullptr) {
+                que.emplace(node->right, depth + 1);
+            }
+        }
+
+        return 0;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：深度优先搜索
+class Solution {
+    public int minDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+
+        if (root.left == null && root.right == null) {
+            return 1;
+        }
+
+        int min_depth = Integer.MAX_VALUE;
+        if (root.left != null) {
+            min_depth = Math.min(minDepth(root.left), min_depth);
+        }
+        if (root.right != null) {
+            min_depth = Math.min(minDepth(root.right), min_depth);
+        }
+
+        return min_depth + 1;
+    }
+}
+
+// 方法二：广度优先搜索
+class Solution {
+    class QueueNode {
+        TreeNode node;
+        int depth;
+
+        public QueueNode(TreeNode node, int depth) {
+            this.node = node;
+            this.depth = depth;
+        }
+    }
+
+    public int minDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+
+        Queue<QueueNode> queue = new LinkedList<QueueNode>();
+        queue.offer(new QueueNode(root, 1));
+        while (!queue.isEmpty()) {
+            QueueNode nodeDepth = queue.poll();
+            TreeNode node = nodeDepth.node;
+            int depth = nodeDepth.depth;
+            if (node.left == null && node.right == null) {
+                return depth;
+            }
+            if (node.left != null) {
+                queue.offer(new QueueNode(node.left, depth + 1));
+            }
+            if (node.right != null) {
+                queue.offer(new QueueNode(node.right, depth + 1));
+            }
+        }
+
+        return 0;
+    }
+}
+```
+
+
+
+### [LCR 151. 彩灯装饰记录 III](https://leetcode.cn/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/)
+
+中等
+
+一棵圣诞树记作根节点为 `root` 的二叉树，节点值为该位置装饰彩灯的颜色编号。请按照如下规则记录彩灯装饰结果：
+
+- 第一层按照从左到右的顺序记录
+- 除第一层外每一层的记录顺序均与上一层相反。即第一层为从左到右，第二层为从右到左。
+
+**示例 1：**
+
+![img](https://pic.leetcode.cn/1694758674-XYrUiV-%E5%89%91%E6%8C%87%20Offer%2032%20-%20I_%E7%A4%BA%E4%BE%8B1.png)
+
+```
+输入：root = [8,17,21,18,null,null,6]
+输出：[[8],[21,17],[18,6]]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：层序遍历 + 双端队列
+class Solution {
+public:
+    vector<vector<int>> decorateRecord(TreeNode* root) {
+        vector<vector<int>> res;
+        if (!root) return res;
+        
+        queue<TreeNode*> q;
+        q.push(root);
+        bool reverse = false;
+        
+        while (!q.empty()) {
+            int size = q.size();
+            vector<int> tmp(size);
+            
+            for (int i = 0; i < size; ++i) {
+                TreeNode* node = q.front();
+                q.pop();
+                
+                int index = reverse ? size - 1 - i : i;
+                tmp[index] = node->val;
+                
+                if (node->left) q.push(node->left);
+                if (node->right) q.push(node->right);
+            }
+            res.push_back(tmp);
+            reverse = !reverse;
+        }
+        return res;
+    }
+};
+
+// 方法二：层序遍历 + 双端队列（奇偶层逻辑分离）
+class Solution {
+public:
+    vector<vector<int>> decorateRecord(TreeNode* root) {
+        deque<TreeNode*> deque;
+        vector<vector<int>> res;
+        if(root != NULL) deque.push_back(root);
+        while(!deque.empty()) {
+            // 打印奇数层
+            vector<int> tmp;
+            for(int i = deque.size(); i > 0; i--) {
+                // 从左向右打印
+                TreeNode* node = deque.front();
+                deque.pop_front();
+                tmp.push_back(node->val);
+                // 先左后右加入下层节点
+                if(node->left != NULL) deque.push_back(node->left);
+                if(node->right != NULL) deque.push_back(node->right);
+            }
+            res.push_back(tmp);
+            if(deque.empty()) break; // 若为空则提前跳出
+            // 打印偶数层
+            tmp.clear();
+            for(int i = deque.size(); i > 0; i--) {
+                // 从右向左打印
+                TreeNode* node = deque.back();
+                deque.pop_back();
+                tmp.push_back(node->val);
+                // 先右后左加入下层节点
+                if(node->right != NULL) deque.push_front(node->right);
+                if(node->left != NULL) deque.push_front(node->left);
+            }
+            res.push_back(tmp);
+        }
+        return res;
+    }
+};
+
+// 方法三：层序遍历 + 倒序
+class Solution {
+public:
+    vector<vector<int>> decorateRecord(TreeNode* root) {
+        queue<TreeNode*> que;
+        vector<vector<int>> res;
+        if(root != NULL) que.push(root);
+        while(!que.empty()) {
+            vector<int> tmp;
+            for(int i = que.size(); i > 0; i--) {
+                TreeNode* node = que.front();
+                que.pop();
+                tmp.push_back(node->val);
+                if(node->left != NULL) que.push(node->left);
+                if(node->right != NULL) que.push(node->right);
+            }
+            if(res.size() % 2 == 1) reverse(tmp.begin(),tmp.end());
+            res.push_back(tmp);
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：层序遍历 + 双端队列
+class Solution {
+    public List<List<Integer>> decorateRecord(TreeNode root) {
+        Queue<TreeNode> queue = new LinkedList<>();
+        List<List<Integer>> res = new ArrayList<>();
+        if(root != null) queue.add(root);
+        while(!queue.isEmpty()) {
+            LinkedList<Integer> tmp = new LinkedList<>();
+            for(int i = queue.size(); i > 0; i--) {
+                TreeNode node = queue.poll();
+                if(res.size() % 2 == 0) tmp.addLast(node.val);
+                else tmp.addFirst(node.val);
+                if(node.left != null) queue.add(node.left);
+                if(node.right != null) queue.add(node.right);
+            }
+            res.add(tmp);
+        }
+        return res;
+    }
+}
+
+// 方法二：层序遍历 + 双端队列（奇偶层逻辑分离）
+class Solution {
+    public List<List<Integer>> decorateRecord(TreeNode root) {
+        Deque<TreeNode> deque = new LinkedList<>();
+        List<List<Integer>> res = new ArrayList<>();
+        if(root != null) deque.add(root);
+        while(!deque.isEmpty()) {
+            // 打印奇数层
+            List<Integer> tmp = new ArrayList<>();
+            for(int i = deque.size(); i > 0; i--) {
+                // 从左向右打印
+                TreeNode node = deque.removeFirst();
+                tmp.add(node.val);
+                // 先左后右加入下层节点
+                if(node.left != null) deque.addLast(node.left);
+                if(node.right != null) deque.addLast(node.right);
+            }
+            res.add(tmp);
+            if(deque.isEmpty()) break; // 若为空则提前跳出
+            // 打印偶数层
+            tmp = new ArrayList<>();
+            for(int i = deque.size(); i > 0; i--) {
+                // 从右向左打印
+                TreeNode node = deque.removeLast();
+                tmp.add(node.val);
+                // 先右后左加入下层节点
+                if(node.right != null) deque.addFirst(node.right);
+                if(node.left != null) deque.addFirst(node.left);
+            }
+            res.add(tmp);
+        }
+        return res;
+    }
+}
+
+// 方法三：层序遍历 + 倒序
+class Solution {
+    public List<List<Integer>> decorateRecord(TreeNode root) {
+        Queue<TreeNode> queue = new LinkedList<>();
+        List<List<Integer>> res = new ArrayList<>();
+        if(root != null) queue.add(root);
+        while(!queue.isEmpty()) {
+            List<Integer> tmp = new ArrayList<>();
+            for(int i = queue.size(); i > 0; i--) {
+                TreeNode node = queue.poll();
+                tmp.add(node.val);
+                if(node.left != null) queue.add(node.left);
+                if(node.right != null) queue.add(node.right);
+            }
+            if(res.size() % 2 == 1) Collections.reverse(tmp);
+            res.add(tmp);
+        }
+        return res;
+    }
+}
+```
 
