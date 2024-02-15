@@ -30,6 +30,7 @@ C++版本
 int find(int x, vector<int>& parent) {
     while (parent[x] != x) {
         parent[x] = parent[parent[x]];
+        x = parent[x];
     }
     return parent[x];
 }
@@ -40,7 +41,8 @@ Java版本
 ```java
 int find(int x, int[] parent) {
     while (parent[x] != x) {
-        parent[x] = parent[parent[x]]; 
+        parent[x] = parent[parent[x]];
+        x = parent[x];
     }
     return parent[x];
 }
