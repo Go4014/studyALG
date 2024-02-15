@@ -237,13 +237,150 @@ class Solution {
 C++版本
 
 ```c++
+// 方法一：Dijkstra 算法 （枚举）
+class Solution {
+public:
+    int networkDelayTime(vector<vector<int>> &times, int n, int k) {
+        const int inf = INT_MAX / 2;
+        vector<vector<int>> g(n, vector<int>(n, inf));
+        for (auto &t : times) {
+            int x = t[0] - 1, y = t[1] - 1;
+            g[x][y] = t[2];
+        }
 
+        vector<int> dist(n, inf);
+        dist[k - 1] = 0;
+        vector<int> used(n);
+        for (int i = 0; i < n; ++i) {
+            int x = -1;
+            for (int y = 0; y < n; ++y) {
+                if (!used[y] && (x == -1 || dist[y] < dist[x])) {
+                    x = y;
+                }
+            }
+            used[x] = true;
+            for (int y = 0; y < n; ++y) {
+                dist[y] = min(dist[y], dist[x] + g[x][y]);
+            }
+        }
+
+        int ans = *max_element(dist.begin(), dist.end());
+        return ans == inf ? -1 : ans;
+    }
+};
+
+// 方法一：Dijkstra 算法 （小根堆）
+class Solution {
+public:
+    int networkDelayTime(vector<vector<int>> &times, int n, int k) {
+        const int inf = INT_MAX / 2;
+        vector<vector<pair<int, int>>> g(n);
+        for (auto &t : times) {
+            int x = t[0] - 1, y = t[1] - 1;
+            g[x].emplace_back(y, t[2]);
+        }
+
+        vector<int> dist(n, inf);
+        dist[k - 1] = 0;
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> q;
+        q.emplace(0, k - 1);
+        while (!q.empty()) {
+            auto p = q.top();
+            q.pop();
+            int time = p.first, x = p.second;
+            if (dist[x] < time) {
+                continue;
+            }
+            for (auto &e : g[x]) {
+                int y = e.first, d = dist[x] + e.second;
+                if (d < dist[y]) {
+                    dist[y] = d;
+                    q.emplace(d, y);
+                }
+            }
+        }
+
+        int ans = *max_element(dist.begin(), dist.end());
+        return ans == inf ? -1 : ans;
+    }
+};
 ```
 
 Java版本
 
 ```java
+// 方法一：Dijkstra 算法 （枚举）
+class Solution {
+    public int networkDelayTime(int[][] times, int n, int k) {
+        final int INF = Integer.MAX_VALUE / 2;
+        int[][] g = new int[n][n];
+        for (int i = 0; i < n; ++i) {
+            Arrays.fill(g[i], INF);
+        }
+        for (int[] t : times) {
+            int x = t[0] - 1, y = t[1] - 1;
+            g[x][y] = t[2];
+        }
 
+        int[] dist = new int[n];
+        Arrays.fill(dist, INF);
+        dist[k - 1] = 0;
+        boolean[] used = new boolean[n];
+        for (int i = 0; i < n; ++i) {
+            int x = -1;
+            for (int y = 0; y < n; ++y) {
+                if (!used[y] && (x == -1 || dist[y] < dist[x])) {
+                    x = y;
+                }
+            }
+            used[x] = true;
+            for (int y = 0; y < n; ++y) {
+                dist[y] = Math.min(dist[y], dist[x] + g[x][y]);
+            }
+        }
+
+        int ans = Arrays.stream(dist).max().getAsInt();
+        return ans == INF ? -1 : ans;
+    }
+}
+
+// 方法一：Dijkstra 算法 （小根堆）
+class Solution {
+    public int networkDelayTime(int[][] times, int n, int k) {
+        final int INF = Integer.MAX_VALUE / 2;
+        List<int[]>[] g = new List[n];
+        for (int i = 0; i < n; ++i) {
+            g[i] = new ArrayList<int[]>();
+        }
+        for (int[] t : times) {
+            int x = t[0] - 1, y = t[1] - 1;
+            g[x].add(new int[]{y, t[2]});
+        }
+
+        int[] dist = new int[n];
+        Arrays.fill(dist, INF);
+        dist[k - 1] = 0;
+        PriorityQueue<int[]> pq = new PriorityQueue<int[]>((a, b) -> a[0] != b[0] ? a[0] - b[0] : a[1] - b[1]);
+        pq.offer(new int[]{0, k - 1});
+        while (!pq.isEmpty()) {
+            int[] p = pq.poll();
+            int time = p[0], x = p[1];
+            if (dist[x] < time) {
+                continue;
+            }
+            for (int[] e : g[x]) {
+                int y = e[0], d = dist[x] + e[1];
+                if (d < dist[y]) {
+                    dist[y] = d;
+                    pq.offer(new int[]{d, y});
+                }
+            }
+        }
+
+        int ans = Arrays.stream(dist).max().getAsInt();
+        return ans == INF ? -1 : ans;
+    }
+}
 ```
 
 
