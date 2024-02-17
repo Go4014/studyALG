@@ -1833,19 +1833,1199 @@ public class Solution {
 
 
 
+### [1202. 交换字符串中的元素](https://leetcode.cn/problems/smallest-string-with-swaps/)
+
+中等
+
+给你一个字符串 `s`，以及该字符串中的一些「索引对」数组 `pairs`，其中 `pairs[i] = [a, b]` 表示字符串中的两个索引（编号从 0 开始）。
+
+你可以 **任意多次交换** 在 `pairs` 中任意一对索引处的字符。
+
+返回在经过若干次交换后，`s` 可以变成的按字典序最小的字符串。
+
+**示例 1:**
+
+```
+输入：s = "dcab", pairs = [[0,3],[1,2]]
+输出："bacd"
+解释： 
+交换 s[0] 和 s[3], s = "bcad"
+交换 s[1] 和 s[2], s = "bacd"
+```
+
+C++版本
+
+```c++
+// 方法一：并查集
+class DisjointSetUnion {
+private:
+    vector<int> f, rank;
+    int n;
+
+public:
+    DisjointSetUnion(int _n) {
+        n = _n;
+        rank.resize(n, 1);
+        f.resize(n);
+        for (int i = 0; i < n; i++) {
+            f[i] = i;
+        }
+    }
+
+    int find(int x) {
+        return f[x] == x ? x : f[x] = find(f[x]);
+    }
+
+    void unionSet(int x, int y) {
+        int fx = find(x), fy = find(y);
+        if (fx == fy) {
+            return;
+        }
+        if (rank[fx] < rank[fy]) {
+            swap(fx, fy);
+        }
+        rank[fx] += rank[fy];
+        f[fy] = fx;
+    }
+};
+
+class Solution {
+public:
+    string smallestStringWithSwaps(string s, vector<vector<int>>& pairs) {
+        DisjointSetUnion dsu(s.length());
+        for (auto& it : pairs) {
+            dsu.unionSet(it[0], it[1]);
+        }
+        unordered_map<int, vector<int>> mp;
+        for (int i = 0; i < s.length(); i++) {
+            mp[dsu.find(i)].emplace_back(s[i]);
+        }
+        for (auto& [x, vec] : mp) {
+            sort(vec.begin(), vec.end(), greater<int>());
+        }
+        for (int i = 0; i < s.length(); i++) {
+            int x = dsu.find(i);
+            s[i] = mp[x].back();
+            mp[x].pop_back();
+        }
+        return s;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：并查集
+class Solution {
+    public String smallestStringWithSwaps(String s, List<List<Integer>> pairs) {
+        DisjointSetUnion dsu = new DisjointSetUnion(s.length());
+        for (List<Integer> pair : pairs) {
+            dsu.unionSet(pair.get(0), pair.get(1));
+        }
+        Map<Integer, List<Character>> map = new HashMap<Integer, List<Character>>();
+        for (int i = 0; i < s.length(); i++) {
+            int parent = dsu.find(i);
+            if (!map.containsKey(parent)) {
+                map.put(parent, new ArrayList<Character>());
+            }
+            map.get(parent).add(s.charAt(i));
+        }
+        for (Map.Entry<Integer, List<Character>> entry : map.entrySet()) {
+            Collections.sort(entry.getValue(), new Comparator<Character>() {
+                public int compare(Character c1, Character c2) {
+                    return c2 - c1;
+                }
+            });
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < s.length(); i++) {
+            int x = dsu.find(i);
+            List<Character> list = map.get(x);
+            sb.append(list.remove(list.size() - 1));
+        }
+        return sb.toString();
+    }
+}
+
+class DisjointSetUnion {
+    int[] f;
+    int[] rank;
+    int n;
+
+    public DisjointSetUnion(int n) {
+        this.n = n;
+        rank = new int[n];
+        Arrays.fill(rank, 1);
+        f = new int[n];
+        for (int i = 0; i < n; i++) {
+            f[i] = i;
+        }
+    }
+
+    public int find(int x) {
+        return f[x] == x ? x : (f[x] = find(f[x]));
+    }
+
+    public void unionSet(int x, int y) {
+        int fx = find(x), fy = find(y);
+        if (fx == fy) {
+            return;
+        }
+        if (rank[fx] < rank[fy]) {
+            int temp = fx;
+            fx = fy;
+            fy = temp;
+        }
+        rank[fx] += rank[fy];
+        f[fy] = fx;
+    }
+}
+
+// 并查集（）
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+
+public class Solution {
+
+    public String smallestStringWithSwaps(String s, List<List<Integer>> pairs) {
+        if (pairs.size() == 0) {
+            return s;
+        }
+
+        // 第 1 步：将任意交换的结点对输入并查集
+        int len = s.length();
+        UnionFind unionFind = new UnionFind(len);
+        for (List<Integer> pair : pairs) {
+            int index1 = pair.get(0);
+            int index2 = pair.get(1);
+            unionFind.union(index1, index2);
+        }
+
+        // 第 2 步：构建映射关系
+        char[] charArray = s.toCharArray();
+        // key：连通分量的代表元，value：同一个连通分量的字符集合（保存在一个优先队列中）
+        Map<Integer, PriorityQueue<Character>> hashMap = new HashMap<>(len);
+        for (int i = 0; i < len; i++) {
+            int root = unionFind.find(i);
+//            if (hashMap.containsKey(root)) {
+//                hashMap.get(root).offer(charArray[i]);
+//            } else {
+//                PriorityQueue<Character> minHeap = new PriorityQueue<>();
+//                minHeap.offer(charArray[i]);
+//                hashMap.put(root, minHeap);
+//            }
+            // 上面六行代码等价于下面一行代码，JDK 1.8 以及以后支持下面的写法
+            hashMap.computeIfAbsent(root, key -> new PriorityQueue<>()).offer(charArray[i]);
+        }
+
+        // 第 3 步：重组字符串
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            int root = unionFind.find(i);
+            stringBuilder.append(hashMap.get(root).poll());
+        }
+        return stringBuilder.toString();
+    }
+
+    private class UnionFind {
+
+        private int[] parent;
+        /**
+         * 以 i 为根结点的子树的高度（引入了路径压缩以后该定义并不准确）
+         */
+        private int[] rank;
+
+        public UnionFind(int n) {
+            this.parent = new int[n];
+            this.rank = new int[n];
+            for (int i = 0; i < n; i++) {
+                this.parent[i] = i;
+                this.rank[i] = 1;
+            }
+        }
+
+        public void union(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+            if (rootX == rootY) {
+                return;
+            }
+
+            if (rank[rootX] == rank[rootY]) {
+                parent[rootX] = rootY;
+                // 此时以 rootY 为根结点的树的高度仅加了 1
+                rank[rootY]++;
+            } else if (rank[rootX] < rank[rootY]) {
+                parent[rootX] = rootY;
+                // 此时以 rootY 为根结点的树的高度不变
+            } else {
+                // 同理，此时以 rootX 为根结点的树的高度不变
+                parent[rootY] = rootX;
+            }
+        }
+
+        public int find(int x) {
+            if (x != parent[x]) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+    }
+}
+
+// 并查集
+class Solution {
+    public String smallestStringWithSwaps(String s, List<List<Integer>> pairs) {
+        char[] cs = s.toCharArray();
+        int n = cs.length;
+        UnionFind uf = new UnionFind(n);
+ 
+        for (List<Integer> pair : pairs) 
+             uf.union(pair.get(0), pair.get(1));
+
+        Node[] nodes = new Node[n];
+        for (int i = 0; i < n; i++) {
+            int root = uf.find(i);
+            if (nodes[root] == null) 
+                 nodes[root] = new Node();
+            nodes[root].update(cs[i]);
+        }
+
+        for (int i = 0; i < n; i++) {
+            int root = uf.find(i);
+            cs[i] = nodes[root].getChar();
+        }
+        return new String(cs);
+    }
+
+    class UnionFind {
+        int n;
+        int[] parent;
+        int[] rank;
+
+        public UnionFind(int n) {
+            this.n = n;
+            this.parent = new int[n];
+            this.rank = new int[n];
+
+            for (int i = 0; i < n; i++) {
+                parent[i] = i;
+                rank[i] = 1;
+            }
+        }
+
+        public void union(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+
+            if (rootX == rootY) return;
+
+            if (rank[rootX] >= rank[rootY]) {
+                parent[rootY] = rootX;
+            } else {
+                parent[rootX] = rootY;
+            }
+
+            rank[parent[rootX]] = rank[rootX] + rank[rootY];
+        }
+
+        public int find(int x) {
+            if (parent[x] != x) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+    }
+
+    class Node {
+        int curIndex;
+        int[] count;
+
+        public Node() {
+            this.curIndex = 26;
+            this.count = new int[26];
+        }
+
+        public void update(char c) {
+            int index = c - 'a';
+            count[index]++;
+            if(index < curIndex)
+                curIndex = index;
+        }
+
+        public char getChar() {
+            while (count[curIndex] == 0) curIndex++;
+            count[curIndex]--;
+            return (char) (curIndex + 'a');
+        }
+    }
+}
+```
 
 
 
+### [947. 移除最多的同行或同列石头](https://leetcode.cn/problems/most-stones-removed-with-same-row-or-column/)
+
+中等
+
+`n` 块石头放置在二维平面中的一些整数坐标点上。每个坐标点上最多只能有一块石头。
+
+如果一块石头的 **同行或者同列** 上有其他石头存在，那么就可以移除这块石头。
+
+给你一个长度为 `n` 的数组 `stones` ，其中 `stones[i] = [xi, yi]` 表示第 `i` 块石头的位置，返回 **可以移除的石子** 的最大数量。
+
+**示例 1：**
+
+```
+输入：stones = [[0,0],[0,1],[1,0],[1,2],[2,1],[2,2]]
+输出：5
+解释：一种移除 5 块石头的方法如下所示：
+1. 移除石头 [2,2] ，因为它和 [2,1] 同行。
+2. 移除石头 [2,1] ，因为它和 [0,1] 同列。
+3. 移除石头 [1,2] ，因为它和 [1,0] 同行。
+4. 移除石头 [1,0] ，因为它和 [0,0] 同列。
+5. 移除石头 [0,1] ，因为它和 [0,0] 同行。
+石头 [0,0] 不能移除，因为它没有与另一块石头同行/列。
+```
+
+C++版本
+
+```c++
+// 方法：并查集
+#include <unordered_map>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+public:
+    int removeStones(vector<vector<int>>& stones) {
+        UnionFind unionFind;
+
+        for (auto& stone : stones) {
+            unionFind.union_(~stone[0], stone[1]);
+        }
+        return stones.size() - unionFind.getCount();
+    }
+
+private:
+    class UnionFind {
+    private:
+        unordered_map<int, int> parent;
+        int count;
+
+    public:
+        UnionFind() : count(0) {}
+
+        int getCount() {
+            return count;
+        }
+
+        int find(int x) {
+            if (!parent.count(x)) {
+                parent[x] = x;
+                count++;
+            }
+
+            if (x != parent[x]) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+
+        void union_(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+            if (rootX == rootY) {
+                return;
+            }
+
+            parent[rootX] = rootY;
+            count--;
+        }
+    };
+};
+
+// 方法一：深度优先搜索
+class Solution {
+public:
+    void dfs(int x, vector<vector<int>> &edge, vector<int> &vis) {
+        vis[x] = true;
+        for (auto &y : edge[x]) {
+            if (!vis[y]) {
+                dfs(y, edge, vis);
+            }
+        }
+    }
+
+    int removeStones(vector<vector<int>> &stones) {
+        int n = stones.size();
+        vector<vector<int>> edge(n);
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (stones[i][0] == stones[j][0] || stones[i][1] == stones[j][1]) {
+                    edge[i].push_back(j);
+                }
+            }
+        }
+        vector<int> vis(n);
+        int num = 0;
+        for (int i = 0; i < n; i++) {
+            if (!vis[i]) {
+                num++;
+                dfs(i, edge, vis);
+            }
+        }
+        return n - num;
+    }
+};
+
+// 方法二：优化建图 + 深度优先搜索
+class Solution {
+public:
+    void dfs(int x, vector<vector<int>> &edge, vector<int> &vis) {
+        vis[x] = true;
+        for (auto &y : edge[x]) {
+            if (!vis[y]) {
+                dfs(y, edge, vis);
+            }
+        }
+    }
+
+    int removeStones(vector<vector<int>> &stones) {
+        int n = stones.size();
+        vector<vector<int>> edge(n);
+        unordered_map<int, vector<int>> rec;
+        for (int i = 0; i < n; i++) {
+            rec[stones[i][0]].push_back(i);
+            rec[stones[i][1] + 10001].push_back(i);
+        }
+        for (auto &[_, vec] : rec) {
+            int k = vec.size();
+            for (int i = 1; i < k; i++) {
+                edge[vec[i - 1]].push_back(vec[i]);
+                edge[vec[i]].push_back(vec[i - 1]);
+            }
+        }
+
+        vector<int> vis(n);
+        int num = 0;
+        for (int i = 0; i < n; i++) {
+            if (!vis[i]) {
+                num++;
+                dfs(i, edge, vis);
+            }
+        }
+        return n - num;
+    }
+};
+
+// 方法三：优化建图 + 并查集
+class DisjointSetUnion {
+private:
+    unordered_map<int, int> f, rank;
+
+public:
+    int find(int x) {
+        if (!f.count(x)) {
+            f[x] = x;
+            rank[x] = 1;
+        }
+        return f[x] == x ? x : f[x] = find(f[x]);
+    }
+
+    void unionSet(int x, int y) {
+        int fx = find(x), fy = find(y);
+        if (fx == fy) {
+            return;
+        }
+        if (rank[fx] < rank[fy]) {
+            swap(fx, fy);
+        }
+        rank[fx] += rank[fy];
+        f[fy] = fx;
+    }
+
+    int numberOfConnectedComponent() {
+        int num = 0;
+        for (auto &[x, fa] : f) {
+            if (x == fa) {
+                num++;
+            }
+        }
+        return num;
+    }
+};
+
+class Solution {
+public:
+    int removeStones(vector<vector<int>> &stones) {
+        int n = stones.size();
+        DisjointSetUnion dsu;
+        for (int i = 0; i < n; i++) {
+            dsu.unionSet(stones[i][0], stones[i][1] + 10001);
+        }
+
+        return n - dsu.numberOfConnectedComponent();
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法：并查集
+import java.util.HashMap;
+import java.util.Map;
+
+public class Solution {
+
+    public int removeStones(int[][] stones) {
+        UnionFind unionFind = new UnionFind();
+
+        for (int[] stone : stones) {
+            // 下面这三种写法任选其一
+            // unionFind.union(~stone[0], stone[1]);
+            // unionFind.union(stone[0] - 10001, stone[1]);
+            unionFind.union(stone[0] + 10001, stone[1]);
+        }
+        return stones.length - unionFind.getCount();
+    }
+
+    private class UnionFind {
+
+        private Map<Integer, Integer> parent;
+        private int count;
+
+        public UnionFind() {
+            this.parent = new HashMap<>();
+            this.count = 0;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public int find(int x) {
+            if (!parent.containsKey(x)) {
+                parent.put(x, x);
+                // 并查集集中新加入一个结点，结点的父亲结点是它自己，所以连通分量的总数 +1
+                count++;
+            }
+
+            if (x != parent.get(x)) {
+                parent.put(x, find(parent.get(x)));
+            }
+            return parent.get(x);
+        }
+
+        public void union(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+            if (rootX == rootY) {
+                return;
+            }
+
+            parent.put(rootX, rootY);
+            // 两个连通分量合并成为一个，连通分量的总数 -1
+            count--;
+        }
+    }
+}
+
+// 方法一：深度优先搜索
+class Solution {
+    public int removeStones(int[][] stones) {
+        int n = stones.length;
+        List<List<Integer>> edge = new ArrayList<List<Integer>>();
+        for (int i = 0; i < n; i++) {
+            edge.add(new ArrayList<Integer>());
+            for (int j = 0; j < n; j++) {
+                if (stones[i][0] == stones[j][0] || stones[i][1] == stones[j][1]) {
+                    edge.get(i).add(j);
+                }
+            }
+        }
+        boolean[] vis = new boolean[n];
+        int num = 0;
+        for (int i = 0; i < n; i++) {
+            if (!vis[i]) {
+                num++;
+                dfs(i, edge, vis);
+            }
+        }
+        return n - num;
+    }
+
+    public void dfs(int x, List<List<Integer>> edge, boolean[] vis) {
+        vis[x] = true;
+        for (int y : edge.get(x)) {
+            if (!vis[y]) {
+                dfs(y, edge, vis);
+            }
+        }
+    }
+}
+
+// 方法二：优化建图 + 深度优先搜索
+class Solution {
+    public int removeStones(int[][] stones) {
+        int n = stones.length;
+        List<List<Integer>> edge = new ArrayList<List<Integer>>();
+        for (int i = 0; i < n; i++) {
+            edge.add(new ArrayList<Integer>());
+        }
+
+        Map<Integer, List<Integer>> rec = new HashMap<Integer, List<Integer>>();
+        for (int i = 0; i < n; i++) {
+            if (!rec.containsKey(stones[i][0])) {
+                rec.put(stones[i][0], new ArrayList<Integer>());
+            }
+            rec.get(stones[i][0]).add(i);
+            if (!rec.containsKey(stones[i][1] + 10001)) {
+                rec.put(stones[i][1] + 10001, new ArrayList<Integer>());
+            }
+            rec.get(stones[i][1] + 10001).add(i);
+        }
+        for (Map.Entry<Integer, List<Integer>> entry : rec.entrySet()) {
+            List<Integer> list = entry.getValue();
+            int k = list.size();
+            for (int i = 1; i < k; i++) {
+                edge.get(list.get(i - 1)).add(list.get(i));
+                edge.get(list.get(i)).add(list.get(i - 1));
+            }
+        }
+
+        boolean[] vis = new boolean[n];
+        int num = 0;
+        for (int i = 0; i < n; i++) {
+            if (!vis[i]) {
+                num++;
+                dfs(i, edge, vis);
+            }
+        }
+        return n - num;
+    }
+
+    public void dfs(int x, List<List<Integer>> edge, boolean[] vis) {
+        vis[x] = true;
+        for (int y : edge.get(x)) {
+            if (!vis[y]) {
+                dfs(y, edge, vis);
+            }
+        }
+    }
+}
+
+// 方法三：优化建图 + 并查集
+class Solution {
+    public int removeStones(int[][] stones) {
+        int n = stones.length;
+        DisjointSetUnion dsu = new DisjointSetUnion();
+        for (int i = 0; i < n; i++) {
+            dsu.unionSet(stones[i][0], stones[i][1] + 10001);
+        }
+
+        return n - dsu.numberOfConnectedComponent();
+    }
+}
+
+class DisjointSetUnion {
+    int[] f;
+    int[] rank;
+
+    public DisjointSetUnion() {
+        f = new int[20001];
+        rank = new int[20001];
+        Arrays.fill(f, -1);
+        Arrays.fill(rank, -1);
+    }
+
+    public int find(int x) {
+        if (f[x] < 0) {
+            f[x] = x;
+            rank[x] = 1;
+        }
+        return f[x] == x ? x : (f[x] = find(f[x]));
+    }
+
+    public void unionSet(int x, int y) {
+        int fx = find(x), fy = find(y);
+        if (fx == fy) {
+            return;
+        }
+        if (rank[fx] < rank[fy]) {
+            int temp = fx;
+            fx = fy;
+            fy = temp;
+        }
+        rank[fx] += rank[fy];
+        f[fy] = fx;
+    }
+
+    public int numberOfConnectedComponent() {
+        int num = 0;
+        for (int i = 0; i < 20000; i++) {
+            if (f[i] == i) {
+                num++;
+            }
+        }
+        return num;
+    }
+}
+```
 
 
 
+### [803. 打砖块](https://leetcode.cn/problems/bricks-falling-when-hit/)
+
+困难
+
+有一个 `m x n` 的二元网格 `grid` ，其中 `1` 表示砖块，`0` 表示空白。砖块 **稳定**（不会掉落）的前提是：
+
+- 一块砖直接连接到网格的顶部，或者
+- 至少有一块相邻（4 个方向之一）砖块 **稳定** 不会掉落时
+
+给你一个数组 `hits` ，这是需要依次消除砖块的位置。每当消除 `hits[i] = (rowi, coli)` 位置上的砖块时，对应位置的砖块（若存在）会消失，然后其他的砖块可能因为这一消除操作而 **掉落** 。一旦砖块掉落，它会 **立即** 从网格 `grid` 中消失（即，它不会落在其他稳定的砖块上）。
+
+返回一个数组 `result` ，其中 `result[i]` 表示第 `i` 次消除操作对应掉落的砖块数目。
+
+**注意**，消除可能指向是没有砖块的空白位置，如果发生这种情况，则没有砖块掉落。
+
+**示例 1：**
+
+```
+输入：grid = [[1,0,0,0],[1,1,1,0]], hits = [[1,0]]
+输出：[2]
+解释：网格开始为：
+[[1,0,0,0]，
+ [1,1,1,0]]
+消除 (1,0) 处加粗的砖块，得到网格：
+[[1,0,0,0]
+ [0,1,1,0]]
+两个加粗的砖不再稳定，因为它们不再与顶部相连，也不再与另一个稳定的砖相邻，因此它们将掉落。得到网格：
+[[1,0,0,0],
+ [0,0,0,0]]
+因此，结果为 [2] 。
+```
+
+C++版本
+
+```c++
+#include <vector>
+#include <unordered_map>
+#include <utility>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+private:
+    int rows;
+    int cols;
+    
+    // 定义常量数组
+    static constexpr int DIRECTIONS[4][2] = {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
+    
+    // 判断坐标是否越界
+    bool inArea(int x, int y) {
+        return x >= 0 && x < rows && y >= 0 && y < cols;
+    }
+
+    // 将二维坐标转换为一维坐标
+    int getIndex(int x, int y) {
+        return x * cols + y;
+    }
+
+    // 并查集类
+    class UnionFind {
+    private:
+        vector<int> parent;
+        vector<int> size;
+    
+    public:
+        // 构造函数
+        UnionFind(int n) : parent(n), size(n, 1) {
+            // 初始化并查集
+            for (int i = 0; i < n; ++i) {
+                parent[i] = i;
+            }
+        }
+
+        // 查找根节点
+        int find(int x) {
+            if (x != parent[x]) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+
+        // 合并两个节点
+        void union_(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+
+            if (rootX != rootY) {
+                parent[rootX] = rootY;
+                size[rootY] += size[rootX];
+            }
+        }
+
+        // 获取当前节点的子树节点总数
+        int getSize(int x) {
+            return size[find(x)];
+        }
+    };
+
+public:
+    vector<int> hitBricks(vector<vector<int>>& grid, vector<vector<int>>& hits) {
+        // 获取行数和列数
+        rows = grid.size();
+        cols = grid[0].size();
+
+        // 复制grid到copy
+        vector<vector<int>> copy = grid;
+
+        // 根据hits，把copy中对应坐标置为0
+        for (auto& hit : hits) {
+            copy[hit[0]][hit[1]] = 0;
+        }
+
+        // 建图，并将砖块和屋顶相连
+        int size = rows * cols;
+        UnionFind unionFind(size + 1);
+
+        for (int j = 0; j < cols; ++j) {
+            if (copy[0][j] == 1) {
+                unionFind.union_(j, size);
+            }
+        }
+
+        // 遍历copy，将砖块的相邻砖块合并到一起
+        for (int i = 1; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                if (copy[i][j] == 1) {
+                    if (copy[i - 1][j] == 1) {
+                        unionFind.union_(getIndex(i - 1, j), getIndex(i, j));
+                    }
+                    if (j > 0 && copy[i][j - 1] == 1) {
+                        unionFind.union_(getIndex(i, j - 1), getIndex(i, j));
+                    }
+                }
+            }
+        }
+
+        // 逆序处理hits
+        int hitsLen = hits.size();
+        vector<int> res(hitsLen);
+        for (int i = hitsLen - 1; i >= 0; --i) {
+            int x = hits[i][0];
+            int y = hits[i][1];
+
+            if (grid[x][y] == 0) {
+                continue;
+            }
+
+            int origin = unionFind.getSize(size);
+
+            if (x == 0) {
+                unionFind.union_(y, size);
+            }
+
+            for (auto& direction : DIRECTIONS) {
+                int newX = x + direction[0];
+                int newY = y + direction[1];
+
+                if (inArea(newX, newY) && copy[newX][newY] == 1) {
+                    unionFind.union_(getIndex(x, y), getIndex(newX, newY));
+                }
+            }
+
+            int current = unionFind.getSize(size);
+            res[i] = max(0, current - origin - 1);
+
+            copy[x][y] = 1;
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 并查集
+public class Solution {
+
+    private int rows;
+    private int cols;
+
+    public static final int[][] DIRECTIONS = {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
+
+    public int[] hitBricks(int[][] grid, int[][] hits) {
+        this.rows = grid.length;
+        this.cols = grid[0].length;
+
+        // 第 1 步：把 grid 中的砖头全部击碎，通常算法问题不能修改输入数据，这一步非必需，可以认为是一种答题规范
+        int[][] copy = new int[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                copy[i][j] = grid[i][j];
+            }
+        }
+
+        // 把 copy 中的砖头全部击碎
+        for (int[] hit : hits) {
+            copy[hit[0]][hit[1]] = 0;
+        }
+
+        // 第 2 步：建图，把砖块和砖块的连接关系输入并查集，size 表示二维网格的大小，也表示虚拟的「屋顶」在并查集中的编号
+        int size = rows * cols;
+        UnionFind unionFind = new UnionFind(size + 1);
+
+        // 将下标为 0 的这一行的砖块与「屋顶」相连
+        for (int j = 0; j < cols; j++) {
+            if (copy[0][j] == 1) {
+                unionFind.union(j, size);
+            }
+        }
+
+        // 其余网格，如果是砖块向上、向左看一下，如果也是砖块，在并查集中进行合并
+        for (int i = 1; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (copy[i][j] == 1) {
+                    // 如果上方也是砖块
+                    if (copy[i - 1][j] == 1) {
+                        unionFind.union(getIndex(i - 1, j), getIndex(i, j));
+                    }
+                    // 如果左边也是砖块
+                    if (j > 0 && copy[i][j - 1] == 1) {
+                        unionFind.union(getIndex(i, j - 1), getIndex(i, j));
+                    }
+                }
+            }
+        }
+
+        // 第 3 步：按照 hits 的逆序，在 copy 中补回砖块，把每一次因为补回砖块而与屋顶相连的砖块的增量记录到 res 数组中
+        int hitsLen = hits.length;
+        int[] res = new int[hitsLen];
+        for (int i = hitsLen - 1; i >= 0; i--) {
+            int x = hits[i][0];
+            int y = hits[i][1];
+
+            // 注意：这里不能用 copy，语义上表示，如果原来在 grid 中，这一块是空白，这一步不会产生任何砖块掉落
+            // 逆向补回的时候，与屋顶相连的砖块数量也肯定不会增加
+            if (grid[x][y] == 0) {
+                continue;
+            }
+
+            // 补回之前与屋顶相连的砖块数
+            int origin = unionFind.getSize(size);
+
+            // 注意：如果补回的这个结点在第 1 行，要告诉并查集它与屋顶相连（逻辑同第 2 步）
+            if (x == 0) {
+                unionFind.union(y, size);
+            }
+
+            // 在 4 个方向上看一下，如果相邻的 4 个方向有砖块，合并它们
+            for (int[] direction : DIRECTIONS) {
+                int newX = x + direction[0];
+                int newY = y + direction[1];
+
+                if (inArea(newX, newY) && copy[newX][newY] == 1) {
+                    unionFind.union(getIndex(x, y), getIndex(newX, newY));
+                }
+            }
+
+            // 补回之后与屋顶相连的砖块数
+            int current = unionFind.getSize(size);
+            // 减去的 1 是逆向补回的砖块（正向移除的砖块），与 0 比较大小，是因为存在一种情况，添加当前砖块，不会使得与屋顶连接的砖块数更多
+            res[i] = Math.max(0, current - origin - 1);
+
+            // 真正补上这个砖块
+            copy[x][y] = 1;
+        }
+        return res;
+    }
+
+    /**
+     * 输入坐标在二维网格中是否越界
+     *
+     * @param x
+     * @param y
+     * @return
+     */
+    private boolean inArea(int x, int y) {
+        return x >= 0 && x < rows && y >= 0 && y < cols;
+    }
+
+    /**
+     * 二维坐标转换为一维坐标
+     *
+     * @param x
+     * @param y
+     * @return
+     */
+    private int getIndex(int x, int y) {
+        return x * cols + y;
+    }
+
+    private class UnionFind {
+
+        /**
+         * 当前结点的父亲结点
+         */
+        private int[] parent;
+        /**
+         * 以当前结点为根结点的子树的结点总数
+         */
+        private int[] size;
+
+        public UnionFind(int n) {
+            parent = new int[n];
+            size = new int[n];
+            for (int i = 0; i < n; i++) {
+                parent[i] = i;
+                size[i] = 1;
+            }
+        }
+
+        /**
+         * 路径压缩，只要求每个不相交集合的「根结点」的子树包含的结点总数数值正确即可，因此在路径压缩的过程中不用维护数组 size
+         *
+         * @param x
+         * @return
+         */
+        public int find(int x) {
+            if (x != parent[x]) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+
+        public void union(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+
+            if (rootX == rootY) {
+                return;
+            }
+            parent[rootX] = rootY;
+            // 在合并的时候维护数组 size
+            size[rootY] += size[rootX];
+        }
+
+        /**
+         * @param x
+         * @return x 在并查集的根结点的子树包含的结点总数
+         */
+        public int getSize(int x) {
+            int root = find(x);
+            return size[root];
+        }
+    }
+}
+```
 
 
 
+### [128. 最长连续序列](https://leetcode.cn/problems/longest-consecutive-sequence/)
 
+中等
 
+给定一个未排序的整数数组 `nums` ，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。
 
+请你设计并实现时间复杂度为 `O(n)` 的算法解决此问题。
 
+**示例 1：**
+
+```
+输入：nums = [100,4,200,1,3,2]
+输出：4
+解释：最长数字连续序列是 [1, 2, 3, 4]。它的长度为 4。
+```
+
+C++版本
+
+```c++
+// 方法一：哈希表(并查集思路)
+class Solution {
+public:
+    int longestConsecutive(vector<int>& nums) {
+        // 使用 unordered_set 存储数组中的所有数字
+        unordered_set<int> numSet;
+        for (int num : nums) {
+            numSet.insert(num);
+        }
+
+        // 初始化最长连续序列的长度为 0
+        int longestStreak = 0;
+
+        // 遍历 unordered_set 中的每个数字
+        for (int num : numSet) {
+            // 如果 unordered_set 中不包含当前数字的前一个数字，则当前数字是连续序列的起点
+            if (!numSet.count(num - 1)) {
+                int currentNum = num;
+                int currentStreak = 1;
+
+                // 依次检查当前数字的下一个数字是否在 unordered_set 中，直到不在集合中或者连续序列结束
+                while (numSet.count(currentNum + 1)) {
+                    currentNum += 1;
+                    currentStreak += 1;
+                }
+
+                // 更新最长连续序列的长度
+                longestStreak = max(longestStreak, currentStreak);
+            }
+        }
+
+        // 返回最长连续序列的长度
+        return longestStreak;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：哈希表(并查集思路)
+public class Solution {
+    public int longestConsecutive(int[] nums) {
+        // 使用哈希集合存储数组中的所有数字
+        HashSet<Integer> numSet = new HashSet<>();
+        for (int num : nums) {
+            numSet.add(num);
+        }
+
+        // 初始化最长连续序列的长度为 0
+        int longestStreak = 0;
+
+        // 遍历哈希集合中的每个数字
+        for (int num : numSet) {
+            // 如果哈希集合中不包含当前数字的前一个数字，则当前数字是连续序列的起点
+            if (!numSet.contains(num - 1)) {
+                int currentNum = num;
+                int currentStreak = 1;
+
+                // 依次检查当前数字的下一个数字是否在哈希集合中，直到不在集合中或者连续序列结束
+                while (numSet.contains(currentNum + 1)) {
+                    currentNum += 1;
+                    currentStreak += 1;
+                }
+
+                // 更新最长连续序列的长度
+                longestStreak = Math.max(longestStreak, currentStreak);
+            }
+        }
+
+        // 返回最长连续序列的长度
+        return longestStreak;
+    }
+}
+```
 
 
 
