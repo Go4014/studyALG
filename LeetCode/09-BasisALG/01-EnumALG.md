@@ -455,7 +455,325 @@ class Solution {
 
 
 
+### [1620. 网络信号最好的坐标](https://leetcode.cn/problems/coordinate-with-maximum-network-quality/)
 
+中等
+
+给你一个数组 `towers` 和一个整数 `radius` 。
+
+数组 `towers` 中包含一些网络信号塔，其中 `towers[i] = [xi, yi, qi]` 表示第 `i` 个网络信号塔的坐标是 `(xi, yi)` 且信号强度参数为 `qi` 。所有坐标都是在 X-Y 坐标系内的 **整数** 坐标。两个坐标之间的距离用 **欧几里得距离** 计算。
+
+整数 `radius` 表示一个塔 **能到达** 的 **最远距离** 。如果一个坐标跟塔的距离在 `radius` 以内，那么该塔的信号可以到达该坐标。在这个范围以外信号会很微弱，所以 `radius` 以外的距离该塔是 **不能到达的** 。
+
+如果第 `i` 个塔能到达 `(x, y)` ，那么该塔在此处的信号为 `⌊qi / (1 + d)⌋` ，其中 `d` 是塔跟此坐标的距离。一个坐标的 **信号强度** 是所有 **能到达** 该坐标的塔的信号强度之和。
+
+请你返回数组 `[cx, cy]` ，表示 **信号强度** 最大的 **整数** 坐标点 `(cx, cy)` 。如果有多个坐标网络信号一样大，请你返回字典序最小的 **非负** 坐标。
+
+**注意：**
+
+- 坐标 
+
+  ```
+  (x1, y1)
+  ```
+
+   字典序比另一个坐标 
+
+  ```
+  (x2, y2)
+  ```
+
+   
+
+  小，需满足以下条件之一：
+
+  - 要么 `x1 < x2` ，
+  - 要么 `x1 == x2` 且 `y1 < y2` 。
+
+- `⌊val⌋` 表示小于等于 `val` 的最大整数（向下取整函数）。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/10/17/untitled-diagram.png)
+
+```
+输入：towers = [[1,2,5],[2,1,7],[3,1,9]], radius = 2
+输出：[2,1]
+解释：
+坐标 (2, 1) 信号强度之和为 13
+- 塔 (2, 1) 强度参数为 7 ，在该点强度为 ⌊7 / (1 + sqrt(0)⌋ = ⌊7⌋ = 7
+- 塔 (1, 2) 强度参数为 5 ，在该点强度为 ⌊5 / (1 + sqrt(2)⌋ = ⌊2.07⌋ = 2
+- 塔 (3, 1) 强度参数为 9 ，在该点强度为 ⌊9 / (1 + sqrt(1)⌋ = ⌊4.5⌋ = 4
+没有别的坐标有更大的信号强度。
+```
+
+C++版本
+
+```c++
+// 方法一：枚举
+class Solution {
+public:
+    vector<int> bestCoordinate(vector<vector<int>>& towers, int radius) {
+        int xMax = INT_MIN, yMax = INT_MIN;
+        for (auto &&tower : towers) {
+            int x = tower[0], y = tower[1];
+            xMax = max(xMax, x);
+            yMax = max(yMax, y);
+        }
+        int cx = 0, cy = 0;
+        int maxQuality = 0;
+        for (int x = 0; x <= xMax; x++) {
+            for (int y = 0; y <= yMax; y++) {
+                vector<int> coordinate = {x, y};
+                int quality = 0;
+                for (auto &&tower : towers) {
+                    int squaredDistance = getSquaredDistance(coordinate, tower);
+                    if (squaredDistance <= radius * radius) {
+                        double distance = sqrt((double)squaredDistance);
+                        quality += floor((double)tower[2] / (1 + distance));
+                    }
+                }
+                if (quality > maxQuality) {
+                    cx = x;
+                    cy = y;
+                    maxQuality = quality;
+                }
+            }
+        }
+        return {cx, cy};
+    }
+
+    int getSquaredDistance(const vector<int> &coordinate, const vector<int> &tower) {
+        return (tower[0] - coordinate[0]) * (tower[0] - coordinate[0]) + (tower[1] - coordinate[1]) * (tower[1] - coordinate[1]);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：枚举
+class Solution {
+    public int[] bestCoordinate(int[][] towers, int radius) {
+        int xMax = Integer.MIN_VALUE, yMax = Integer.MIN_VALUE;
+        for (int[] tower : towers) {
+            int x = tower[0], y = tower[1];
+            xMax = Math.max(xMax, x);
+            yMax = Math.max(yMax, y);
+        }
+        int cx = 0, cy = 0;
+        int maxQuality = 0;
+        for (int x = 0; x <= xMax; x++) {
+            for (int y = 0; y <= yMax; y++) {
+                int[] coordinate = {x, y};
+                int quality = 0;
+                for (int[] tower : towers) {
+                    int squaredDistance = getSquaredDistance(coordinate, tower);
+                    if (squaredDistance <= radius * radius) {
+                        double distance = Math.sqrt(squaredDistance);
+                        quality += (int) Math.floor(tower[2] / (1 + distance));
+                    }
+                }
+                if (quality > maxQuality) {
+                    cx = x;
+                    cy = y;
+                    maxQuality = quality;
+                }
+            }
+        }
+        return new int[]{cx, cy};
+    }
+
+    public int getSquaredDistance(int[] coordinate, int[] tower) {
+        return (tower[0] - coordinate[0]) * (tower[0] - coordinate[0]) + (tower[1] - coordinate[1]) * (tower[1] - coordinate[1]);
+    }
+}
+```
+
+
+
+### [LCR 180. 文件组合](https://leetcode.cn/problems/he-wei-sde-lian-xu-zheng-shu-xu-lie-lcof/)
+
+简单
+
+待传输文件被切分成多个部分，按照原排列顺序，每部分文件编号均为一个 **正整数**（至少含有两个文件）。传输要求为：连续文件编号总和为接收方指定数字 `target` 的所有文件。请返回所有符合该要求的文件传输组合列表。
+
+**注意**，返回时需遵循以下规则：
+
+- 每种组合按照文件编号 **升序** 排列；
+- 不同组合按照第一个文件编号 **升序** 排列。
+
+**示例 1：**
+
+```
+输入：target = 12
+输出：[[3, 4, 5]]
+解释：在上述示例中，存在一个连续正整数序列的和为 12，为 [3, 4, 5]。
+```
+
+C++版本
+
+```c++
+// 方法一：枚举 + 暴力
+class Solution {
+public:
+    vector<vector<int>> fileCombination(int target) {
+        vector<vector<int>> vec;
+        vector<int> res;
+        int sum = 0, limit = (target - 1) / 2; // (target - 1) / 2 等效于 target / 2 下取整
+        for (int i = 1; i <= limit; ++i) {
+            for (int j = i;; ++j) {
+                sum += j;
+                if (sum > target) {
+                    sum = 0;
+                    break;
+                } else if (sum == target) {
+                    res.clear();
+                    for (int k = i; k <= j; ++k) {
+                        res.emplace_back(k);
+                    }
+                    vec.emplace_back(res);
+                    sum = 0;
+                    break;
+                }
+            }
+        }
+        return vec;
+    }
+};
+
+// 方法二：枚举 + 数学优化
+class Solution {
+public:
+    vector<vector<int>> fileCombination(int target) {
+        vector<vector<int>> vec;
+        vector<int> res;
+        int sum = 0, limit = (target - 1) / 2; // (target - 1) / 2 等效于 target / 2 下取整
+        for (int x = 1; x <= limit; ++x) {
+            long long delta = 1 - 4 * (x - 1ll * x * x - 2 * target);
+            if (delta < 0) {
+                continue;
+            }
+            int delta_sqrt = (int)sqrt(delta + 0.5);
+            if (1ll * delta_sqrt * delta_sqrt == delta && (delta_sqrt - 1) % 2 == 0) {
+                int y = (-1 + delta_sqrt) / 2; // 另一个解(-1-delta_sqrt)/2必然小于0，不用考虑
+                if (x < y) {
+                    res.clear();
+                    for (int i = x; i <= y; ++i) {
+                        res.emplace_back(i);
+                    }
+                    vec.emplace_back(res);
+                }
+            }
+        }
+        return vec;
+    }
+};
+
+// 方法三：双指针
+class Solution {
+public:
+    vector<vector<int>> fileCombination(int target) {
+        vector<vector<int>>vec;
+        vector<int> res;
+        for (int l = 1, r = 2; l < r;){
+            int sum = (l + r) * (r - l + 1) / 2;
+            if (sum == target) {
+                res.clear();
+                for (int i = l; i <= r; ++i) {
+                    res.emplace_back(i);
+                }
+                vec.emplace_back(res);
+                l++;
+            } else if (sum < target) {
+                r++;
+            } else {
+                l++;
+            }
+        }
+        return vec;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：枚举 + 暴力
+class Solution {
+    public int[][] fileCombination(int target) {
+        List<int[]> vec = new ArrayList<int[]>();
+        int sum = 0, limit = (target - 1) / 2; // (target - 1) / 2 等效于 target / 2 下取整
+        for (int i = 1; i <= limit; ++i) {
+            for (int j = i;; ++j) {
+                sum += j;
+                if (sum > target) {
+                    sum = 0;
+                    break;
+                } else if (sum == target) {
+                    int[] res = new int[j - i + 1];
+                    for (int k = i; k <= j; ++k) {
+                        res[k - i] = k;
+                    }
+                    vec.add(res);
+                    sum = 0;
+                    break;
+                }
+            }
+        }
+        return vec.toArray(new int[vec.size()][]);
+    }
+}
+
+// 方法二：枚举 + 数学优化
+class Solution {
+    public int[][] fileCombination(int target) {
+        List<int[]> vec = new ArrayList<int[]>();
+        int sum = 0, limit = (target - 1) / 2; // (target - 1) / 2 等效于 target / 2 下取整
+        for (int x = 1; x <= limit; ++x) {
+            long delta = 1 - 4 * (x - (long) x * x - 2 * target);
+            if (delta < 0) {
+                continue;
+            }
+            int delta_sqrt = (int) Math.sqrt(delta + 0.5);
+            if ((long) delta_sqrt * delta_sqrt == delta && (delta_sqrt - 1) % 2 == 0) {
+                int y = (-1 + delta_sqrt) / 2; // 另一个解(-1-delta_sqrt)/2必然小于0，不用考虑
+                if (x < y) {
+                    int[] res = new int[y - x + 1];
+                    for (int i = x; i <= y; ++i) {
+                        res[i - x] = i;
+                    }
+                    vec.add(res);
+                }
+            }
+        }
+        return vec.toArray(new int[vec.size()][]);
+    }
+}
+
+// 方法三：双指针
+class Solution {
+    public int[][] fileCombination(int target) {
+        List<int[]> vec = new ArrayList<int[]>();
+        for (int l = 1, r = 2; l < r;) {
+            int sum = (l + r) * (r - l + 1) / 2;
+            if (sum == target) {
+                int[] res = new int[r - l + 1];
+                for (int i = l; i <= r; ++i) {
+                    res[i - l] = i;
+                }
+                vec.add(res);
+                l++;
+            } else if (sum < target) {
+                r++;
+            } else {
+                l++;
+            }
+        }
+        return vec.toArray(new int[vec.size()][]);
+    }
+}
+```
 
 
 
