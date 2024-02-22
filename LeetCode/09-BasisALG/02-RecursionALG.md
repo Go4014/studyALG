@@ -161,6 +161,223 @@ class Solution {
 
 
 
+### [118. 杨辉三角](https://leetcode.cn/problems/pascals-triangle/)
+
+简单
+
+给定一个非负整数 *`numRows`，*生成「杨辉三角」的前 *`numRows`* 行。
+
+在「杨辉三角」中，每个数是它左上方和右上方的数的和。
+
+![img](https://pic.leetcode-cn.com/1626927345-DZmfxB-PascalTriangleAnimated2.gif)
+
+**示例 1:**
+
+```
+输入: numRows = 5
+输出: [[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1]]
+```
+
+C++版本
+
+```c++
+// 方法一：数学
+class Solution {
+public:
+    vector<vector<int>> generate(int numRows) {
+        vector<vector<int>> ret(numRows);
+        for (int i = 0; i < numRows; ++i) {
+            ret[i].resize(i + 1);
+            ret[i][0] = ret[i][i] = 1;
+            for (int j = 1; j < i; ++j) {
+                ret[i][j] = ret[i - 1][j] + ret[i - 1][j - 1];
+            }
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：数学
+class Solution {
+    public List<List<Integer>> generate(int numRows) {
+        List<List<Integer>> ret = new ArrayList<List<Integer>>();
+        for (int i = 0; i < numRows; ++i) {
+            List<Integer> row = new ArrayList<Integer>();
+            for (int j = 0; j <= i; ++j) {
+                if (j == 0 || j == i) {
+                    row.add(1);
+                } else {
+                    row.add(ret.get(i - 1).get(j - 1) + ret.get(i - 1).get(j));
+                }
+            }
+            ret.add(row);
+        }
+        return ret;
+    }
+}
+```
+
+
+
+### [119. 杨辉三角 II](https://leetcode.cn/problems/pascals-triangle-ii/)
+
+简单
+
+给定一个非负索引 `rowIndex`，返回「杨辉三角」的第 `rowIndex` 行。
+
+在「杨辉三角」中，每个数是它左上方和右上方的数的和。
+
+![img](https://pic.leetcode-cn.com/1626927345-DZmfxB-PascalTriangleAnimated2.gif)
+
+**示例 1:**
+
+```
+输入: rowIndex = 3
+输出: [1,3,3,1]
+```
+
+C++版本
+
+```c++
+// 方法一：递推
+class Solution {
+public:
+    vector<int> getRow(int rowIndex) {
+        vector<vector<int>> C(rowIndex + 1);
+        for (int i = 0; i <= rowIndex; ++i) {
+            C[i].resize(i + 1);
+            C[i][0] = C[i][i] = 1;
+            for (int j = 1; j < i; ++j) {
+                C[i][j] = C[i - 1][j - 1] + C[i - 1][j];
+            }
+        }
+        return C[rowIndex];
+    }
+};
+
+// 优化
+class Solution {
+public:
+    vector<int> getRow(int rowIndex) {
+        vector<int> pre, cur;
+        for (int i = 0; i <= rowIndex; ++i) {
+            cur.resize(i + 1);
+            cur[0] = cur[i] = 1;
+            for (int j = 1; j < i; ++j) {
+                cur[j] = pre[j - 1] + pre[j];
+            }
+            pre = cur;
+        }
+        return pre;
+    }
+};
+
+// 进一步优化
+class Solution {
+public:
+    vector<int> getRow(int rowIndex) {
+        vector<int> row(rowIndex + 1);
+        row[0] = 1;
+        for (int i = 1; i <= rowIndex; ++i) {
+            for (int j = i; j > 0; --j) {
+                row[j] += row[j - 1];
+            }
+        }
+        return row;
+    }
+};
+
+// 方法二：线性递推
+class Solution {
+public:
+    vector<int> getRow(int rowIndex) {
+        vector<int> row(rowIndex + 1);
+        row[0] = 1;
+        for (int i = 1; i <= rowIndex; ++i) {
+            row[i] = 1LL * row[i - 1] * (rowIndex - i + 1) / i;
+        }
+        return row;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：递推
+class Solution {
+    public List<Integer> getRow(int rowIndex) {
+        List<List<Integer>> C = new ArrayList<List<Integer>>();
+        for (int i = 0; i <= rowIndex; ++i) {
+            List<Integer> row = new ArrayList<Integer>();
+            for (int j = 0; j <= i; ++j) {
+                if (j == 0 || j == i) {
+                    row.add(1);
+                } else {
+                    row.add(C.get(i - 1).get(j - 1) + C.get(i - 1).get(j));
+                }
+            }
+            C.add(row);
+        }
+        return C.get(rowIndex);
+    }
+}
+
+// 优化
+class Solution {
+    public List<Integer> getRow(int rowIndex) {
+        List<Integer> pre = new ArrayList<Integer>();
+        for (int i = 0; i <= rowIndex; ++i) {
+            List<Integer> cur = new ArrayList<Integer>();
+            for (int j = 0; j <= i; ++j) {
+                if (j == 0 || j == i) {
+                    cur.add(1);
+                } else {
+                    cur.add(pre.get(j - 1) + pre.get(j));
+                }
+            }
+            pre = cur;
+        }
+        return pre;
+    }
+}
+
+// 进一步优化
+class Solution {
+    public List<Integer> getRow(int rowIndex) {
+        List<Integer> row = new ArrayList<Integer>();
+        row.add(1);
+        for (int i = 1; i <= rowIndex; ++i) {
+            row.add(0);
+            for (int j = i; j > 0; --j) {
+                row.set(j, row.get(j) + row.get(j - 1));
+            }
+        }
+        return row;
+    }
+}
+
+// 方法二：线性递推
+class Solution {
+    public List<Integer> getRow(int rowIndex) {
+        List<Integer> row = new ArrayList<Integer>();
+        row.add(1);
+        for (int i = 1; i <= rowIndex; ++i) {
+            row.add((int) ((long) row.get(i - 1) * (rowIndex - i + 1) / i));
+        }
+        return row;
+    }
+}
+```
+
+
+
+
+
 
 
 
