@@ -1524,7 +1524,308 @@ class Solution {
 
 
 
+### [779. 第K个语法符号](https://leetcode.cn/problems/k-th-symbol-in-grammar/)
+
+中等
+
+我们构建了一个包含 `n` 行( **索引从 1 开始** )的表。首先在第一行我们写上一个 `0`。接下来的每一行，将前一行中的`0`替换为`01`，`1`替换为`10`。
+
+- 例如，对于 `n = 3` ，第 `1` 行是 `0` ，第 `2` 行是 `01` ，第3行是 `0110` 。
+
+给定行数 `n` 和序数 `k`，返回第 `n` 行中第 `k` 个字符。（ `k` **从索引 1 开始**）
+
+**示例 1:**
+
+```
+输入: n = 1, k = 1
+输出: 0
+解释: 第一行：0
+```
+
+C++版本
+
+```c++
+// 方法一：递归
+class Solution {
+public:
+    int kthGrammar(int n, int k) {
+        if (n == 1) {
+            return 0;
+        }
+        return (k & 1) ^ 1 ^ kthGrammar(n - 1, (k + 1) / 2);
+    }
+};
+
+// 方法二：找规律 + 递归
+class Solution {
+public:
+    int kthGrammar(int n, int k) {
+        if (k == 1) {
+            return 0;
+        }
+        if (k > (1 << (n - 2))) {
+            return 1 ^ kthGrammar(n - 1, k - (1 << (n - 2)));
+        }
+        return kthGrammar(n - 1, k);
+    }
+};
+
+// 方法三：找规律 + 位运算
+class Solution {
+public:
+    int kthGrammar(int n, int k) {
+        // return __builtin_popcount(k - 1) & 1;
+        k--;
+        int res = 0;
+        while (k > 0) {
+            k &= k - 1;
+            res ^= 1;
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：递归
+class Solution {
+    public int kthGrammar(int n, int k) {
+        if (n == 1) {
+            return 0;
+        }
+        return (k & 1) ^ 1 ^ kthGrammar(n - 1, (k + 1) / 2);
+    }
+}
+
+// 方法二：找规律 + 递归
+class Solution {
+    public int kthGrammar(int n, int k) {
+        if (k == 1) {
+            return 0;
+        }
+        if (k > (1 << (n - 2))) {
+            return 1 ^ kthGrammar(n - 1, k - (1 << (n - 2)));
+        }
+        return kthGrammar(n - 1, k);
+    }
+}
+
+// 方法三：找规律 + 位运算
+class Solution {
+    public int kthGrammar(int n, int k) {
+        // return Integer.bitCount(k - 1) & 1;
+        k--;
+        int res = 0;
+        while (k > 0) {
+            k &= k - 1;
+            res ^= 1;
+        }
+        return res;
+    }
+}
+```
 
 
 
+### [95. 不同的二叉搜索树 II](https://leetcode.cn/problems/unique-binary-search-trees-ii/)
+
+中等
+
+给你一个整数 `n` ，请你生成并返回所有由 `n` 个节点组成且节点值从 `1` 到 `n` 互不相同的不同 **二叉搜索树** 。可以按 **任意顺序** 返回答案。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/18/uniquebstn3.jpg)
+
+```
+输入：n = 3
+输出：[[1,null,2,null,3],[1,null,3,2],[2,1,3],[3,1,null,null,2],[3,2,null,1]]
+```
+
+C++版本
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+// 方法一：回溯
+class Solution {
+public:
+    vector<TreeNode*> generateTrees(int start, int end) {
+        if (start > end) {
+            return { nullptr };
+        }
+        vector<TreeNode*> allTrees;
+        // 枚举可行根节点
+        for (int i = start; i <= end; i++) {
+            // 获得所有可行的左子树集合
+            vector<TreeNode*> leftTrees = generateTrees(start, i - 1);
+
+            // 获得所有可行的右子树集合
+            vector<TreeNode*> rightTrees = generateTrees(i + 1, end);
+
+            // 从左子树集合中选出一棵左子树，从右子树集合中选出一棵右子树，拼接到根节点上
+            for (auto& left : leftTrees) {
+                for (auto& right : rightTrees) {
+                    TreeNode* currTree = new TreeNode(i);
+                    currTree->left = left;
+                    currTree->right = right;
+                    allTrees.emplace_back(currTree);
+                }
+            }
+        }
+        return allTrees;
+    }
+
+    vector<TreeNode*> generateTrees(int n) {
+        if (!n) {
+            return {};
+        }
+        return generateTrees(1, n);
+    }
+};
+```
+
+Java版本
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+// 方法一：回溯
+class Solution {
+    public List<TreeNode> generateTrees(int n) {
+        if (n == 0) {
+            return new LinkedList<TreeNode>();
+        }
+        return generateTrees(1, n);
+    }
+
+    public List<TreeNode> generateTrees(int start, int end) {
+        List<TreeNode> allTrees = new LinkedList<TreeNode>();
+        if (start > end) {
+            allTrees.add(null);
+            return allTrees;
+        }
+
+        // 枚举可行根节点
+        for (int i = start; i <= end; i++) {
+            // 获得所有可行的左子树集合
+            List<TreeNode> leftTrees = generateTrees(start, i - 1);
+
+            // 获得所有可行的右子树集合
+            List<TreeNode> rightTrees = generateTrees(i + 1, end);
+
+            // 从左子树集合中选出一棵左子树，从右子树集合中选出一棵右子树，拼接到根节点上
+            for (TreeNode left : leftTrees) {
+                for (TreeNode right : rightTrees) {
+                    TreeNode currTree = new TreeNode(i);
+                    currTree.left = left;
+                    currTree.right = right;
+                    allTrees.add(currTree);
+                }
+            }
+        }
+        return allTrees;
+    }
+}
+```
+
+
+
+### [LCR 187. 破冰游戏](https://leetcode.cn/problems/yuan-quan-zhong-zui-hou-sheng-xia-de-shu-zi-lcof/)
+
+简单
+
+社团共有 `num` 位成员参与破冰游戏，编号为 `0 ~ num-1`。成员们按照编号顺序围绕圆桌而坐。社长抽取一个数字 `target`，从 0 号成员起开始计数，排在第 `target` 位的成员离开圆桌，且成员离开后从下一个成员开始计数。请返回游戏结束时最后一位成员的编号。
+
+**示例 1：**
+
+```
+输入：num = 7, target = 4
+输出：1
+```
+
+C++版本
+
+```c++
+// 方法一：数学 + 递归
+class Solution {
+    int f(int num, int target) {
+        if (num == 1) {
+            return 0;
+        }
+        int x = f(num - 1, target);
+        return (target + x) % num;
+    }
+public:
+    int iceBreakingGame(int num, int target) {
+        return f(num, target);
+    }
+};
+
+// 方法二：数学 + 迭代
+class Solution {
+public:
+    int iceBreakingGame(int num, int target) {
+        int f = 0;
+        for (int i = 2; i != num + 1; ++i) {
+            f = (target + f) % i;
+        }
+        return f;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：数学 + 递归
+class Solution {
+    public int iceBreakingGame(int num, int target) {
+        return f(num, target);
+    }
+
+    public int f(int num, int target) {
+        if (num == 1) {
+            return 0;
+        }
+        int x = f(num - 1, target);
+        return (target + x) % num;
+    }
+}
+
+// 方法二：数学 + 迭代
+class Solution {
+    public int iceBreakingGame(int num, int target) {
+        int f = 0;
+        for (int i = 2; i != num + 1; ++i) {
+            f = (target + f) % i;
+        }
+        return f;
+    }
+}
+```
 
