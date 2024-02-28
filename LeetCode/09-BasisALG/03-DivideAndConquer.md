@@ -472,7 +472,266 @@ class Solution {
 
 
 
+### [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
+
+中等
+
+给你一个整数数组 `nums` ，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+**子数组** 是数组中的一个连续部分。
+
+**示例 1：**
+
+```
+输入：nums = [-2,1,-3,4,-1,2,1,-5,4]
+输出：6
+解释：连续子数组 [4,-1,2,1] 的和最大，为 6 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        int pre = 0, maxAns = nums[0];
+        for (const auto &x: nums) {
+            pre = max(pre + x, x);
+            maxAns = max(maxAns, pre);
+        }
+        return maxAns;
+    }
+};
+
+// 方法二：分治
+class Solution {
+public:
+    struct Status {
+        int lSum, rSum, mSum, iSum;
+    };
+
+    Status pushUp(Status l, Status r) {
+        int iSum = l.iSum + r.iSum;
+        int lSum = max(l.lSum, l.iSum + r.lSum);
+        int rSum = max(r.rSum, r.iSum + l.rSum);
+        int mSum = max(max(l.mSum, r.mSum), l.rSum + r.lSum);
+        return (Status) {lSum, rSum, mSum, iSum};
+    };
+
+    Status get(vector<int> &a, int l, int r) {
+        if (l == r) {
+            return (Status) {a[l], a[l], a[l], a[l]};
+        }
+        int m = (l + r) >> 1;
+        Status lSub = get(a, l, m);
+        Status rSub = get(a, m + 1, r);
+        return pushUp(lSub, rSub);
+    }
+
+    int maxSubArray(vector<int>& nums) {
+        return get(nums, 0, nums.size() - 1).mSum;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int maxSubArray(int[] nums) {
+        int pre = 0, maxAns = nums[0];
+        for (int x : nums) {
+            pre = Math.max(pre + x, x);
+            maxAns = Math.max(maxAns, pre);
+        }
+        return maxAns;
+    }
+}
+
+// 方法二：分治
+class Solution {
+    public class Status {
+        public int lSum, rSum, mSum, iSum;
+
+        public Status(int lSum, int rSum, int mSum, int iSum) {
+            this.lSum = lSum;
+            this.rSum = rSum;
+            this.mSum = mSum;
+            this.iSum = iSum;
+        }
+    }
+
+    public int maxSubArray(int[] nums) {
+        return getInfo(nums, 0, nums.length - 1).mSum;
+    }
+
+    public Status getInfo(int[] a, int l, int r) {
+        if (l == r) {
+            return new Status(a[l], a[l], a[l], a[l]);
+        }
+        int m = (l + r) >> 1;
+        Status lSub = getInfo(a, l, m);
+        Status rSub = getInfo(a, m + 1, r);
+        return pushUp(lSub, rSub);
+    }
+
+    public Status pushUp(Status l, Status r) {
+        int iSum = l.iSum + r.iSum;
+        int lSum = Math.max(l.lSum, l.iSum + r.lSum);
+        int rSum = Math.max(r.rSum, r.iSum + l.rSum);
+        int mSum = Math.max(Math.max(l.mSum, r.mSum), l.rSum + r.lSum);
+        return new Status(lSum, rSum, mSum, iSum);
+    }
+}
+```
 
 
 
+### [241. 为运算表达式设计优先级](https://leetcode.cn/problems/different-ways-to-add-parentheses/)
+
+中等
+
+给你一个由数字和运算符组成的字符串 `expression` ，按不同优先级组合数字和运算符，计算并返回所有可能组合的结果。你可以 **按任意顺序** 返回答案。
+
+生成的测试用例满足其对应输出值符合 32 位整数范围，不同结果的数量不超过 `104` 。
+
+**示例 1：**
+
+```
+输入：expression = "2-1-1"
+输出：[0,2]
+解释：
+((2-1)-1) = 0 
+(2-(1-1)) = 2
+```
+
+C++版本
+
+```c++
+// 方法一：记忆化搜索
+class Solution {
+public:
+    const int ADDITION = -1;
+    const int SUBTRACTION = -2;
+    const int MULTIPLICATION = -3;
+
+    vector<int> dfs(vector<vector<vector<int>>>& dp, int l, int r, const vector<int>& ops) {
+        if (dp[l][r].empty()) {
+            if (l == r) {
+                dp[l][r].push_back(ops[l]);
+            } else {
+                for (int i = l; i < r; i += 2) {
+                    auto left = dfs(dp, l, i, ops);
+                    auto right = dfs(dp, i + 2, r, ops);
+                    for (auto& lv : left) {
+                        for (auto& rv : right) {
+                            if (ops[i + 1] == ADDITION) {
+                                dp[l][r].push_back(lv + rv);
+                            } else if (ops[i + 1] == SUBTRACTION) {
+                                dp[l][r].push_back(lv - rv);
+                            } else {
+                                dp[l][r].push_back(lv * rv);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return dp[l][r];
+    }
+
+    vector<int> diffWaysToCompute(string expression) {
+        vector<int> ops;
+        for (int i = 0; i < expression.size();) {
+            if (!isdigit(expression[i])) {
+                if (expression[i] == '+') {
+                    ops.push_back(ADDITION);
+                } else if (expression[i] == '-') {
+                    ops.push_back(SUBTRACTION);
+                } else {
+                    ops.push_back(MULTIPLICATION);
+                }
+                i++;
+            } else {
+                int t = 0;
+                while (i < expression.size() && isdigit(expression[i])) {
+                    t = t * 10 + expression[i] - '0';
+                    i++;
+                }
+                ops.push_back(t);
+            }
+        }
+        vector<vector<vector<int>>> dp((int) ops.size(), vector<vector<int>>((int) ops.size()));
+        return dfs(dp, 0, ops.size() - 1, ops);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：记忆化搜索
+class Solution {
+    static final int ADDITION = -1;
+    static final int SUBTRACTION = -2;
+    static final int MULTIPLICATION = -3;
+
+    public List<Integer> diffWaysToCompute(String expression) {
+        List<Integer> ops = new ArrayList<Integer>();
+        for (int i = 0; i < expression.length();) {
+            if (!Character.isDigit(expression.charAt(i))) {
+                if (expression.charAt(i) == '+') {
+                    ops.add(ADDITION);
+                } else if (expression.charAt(i) == '-') {
+                    ops.add(SUBTRACTION);
+                } else {
+                    ops.add(MULTIPLICATION);
+                }
+                i++;
+            } else {
+                int t = 0;
+                while (i < expression.length() && Character.isDigit(expression.charAt(i))) {
+                    t = t * 10 + expression.charAt(i) - '0';
+                    i++;
+                }
+                ops.add(t);
+            }
+        }
+        List<Integer>[][] dp = new List[ops.size()][ops.size()];
+        for (int i = 0; i < ops.size(); i++) {
+            for (int j = 0; j < ops.size(); j++) {
+                dp[i][j] = new ArrayList<Integer>();
+            }
+        }
+        return dfs(dp, 0, ops.size() - 1, ops);
+    }
+
+    public List<Integer> dfs(List<Integer>[][] dp, int l, int r, List<Integer> ops) {
+        if (dp[l][r].isEmpty()) {
+            if (l == r) {
+                dp[l][r].add(ops.get(l));
+            } else {
+                for (int i = l; i < r; i += 2) {
+                    List<Integer> left = dfs(dp, l, i, ops);
+                    List<Integer> right = dfs(dp, i + 2, r, ops);
+                    for (int lv : left) {
+                        for (int rv : right) {
+                            if (ops.get(i + 1) == ADDITION) {
+                                dp[l][r].add(lv + rv);
+                            } else if (ops.get(i + 1) == SUBTRACTION) {
+                                dp[l][r].add(lv - rv);
+                            } else {
+                                dp[l][r].add(lv * rv);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return dp[l][r];
+    }
+}
+```
 
