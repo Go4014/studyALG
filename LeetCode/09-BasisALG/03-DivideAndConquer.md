@@ -855,3 +855,355 @@ class Solution {
 };
 ```
 
+
+
+### [169. 多数元素](https://leetcode.cn/problems/majority-element/)
+
+简单
+
+给定一个大小为 `n` 的数组 `nums` ，返回其中的多数元素。多数元素是指在数组中出现次数 **大于** `⌊ n/2 ⌋` 的元素。
+
+你可以假设数组是非空的，并且给定的数组总是存在多数元素。
+
+**示例 1：**
+
+```
+输入：nums = [3,2,3]
+输出：3
+```
+
+C++版本
+
+```c++
+// 方法一：哈希表
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        unordered_map<int, int> counts;
+        int majority = 0, cnt = 0;
+        for (int num: nums) {
+            ++counts[num];
+            if (counts[num] > cnt) {
+                majority = num;
+                cnt = counts[num];
+            }
+        }
+        return majority;
+    }
+};
+
+// 方法二：排序
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        sort(nums.begin(), nums.end());
+        return nums[nums.size() / 2];
+    }
+};
+
+// 方法三：随机化
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        while (true) {
+            int candidate = nums[rand() % nums.size()];
+            int count = 0;
+            for (int num : nums)
+                if (num == candidate)
+                    ++count;
+            if (count > nums.size() / 2)
+                return candidate;
+        }
+        return -1;
+    }
+};
+
+// 方法四：分治
+class Solution {
+    int count_in_range(vector<int>& nums, int target, int lo, int hi) {
+        int count = 0;
+        for (int i = lo; i <= hi; ++i)
+            if (nums[i] == target)
+                ++count;
+        return count;
+    }
+    int majority_element_rec(vector<int>& nums, int lo, int hi) {
+        if (lo == hi)
+            return nums[lo];
+        int mid = (lo + hi) / 2;
+        int left_majority = majority_element_rec(nums, lo, mid);
+        int right_majority = majority_element_rec(nums, mid + 1, hi);
+        if (count_in_range(nums, left_majority, lo, hi) > (hi - lo + 1) / 2)
+            return left_majority;
+        if (count_in_range(nums, right_majority, lo, hi) > (hi - lo + 1) / 2)
+            return right_majority;
+        return -1;
+    }
+public:
+    int majorityElement(vector<int>& nums) {
+        return majority_element_rec(nums, 0, nums.size() - 1);
+    }
+};
+
+// 方法五：Boyer-Moore 投票算法
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        int candidate = -1;
+        int count = 0;
+        for (int num : nums) {
+            if (num == candidate)
+                ++count;
+            else if (--count < 0) {
+                candidate = num;
+                count = 1;
+            }
+        }
+        return candidate;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：哈希表
+class Solution {
+    private Map<Integer, Integer> countNums(int[] nums) {
+        Map<Integer, Integer> counts = new HashMap<Integer, Integer>();
+        for (int num : nums) {
+            if (!counts.containsKey(num)) {
+                counts.put(num, 1);
+            } else {
+                counts.put(num, counts.get(num) + 1);
+            }
+        }
+        return counts;
+    }
+
+    public int majorityElement(int[] nums) {
+        Map<Integer, Integer> counts = countNums(nums);
+
+        Map.Entry<Integer, Integer> majorityEntry = null;
+        for (Map.Entry<Integer, Integer> entry : counts.entrySet()) {
+            if (majorityEntry == null || entry.getValue() > majorityEntry.getValue()) {
+                majorityEntry = entry;
+            }
+        }
+
+        return majorityEntry.getKey();
+    }
+}
+
+// 方法二：排序
+class Solution {
+    public int majorityElement(int[] nums) {
+        Arrays.sort(nums);
+        return nums[nums.length / 2];
+    }
+}
+
+// 方法三：随机化
+class Solution {
+    private int randRange(Random rand, int min, int max) {
+        return rand.nextInt(max - min) + min;
+    }
+
+    private int countOccurences(int[] nums, int num) {
+        int count = 0;
+        for (int i = 0; i < nums.length; i++) {
+            if (nums[i] == num) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int majorityElement(int[] nums) {
+        Random rand = new Random();
+
+        int majorityCount = nums.length / 2;
+
+        while (true) {
+            int candidate = nums[randRange(rand, 0, nums.length)];
+            if (countOccurences(nums, candidate) > majorityCount) {
+                return candidate;
+            }
+        }
+    }
+}
+
+// 方法四：分治
+class Solution {
+    private int countInRange(int[] nums, int num, int lo, int hi) {
+        int count = 0;
+        for (int i = lo; i <= hi; i++) {
+            if (nums[i] == num) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private int majorityElementRec(int[] nums, int lo, int hi) {
+        // base case; the only element in an array of size 1 is the majority
+        // element.
+        if (lo == hi) {
+            return nums[lo];
+        }
+
+        // recurse on left and right halves of this slice.
+        int mid = (hi - lo) / 2 + lo;
+        int left = majorityElementRec(nums, lo, mid);
+        int right = majorityElementRec(nums, mid + 1, hi);
+
+        // if the two halves agree on the majority element, return it.
+        if (left == right) {
+            return left;
+        }
+
+        // otherwise, count each element and return the "winner".
+        int leftCount = countInRange(nums, left, lo, hi);
+        int rightCount = countInRange(nums, right, lo, hi);
+
+        return leftCount > rightCount ? left : right;
+    }
+
+    public int majorityElement(int[] nums) {
+        return majorityElementRec(nums, 0, nums.length - 1);
+    }
+}
+
+// 方法五：Boyer-Moore 投票算法
+class Solution {
+    public int majorityElement(int[] nums) {
+        int count = 0;
+        Integer candidate = null;
+
+        for (int num : nums) {
+            if (count == 0) {
+                candidate = num;
+            }
+            count += (num == candidate) ? 1 : -1;
+        }
+
+        return candidate;
+    }
+}
+```
+
+
+
+### [50. Pow(x, n)](https://leetcode.cn/problems/powx-n/)
+
+中等
+
+实现 [pow(*x*, *n*)](https://www.cplusplus.com/reference/valarray/pow/) ，即计算 `x` 的整数 `n` 次幂函数（即，`xn` ）。
+
+**示例 1：**
+
+```
+输入：x = 2.00000, n = 10
+输出：1024.00000
+```
+
+C++版本
+
+```c++
+// 方法一：快速幂 + 递归
+class Solution {
+public:
+    double quickMul(double x, long long N) {
+        if (N == 0) {
+            return 1.0;
+        }
+        double y = quickMul(x, N / 2);
+        return N % 2 == 0 ? y * y : y * y * x;
+    }
+
+    double myPow(double x, int n) {
+        long long N = n;
+        return N >= 0 ? quickMul(x, N) : 1.0 / quickMul(x, -N);
+    }
+};
+
+// 方法二：快速幂 + 迭代
+class Solution {
+public:
+    double quickMul(double x, long long N) {
+        double ans = 1.0;
+        // 贡献的初始值为 x
+        double x_contribute = x;
+        // 在对 N 进行二进制拆分的同时计算答案
+        while (N > 0) {
+            if (N % 2 == 1) {
+                // 如果 N 二进制表示的最低位为 1，那么需要计入贡献
+                ans *= x_contribute;
+            }
+            // 将贡献不断地平方
+            x_contribute *= x_contribute;
+            // 舍弃 N 二进制表示的最低位，这样我们每次只要判断最低位即可
+            N /= 2;
+        }
+        return ans;
+    }
+
+    double myPow(double x, int n) {
+        long long N = n;
+        return N >= 0 ? quickMul(x, N) : 1.0 / quickMul(x, -N);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：快速幂 + 递归
+class Solution {
+    public double myPow(double x, int n) {
+        long N = n;
+        return N >= 0 ? quickMul(x, N) : 1.0 / quickMul(x, -N);
+    }
+
+    public double quickMul(double x, long N) {
+        if (N == 0) {
+            return 1.0;
+        }
+        double y = quickMul(x, N / 2);
+        return N % 2 == 0 ? y * y : y * y * x;
+    }
+}
+
+// 方法二：快速幂 + 迭代
+class Solution {
+    public double myPow(double x, int n) {
+        long N = n;
+        return N >= 0 ? quickMul(x, N) : 1.0 / quickMul(x, -N);
+    }
+
+    public double quickMul(double x, long N) {
+        double ans = 1.0;
+        // 贡献的初始值为 x
+        double x_contribute = x;
+        // 在对 N 进行二进制拆分的同时计算答案
+        while (N > 0) {
+            if (N % 2 == 1) {
+                // 如果 N 二进制表示的最低位为 1，那么需要计入贡献
+                ans *= x_contribute;
+            }
+            // 将贡献不断地平方
+            x_contribute *= x_contribute;
+            // 舍弃 N 二进制表示的最低位，这样我们每次只要判断最低位即可
+            N /= 2;
+        }
+        return ans;
+    }
+}
+```
+
+
+
+
+
+
+
