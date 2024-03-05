@@ -82,12 +82,11 @@ class Solution {
 class Solution {
     public List<List<Integer>> permute(int[] nums) {
         List<List<Integer>> result = new ArrayList<>();
-        List<Integer> current = new ArrayList<>();
-        dfs(nums, 0, result);
+        backtrack(nums, 0, result);
         return result;
     }
 
-    private void dfs(int[] nums, int index, List<List<Integer>> result) {
+    private void backtrack(int[] nums, int index, List<List<Integer>> result) {
         if (index == nums.length) {
             List<Integer> cur = new ArrayList<>();
             for (Integer integer: nums) {
@@ -97,7 +96,7 @@ class Solution {
         }
         for (int i = index; i < nums.length; i++) {
             swap(nums, index, i);
-            dfs(nums, index + 1, result);
+            backtrack(nums, index + 1, result);
             swap(nums, index, i);
         }
     }
@@ -127,6 +126,11 @@ class Solution {
  [1,2,1],
  [2,1,1]]
 ```
+
+**提示：**
+
+- `1 <= nums.length <= 8`
+- `-10 <= nums[i] <= 10`
 
 C++版本
 
@@ -220,9 +224,9 @@ class Solution {
             }
             res.add(resList);
         } else {
-            boolean[] visited = new boolean[20];
+            boolean[] visited = new boolean[21]; // -10 <= nums[i] <= 10
             for (int i = index; i < nums.length; i++) {
-                if (visited[nums[i]+ 10]) {
+                if (visited[nums[i] + 10]) {
                     continue;
                 } else {
                     visited[nums[i]+ 10] = true;
@@ -235,6 +239,615 @@ class Solution {
     }
 }
 ```
+
+
+
+### [37. 解数独](https://leetcode.cn/problems/sudoku-solver/)
+
+困难
+
+编写一个程序，通过填充空格来解决数独问题。
+
+数独的解法需 **遵循如下规则**：
+
+1. 数字 `1-9` 在每一行只能出现一次。
+2. 数字 `1-9` 在每一列只能出现一次。
+3. 数字 `1-9` 在每一个以粗实线分隔的 `3x3` 宫内只能出现一次。（请参考示例图）
+
+数独部分空格内已填入了数字，空白格用 `'.'` 表示。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2021/04/12/250px-sudoku-by-l2g-20050714svg.png)
+
+```
+输入：board = [["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]
+输出：[["5","3","4","6","7","8","9","1","2"],["6","7","2","1","9","5","3","4","8"],["1","9","8","3","4","2","5","6","7"],["8","5","9","7","6","1","4","2","3"],["4","2","6","8","5","3","7","9","1"],["7","1","3","9","2","4","8","5","6"],["9","6","1","5","3","7","2","8","4"],["2","8","7","4","1","9","6","3","5"],["3","4","5","2","8","6","1","7","9"]]
+解释：输入的数独如上图所示，唯一有效的解决方案如下所示：
+```
+
+C++版本
+
+```c++
+// 方法一：回溯
+class Solution {
+private:
+    bool line[9][9];
+    bool column[9][9];
+    bool block[3][3][9];
+    bool valid;
+    vector<pair<int, int>> spaces;
+
+public:
+    void dfs(vector<vector<char>>& board, int pos) {
+        if (pos == spaces.size()) {
+            valid = true;
+            return;
+        }
+
+        auto [i, j] = spaces[pos];
+        for (int digit = 0; digit < 9 && !valid; ++digit) {
+            if (!line[i][digit] && !column[j][digit] && !block[i / 3][j / 3][digit]) {
+                line[i][digit] = column[j][digit] = block[i / 3][j / 3][digit] = true;
+                board[i][j] = digit + '0' + 1;
+                dfs(board, pos + 1);
+                line[i][digit] = column[j][digit] = block[i / 3][j / 3][digit] = false;
+            }
+        }
+    }
+
+    void solveSudoku(vector<vector<char>>& board) {
+        memset(line, false, sizeof(line));
+        memset(column, false, sizeof(column));
+        memset(block, false, sizeof(block));
+        valid = false;
+
+        for (int i = 0; i < 9; ++i) {
+            for (int j = 0; j < 9; ++j) {
+                if (board[i][j] == '.') {
+                    spaces.emplace_back(i, j);
+                }
+                else {
+                    int digit = board[i][j] - '0' - 1;
+                    line[i][digit] = column[j][digit] = block[i / 3][j / 3][digit] = true;
+                }
+            }
+        }
+
+        dfs(board, 0);
+    }
+};
+
+// 方法二：位运算优化
+class Solution {
+private:
+    int line[9];
+    int column[9];
+    int block[3][3];
+    bool valid;
+    vector<pair<int, int>> spaces;
+
+public:
+    void flip(int i, int j, int digit) {
+        line[i] ^= (1 << digit);
+        column[j] ^= (1 << digit);
+        block[i / 3][j / 3] ^= (1 << digit);
+    }
+
+    void dfs(vector<vector<char>>& board, int pos) {
+        if (pos == spaces.size()) {
+            valid = true;
+            return;
+        }
+
+        auto [i, j] = spaces[pos];
+        int mask = ~(line[i] | column[j] | block[i / 3][j / 3]) & 0x1ff;
+        for (; mask && !valid; mask &= (mask - 1)) {
+            int digitMask = mask & (-mask);
+            int digit = __builtin_ctz(digitMask);
+            flip(i, j, digit);
+            board[i][j] = digit + '0' + 1;
+            dfs(board, pos + 1);
+            flip(i, j, digit);
+        }
+    }
+
+    void solveSudoku(vector<vector<char>>& board) {
+        memset(line, 0, sizeof(line));
+        memset(column, 0, sizeof(column));
+        memset(block, 0, sizeof(block));
+        valid = false;
+
+        for (int i = 0; i < 9; ++i) {
+            for (int j = 0; j < 9; ++j) {
+                if (board[i][j] == '.') {
+                    spaces.emplace_back(i, j);
+                }
+                else {
+                    int digit = board[i][j] - '0' - 1;
+                    flip(i, j, digit);
+                }
+            }
+        }
+
+        dfs(board, 0);
+    }
+};
+
+// 方法三：枚举优化
+class Solution {
+private:
+    int line[9];
+    int column[9];
+    int block[3][3];
+    bool valid;
+    vector<pair<int, int>> spaces;
+
+public:
+    void flip(int i, int j, int digit) {
+        line[i] ^= (1 << digit);
+        column[j] ^= (1 << digit);
+        block[i / 3][j / 3] ^= (1 << digit);
+    }
+
+    void dfs(vector<vector<char>>& board, int pos) {
+        if (pos == spaces.size()) {
+            valid = true;
+            return;
+        }
+
+        auto [i, j] = spaces[pos];
+        int mask = ~(line[i] | column[j] | block[i / 3][j / 3]) & 0x1ff;
+        for (; mask && !valid; mask &= (mask - 1)) {
+            int digitMask = mask & (-mask);
+            int digit = __builtin_ctz(digitMask);
+            flip(i, j, digit);
+            board[i][j] = digit + '0' + 1;
+            dfs(board, pos + 1);
+            flip(i, j, digit);
+        }
+    }
+
+    void solveSudoku(vector<vector<char>>& board) {
+        memset(line, 0, sizeof(line));
+        memset(column, 0, sizeof(column));
+        memset(block, 0, sizeof(block));
+        valid = false;
+
+        for (int i = 0; i < 9; ++i) {
+            for (int j = 0; j < 9; ++j) {
+                if (board[i][j] != '.') {
+                    int digit = board[i][j] - '0' - 1;
+                    flip(i, j, digit);
+                }
+            }
+        }
+
+        while (true) {
+            int modified = false;
+            for (int i = 0; i < 9; ++i) {
+                for (int j = 0; j < 9; ++j) {
+                    if (board[i][j] == '.') {
+                        int mask = ~(line[i] | column[j] | block[i / 3][j / 3]) & 0x1ff;
+                        if (!(mask & (mask - 1))) {
+                            int digit = __builtin_ctz(mask);
+                            flip(i, j, digit);
+                            board[i][j] = digit + '0' + 1;
+                            modified = true;
+                        }
+                    }
+                }
+            }
+            if (!modified) {
+                break;
+            }
+        }
+
+        for (int i = 0; i < 9; ++i) {
+            for (int j = 0; j < 9; ++j) {
+                if (board[i][j] == '.') {
+                    spaces.emplace_back(i, j);
+                }
+            }
+        }
+
+        dfs(board, 0);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：回溯
+class Solution {
+    private boolean[][] line = new boolean[9][9];
+    private boolean[][] column = new boolean[9][9];
+    private boolean[][][] block = new boolean[3][3][9];
+    private boolean valid = false;
+    private List<int[]> spaces = new ArrayList<int[]>();
+
+    public void solveSudoku(char[][] board) {
+        for (int i = 0; i < 9; ++i) {
+            for (int j = 0; j < 9; ++j) {
+                if (board[i][j] == '.') {
+                    spaces.add(new int[]{i, j});
+                } else {
+                    int digit = board[i][j] - '0' - 1;
+                    line[i][digit] = column[j][digit] = block[i / 3][j / 3][digit] = true;
+                }
+            }
+        }
+
+        dfs(board, 0);
+    }
+
+    public void dfs(char[][] board, int pos) {
+        if (pos == spaces.size()) {
+            valid = true;
+            return;
+        }
+
+        int[] space = spaces.get(pos);
+        int i = space[0], j = space[1];
+        for (int digit = 0; digit < 9 && !valid; ++digit) {
+            if (!line[i][digit] && !column[j][digit] && !block[i / 3][j / 3][digit]) {
+                line[i][digit] = column[j][digit] = block[i / 3][j / 3][digit] = true;
+                board[i][j] = (char) (digit + '0' + 1);
+                dfs(board, pos + 1);
+                line[i][digit] = column[j][digit] = block[i / 3][j / 3][digit] = false;
+            }
+        }
+    }
+}
+
+// 方法二：位运算优化
+class Solution {
+    private int[] line = new int[9];
+    private int[] column = new int[9];
+    private int[][] block = new int[3][3];
+    private boolean valid = false;
+    private List<int[]> spaces = new ArrayList<int[]>();
+
+    public void solveSudoku(char[][] board) {
+        for (int i = 0; i < 9; ++i) {
+            for (int j = 0; j < 9; ++j) {
+                if (board[i][j] == '.') {
+                    spaces.add(new int[]{i, j});
+                } else {
+                    int digit = board[i][j] - '0' - 1;
+                    flip(i, j, digit);
+                }
+            }
+        }
+
+        dfs(board, 0);
+    }
+
+    public void dfs(char[][] board, int pos) {
+        if (pos == spaces.size()) {
+            valid = true;
+            return;
+        }
+
+        int[] space = spaces.get(pos);
+        int i = space[0], j = space[1];
+        int mask = ~(line[i] | column[j] | block[i / 3][j / 3]) & 0x1ff;
+        for (; mask != 0 && !valid; mask &= (mask - 1)) {
+            int digitMask = mask & (-mask);
+            int digit = Integer.bitCount(digitMask - 1);
+            flip(i, j, digit);
+            board[i][j] = (char) (digit + '0' + 1);
+            dfs(board, pos + 1);
+            flip(i, j, digit);
+        }
+    }
+
+    public void flip(int i, int j, int digit) {
+        line[i] ^= (1 << digit);
+        column[j] ^= (1 << digit);
+        block[i / 3][j / 3] ^= (1 << digit);
+    }
+}
+
+// 方法三：枚举优化
+class Solution {
+    private int[] line = new int[9];
+    private int[] column = new int[9];
+    private int[][] block = new int[3][3];
+    private boolean valid = false;
+    private List<int[]> spaces = new ArrayList<int[]>();
+
+    public void solveSudoku(char[][] board) {
+        for (int i = 0; i < 9; ++i) {
+            for (int j = 0; j < 9; ++j) {
+                if (board[i][j] != '.') {
+                    int digit = board[i][j] - '0' - 1;
+                    flip(i, j, digit);
+                }
+            }
+        }
+
+        while (true) {
+            boolean modified = false;
+            for (int i = 0; i < 9; ++i) {
+                for (int j = 0; j < 9; ++j) {
+                    if (board[i][j] == '.') {
+                        int mask = ~(line[i] | column[j] | block[i / 3][j / 3]) & 0x1ff;
+                        if ((mask & (mask - 1)) == 0) {
+                            int digit = Integer.bitCount(mask - 1);
+                            flip(i, j, digit);
+                            board[i][j] = (char) (digit + '0' + 1);
+                            modified = true;
+                        }
+                    }
+                }
+            }
+            if (!modified) {
+                break;
+            }
+        }
+
+        for (int i = 0; i < 9; ++i) {
+            for (int j = 0; j < 9; ++j) {
+                if (board[i][j] == '.') {
+                    spaces.add(new int[]{i, j});
+                }
+            }
+        }
+
+        dfs(board, 0);
+    }
+
+    public void dfs(char[][] board, int pos) {
+        if (pos == spaces.size()) {
+            valid = true;
+            return;
+        }
+
+        int[] space = spaces.get(pos);
+        int i = space[0], j = space[1];
+        int mask = ~(line[i] | column[j] | block[i / 3][j / 3]) & 0x1ff;
+        for (; mask != 0 && !valid; mask &= (mask - 1)) {
+            int digitMask = mask & (-mask);
+            int digit = Integer.bitCount(digitMask - 1);
+            flip(i, j, digit);
+            board[i][j] = (char) (digit + '0' + 1);
+            dfs(board, pos + 1);
+            flip(i, j, digit);
+        }
+    }
+
+    public void flip(int i, int j, int digit) {
+        line[i] ^= (1 << digit);
+        column[j] ^= (1 << digit);
+        block[i / 3][j / 3] ^= (1 << digit);
+    }
+}
+```
+
+
+
+### [22. 括号生成](https://leetcode.cn/problems/generate-parentheses/)
+
+中等
+
+数字 `n` 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 **有效的** 括号组合。
+
+**示例 1：**
+
+```
+输入：n = 3
+输出：["((()))","(()())","(())()","()(())","()()()"]
+```
+
+C++版本
+
+```c++
+// 方法一：暴力法
+class Solution {
+    bool valid(const string& str) {
+        int balance = 0;
+        for (char c : str) {
+            if (c == '(') {
+                ++balance;
+            } else {
+                --balance;
+            }
+            if (balance < 0) {
+                return false;
+            }
+        }
+        return balance == 0;
+    }
+
+    void generate_all(string& current, int n, vector<string>& result) {
+        if (n == current.size()) {
+            if (valid(current)) {
+                result.push_back(current);
+            }
+            return;
+        }
+        current += '(';
+        generate_all(current, n, result);
+        current.pop_back();
+        current += ')';
+        generate_all(current, n, result);
+        current.pop_back();
+    }
+public:
+    vector<string> generateParenthesis(int n) {
+        vector<string> result;
+        string current;
+        generate_all(current, n * 2, result);
+        return result;
+    }
+};
+
+// 方法二：回溯法
+class Solution {
+    void backtrack(vector<string>& ans, string& cur, int open, int close, int n) {
+        if (cur.size() == n * 2) {
+            ans.push_back(cur);
+            return;
+        }
+        if (open < n) {
+            cur.push_back('(');
+            backtrack(ans, cur, open + 1, close, n);
+            cur.pop_back();
+        }
+        if (close < open) {
+            cur.push_back(')');
+            backtrack(ans, cur, open, close + 1, n);
+            cur.pop_back();
+        }
+    }
+public:
+    vector<string> generateParenthesis(int n) {
+        vector<string> result;
+        string current;
+        backtrack(result, current, 0, 0, n);
+        return result;
+    }
+};
+
+// 方法三：按括号序列的长度递归
+class Solution {
+    shared_ptr<vector<string>> cache[100] = {nullptr};
+public:
+    shared_ptr<vector<string>> generate(int n) {
+        if (cache[n] != nullptr)
+            return cache[n];
+        if (n == 0) {
+            cache[0] = shared_ptr<vector<string>>(new vector<string>{""});
+        } else {
+            auto result = shared_ptr<vector<string>>(new vector<string>);
+            for (int i = 0; i != n; ++i) {
+                auto lefts = generate(i);
+                auto rights = generate(n - i - 1);
+                for (const string& left : *lefts)
+                    for (const string& right : *rights)
+                        result -> push_back("(" + left + ")" + right);
+            }
+            cache[n] = result;
+        }
+        return cache[n];
+    }
+    vector<string> generateParenthesis(int n) {
+        return *generate(n);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：暴力法
+class Solution {
+    public List<String> generateParenthesis(int n) {
+        List<String> combinations = new ArrayList<String>();
+        generateAll(new char[2 * n], 0, combinations);
+        return combinations;
+    }
+
+    public void generateAll(char[] current, int pos, List<String> result) {
+        if (pos == current.length) {
+            if (valid(current)) {
+                result.add(new String(current));
+            }
+        } else {
+            current[pos] = '(';
+            generateAll(current, pos + 1, result);
+            current[pos] = ')';
+            generateAll(current, pos + 1, result);
+        }
+    }
+
+    public boolean valid(char[] current) {
+        int balance = 0;
+        for (char c: current) {
+            if (c == '(') {
+                ++balance;
+            } else {
+                --balance;
+            }
+            if (balance < 0) {
+                return false;
+            }
+        }
+        return balance == 0;
+    }
+}
+
+// 方法二：回溯法
+class Solution {
+    public List<String> generateParenthesis(int n) {
+        List<String> ans = new ArrayList<String>();
+        backtrack(ans, new StringBuilder(), 0, 0, n);
+        return ans;
+    }
+
+    public void backtrack(List<String> ans, StringBuilder cur, int open, int close, int max) {
+        if (cur.length() == max * 2) {
+            ans.add(cur.toString());
+            return;
+        }
+        if (open < max) {
+            cur.append('(');
+            backtrack(ans, cur, open + 1, close, max);
+            cur.deleteCharAt(cur.length() - 1);
+        }
+        if (close < open) {
+            cur.append(')');
+            backtrack(ans, cur, open, close + 1, max);
+            cur.deleteCharAt(cur.length() - 1);
+        }
+    }
+}
+
+// 方法三：按括号序列的长度递归
+class Solution {
+    ArrayList[] cache = new ArrayList[100];
+
+    public List<String> generate(int n) {
+        if (cache[n] != null) {
+            return cache[n];
+        }
+        ArrayList<String> ans = new ArrayList<String>();
+        if (n == 0) {
+            ans.add("");
+        } else {
+            for (int c = 0; c < n; ++c) {
+                for (String left: generate(c)) {
+                    for (String right: generate(n - 1 - c)) {
+                        ans.add("(" + left + ")" + right);
+                    }
+                }
+            }
+        }
+        cache[n] = ans;
+        return ans;
+    }
+
+    public List<String> generateParenthesis(int n) {
+        return generate(n);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
