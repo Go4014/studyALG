@@ -837,7 +837,308 @@ class Solution {
 
 
 
+### [17. 电话号码的字母组合](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/)
 
+中等
+
+给定一个仅包含数字 `2-9` 的字符串，返回所有它能表示的字母组合。答案可以按 **任意顺序** 返回。
+
+给出数字到字母的映射如下（与电话按键相同）。注意 1 不对应任何字母。
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2021/11/09/200px-telephone-keypad2svg.png)
+
+**示例 1：**
+
+```
+输入：digits = "23"
+输出：["ad","ae","af","bd","be","bf","cd","ce","cf"]
+```
+
+C++版本
+
+```c++
+// 方法一：回溯
+class Solution {
+public:
+    vector<string> letterCombinations(string digits) {
+        vector<string> combinations;
+        if (digits.empty()) {
+            return combinations;
+        }
+        unordered_map<char, string> phoneMap{
+            {'2', "abc"},
+            {'3', "def"},
+            {'4', "ghi"},
+            {'5', "jkl"},
+            {'6', "mno"},
+            {'7', "pqrs"},
+            {'8', "tuv"},
+            {'9', "wxyz"}
+        };
+        string combination;
+        backtrack(combinations, phoneMap, digits, 0, combination);
+        return combinations;
+    }
+
+    void backtrack(vector<string>& combinations, const unordered_map<char, string>& phoneMap, const string& digits, int index, string& combination) {
+        if (index == digits.length()) {
+            combinations.push_back(combination);
+        } else {
+            char digit = digits[index];
+            const string& letters = phoneMap.at(digit);
+            for (const char& letter: letters) {
+                combination.push_back(letter);
+                backtrack(combinations, phoneMap, digits, index + 1, combination);
+                combination.pop_back();
+            }
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：回溯
+class Solution {
+    public List<String> letterCombinations(String digits) {
+        List<String> combinations = new ArrayList<String>();
+        if (digits.length() == 0) {
+            return combinations;
+        }
+        Map<Character, String> phoneMap = new HashMap<Character, String>() {{
+            put('2', "abc");
+            put('3', "def");
+            put('4', "ghi");
+            put('5', "jkl");
+            put('6', "mno");
+            put('7', "pqrs");
+            put('8', "tuv");
+            put('9', "wxyz");
+        }};
+        backtrack(combinations, phoneMap, digits, 0, new StringBuffer());
+        return combinations;
+    }
+
+    public void backtrack(List<String> combinations, Map<Character, String> phoneMap, String digits, int index, StringBuffer combination) {
+        if (index == digits.length()) {
+            combinations.add(combination.toString());
+        } else {
+            char digit = digits.charAt(index);
+            String letters = phoneMap.get(digit);
+            int lettersCount = letters.length();
+            for (int i = 0; i < lettersCount; i++) {
+                combination.append(letters.charAt(i));
+                backtrack(combinations, phoneMap, digits, index + 1, combination);
+                combination.deleteCharAt(index);
+            }
+        }
+    }
+}
+
+// 回溯
+class Solution {
+    // 定义全局变量
+    List<String> res = new ArrayList<>();
+    StringBuilder sb = new StringBuilder();
+    public List<String> letterCombinations(String digits) {
+        if(digits.length() == 0 || digits == null) return res;
+        // 各个数字对应的字母组合
+        String []string = {"", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+        backTracking(digits,string,0);
+        return res;
+    }
+    // 回溯的返回值一般为0
+    private void backTracking(String digits, String[] string, int num){
+        if(num == digits.length()){ // 终止条件
+            res.add(sb.toString()); // 存放结果
+            return;
+        }
+        String nowNumString = string[digits.charAt(num) - '0']; // 现在的数字对应的字符串
+        for(int i = 0 ; i < nowNumString.length() ;i++){        // 选择本层集合中的元素
+            sb.append(nowNumString.charAt(i));                  // 处理节点
+            backTracking(digits, string, num + 1);              // 回溯
+            sb.deleteCharAt(sb.length() - 1);                   // 撤销此次处理结果
+        }
+    }
+}
+```
+
+
+
+### [784. 字母大小写全排列](https://leetcode.cn/problems/letter-case-permutation/)
+
+中等
+
+给定一个字符串 `s` ，通过将字符串 `s` 中的每个字母转变大小写，我们可以获得一个新的字符串。
+
+返回 *所有可能得到的字符串集合* 。以 **任意顺序** 返回输出。
+
+**示例 1：**
+
+```
+输入：s = "a1b2"
+输出：["a1b2", "a1B2", "A1b2", "A1B2"]
+```
+
+C++版本
+
+```c++
+// 方法一：广度优先搜索
+class Solution {
+public:
+    vector<string> letterCasePermutation(string s) {
+        vector<string> ans;
+        queue<string> qu;
+        qu.emplace("");
+        while (!qu.empty()) {
+            string &curr = qu.front();
+            if (curr.size() == s.size()) {
+                ans.emplace_back(curr);
+                qu.pop();
+            } else {
+                int pos = curr.size();
+                if (isalpha(s[pos])) {
+                    string next = curr;
+                    next.push_back(s[pos] ^ 32);
+                    qu.emplace(next);
+                }
+                curr.push_back(s[pos]);                
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：回溯
+class Solution {
+public:
+    void dfs(string &s, int pos, vector<string> &res) {
+        while (pos < s.size() && isdigit(s[pos])) {
+            pos++;
+        }
+        if (pos == s.size()) {
+            res.emplace_back(s);
+            return;
+        }
+        s[pos] ^= 32;
+        dfs(s, pos + 1, res);
+        s[pos] ^= 32;
+        dfs(s, pos + 1, res);
+    }
+
+    vector<string> letterCasePermutation(string s) {
+        vector<string> ans;
+        dfs(s, 0, ans);
+        return ans;
+    }
+};
+
+// 方法三：二进制位图
+class Solution {
+public:
+    vector<string> letterCasePermutation(string s) {
+        int n = s.size();
+        int m = 0;
+        for (auto c : s) {
+            if (isalpha(c)) {
+                m++;
+            }
+        }
+        vector<string> ans;
+        for (int mask = 0; mask < (1 << m); mask++) {
+            string str;
+            for (int j = 0, k = 0; j < n; j++) {
+                if (isalpha(s[j]) && (mask & (1 << k++))) {
+                    str.push_back(toupper(s[j]));
+                } else {
+                    str.push_back(tolower(s[j]));
+                }
+            }
+            ans.emplace_back(str);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：广度优先搜索
+class Solution {
+    public List<String> letterCasePermutation(String s) {
+        List<String> ans = new ArrayList<String>();
+        Queue<StringBuilder> queue = new ArrayDeque<StringBuilder>();
+        queue.offer(new StringBuilder());
+        while (!queue.isEmpty()) {
+            StringBuilder curr = queue.peek();
+            if (curr.length() == s.length()) {
+                ans.add(curr.toString());
+                queue.poll();
+            } else {
+                int pos = curr.length();
+                if (Character.isLetter(s.charAt(pos))) {
+                    StringBuilder next = new StringBuilder(curr);
+                    next.append((char) (s.charAt(pos) ^ 32));
+                    queue.offer(next);
+                }
+                curr.append(s.charAt(pos));
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：回溯
+class Solution {
+    public List<String> letterCasePermutation(String s) {
+        List<String> ans = new ArrayList<String>();
+        dfs(s.toCharArray(), 0, ans);
+        return ans;
+    }
+
+    public void dfs(char[] arr, int pos, List<String> res) {
+        while (pos < arr.length && Character.isDigit(arr[pos])) {
+            pos++;
+        }
+        if (pos == arr.length) {
+            res.add(new String(arr));
+            return;
+        }
+        arr[pos] ^= 32;
+        dfs(arr, pos + 1, res);
+        arr[pos] ^= 32;
+        dfs(arr, pos + 1, res);
+    }
+}
+
+// 方法三：二进制位图
+class Solution {
+    public List<String> letterCasePermutation(String s) {
+        int n = s.length();
+        int m = 0;
+        for (int i = 0; i < n; i++) {
+            if (Character.isLetter(s.charAt(i))) {
+                m++;
+            }
+        }
+        List<String> ans = new ArrayList<String>();
+        for (int mask = 0; mask < (1 << m); mask++) {
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0, k = 0; j < n; j++) {
+                if (Character.isLetter(s.charAt(j)) && (mask & (1 << k++)) != 0) {
+                    sb.append(Character.toUpperCase(s.charAt(j)));
+                } else {
+                    sb.append(Character.toLowerCase(s.charAt(j)));
+                }
+            }
+            ans.add(sb.toString());
+        }
+        return ans;
+    }
+}
+```
 
 
 
