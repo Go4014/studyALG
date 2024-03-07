@@ -941,21 +941,23 @@ class Solution {
     // 定义全局变量
     List<String> res = new ArrayList<>();
     StringBuilder sb = new StringBuilder();
+    
     public List<String> letterCombinations(String digits) {
         if(digits.length() == 0 || digits == null) return res;
         // 各个数字对应的字母组合
         String []string = {"", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
-        backTracking(digits,string,0);
+        backTracking(digits, string, 0);
         return res;
     }
+    
     // 回溯的返回值一般为0
-    private void backTracking(String digits, String[] string, int num){
-        if(num == digits.length()){ // 终止条件
+    private void backTracking(String digits, String[] string, int num) {
+        if(num == digits.length()) { // 终止条件
             res.add(sb.toString()); // 存放结果
             return;
         }
         String nowNumString = string[digits.charAt(num) - '0']; // 现在的数字对应的字符串
-        for(int i = 0 ; i < nowNumString.length() ;i++){        // 选择本层集合中的元素
+        for(int i = 0; i < nowNumString.length(); i++) {        // 选择本层集合中的元素
             sb.append(nowNumString.charAt(i));                  // 处理节点
             backTracking(digits, string, num + 1);              // 回溯
             sb.deleteCharAt(sb.length() - 1);                   // 撤销此次处理结果
@@ -1142,7 +1144,209 @@ class Solution {
 
 
 
+### [39. 组合总和](https://leetcode.cn/problems/combination-sum/)
 
+中等
+
+给你一个 **无重复元素** 的整数数组 `candidates` 和一个目标整数 `target` ，找出 `candidates` 中可以使数字和为目标数 `target` 的 所有 **不同组合** ，并以列表形式返回。你可以按 **任意顺序** 返回这些组合。
+
+`candidates` 中的 **同一个** 数字可以 **无限制重复被选取** 。如果至少一个数字的被选数量不同，则两种组合是不同的。 
+
+对于给定的输入，保证和为 `target` 的不同组合数少于 `150` 个。
+
+**示例 1：**
+
+```
+输入：candidates = [2,3,6,7], target = 7
+输出：[[2,2,3],[7]]
+解释：
+2 和 3 可以形成一组候选，2 + 2 + 3 = 7 。注意 2 可以使用多次。
+7 也是一个候选， 7 = 7 。
+仅有这两种组合。
+```
+
+C++版本
+
+```c++
+// 方法一：搜索回溯
+class Solution {
+public:
+    void dfs(vector<int>& candidates, int target, vector<vector<int>>& ans, vector<int>& combine, int idx) {
+        if (idx == candidates.size()) {
+            return;
+        }
+        if (target == 0) {
+            ans.emplace_back(combine);
+            return;
+        }
+        // 直接跳过
+        dfs(candidates, target, ans, combine, idx + 1);
+        // 选择当前数
+        if (target - candidates[idx] >= 0) {
+            combine.emplace_back(candidates[idx]);
+            dfs(candidates, target - candidates[idx], ans, combine, idx);
+            combine.pop_back();
+        }
+    }
+
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        vector<vector<int>> ans;
+        vector<int> combine;
+        dfs(candidates, target, ans, combine, 0);
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：搜索回溯
+class Solution {
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        List<List<Integer>> ans = new ArrayList<List<Integer>>();
+        List<Integer> combine = new ArrayList<Integer>();
+        dfs(candidates, target, ans, combine, 0);
+        return ans;
+    }
+
+    public void dfs(int[] candidates, int target, List<List<Integer>> ans, List<Integer> combine, int idx) {
+        if (idx == candidates.length) {
+            return;
+        }
+        if (target == 0) {
+            ans.add(new ArrayList<Integer>(combine));
+            return;
+        }
+        // 直接跳过
+        dfs(candidates, target, ans, combine, idx + 1);
+        // 选择当前数
+        if (target - candidates[idx] >= 0) {
+            combine.add(candidates[idx]);
+            dfs(candidates, target - candidates[idx], ans, combine, idx);
+            combine.remove(combine.size() - 1);
+        }
+    }
+}
+```
+
+
+
+### [40. 组合总和 II](https://leetcode.cn/problems/combination-sum-ii/)
+
+中等
+
+给定一个候选人编号的集合 `candidates` 和一个目标数 `target` ，找出 `candidates` 中所有可以使数字和为 `target` 的组合。
+
+`candidates` 中的每个数字在每个组合中只能使用 **一次** 。
+
+**注意：**解集不能包含重复的组合。 
+
+**示例 1:**
+
+```
+输入: candidates = [10,1,2,7,6,1,5], target = 8,
+输出:
+[
+[1,1,6],
+[1,2,5],
+[1,7],
+[2,6]
+]
+```
+
+C++版本
+
+```c++
+// 方法一：回溯
+class Solution {
+private:
+    vector<pair<int, int>> freq;
+    vector<vector<int>> ans;
+    vector<int> sequence;
+
+public:
+    void dfs(int pos, int rest) {
+        if (rest == 0) {
+            ans.push_back(sequence);
+            return;
+        }
+        if (pos == freq.size() || rest < freq[pos].first) {
+            return;
+        }
+
+        dfs(pos + 1, rest);
+
+        int most = min(rest / freq[pos].first, freq[pos].second);
+        for (int i = 1; i <= most; ++i) {
+            sequence.push_back(freq[pos].first);
+            dfs(pos + 1, rest - i * freq[pos].first);
+        }
+        for (int i = 1; i <= most; ++i) {
+            sequence.pop_back();
+        }
+    }
+
+    vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+        sort(candidates.begin(), candidates.end());
+        for (int num: candidates) {
+            if (freq.empty() || num != freq.back().first) {
+                freq.emplace_back(num, 1);
+            } else {
+                ++freq.back().second;
+            }
+        }
+        dfs(0, target);
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：回溯
+class Solution {
+    List<int[]> freq = new ArrayList<int[]>();
+    List<List<Integer>> ans = new ArrayList<List<Integer>>();
+    List<Integer> sequence = new ArrayList<Integer>();
+
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        Arrays.sort(candidates);
+        for (int num : candidates) {
+            int size = freq.size();
+            if (freq.isEmpty() || num != freq.get(size - 1)[0]) {
+                freq.add(new int[]{num, 1});
+            } else {
+                ++freq.get(size - 1)[1];
+            }
+        }
+        dfs(0, target);
+        return ans;
+    }
+
+    public void dfs(int pos, int rest) {
+        if (rest == 0) {
+            ans.add(new ArrayList<Integer>(sequence));
+            return;
+        }
+        if (pos == freq.size() || rest < freq.get(pos)[0]) {
+            return;
+        }
+
+        dfs(pos + 1, rest);
+
+        int most = Math.min(rest / freq.get(pos)[0], freq.get(pos)[1]);
+        for (int i = 1; i <= most; ++i) {
+            sequence.add(freq.get(pos)[0]);
+            dfs(pos + 1, rest - i * freq.get(pos)[0]);
+        }
+        for (int i = 1; i <= most; ++i) {
+            sequence.remove(sequence.size() - 1);
+        }
+    }
+}
+```
 
 
 
