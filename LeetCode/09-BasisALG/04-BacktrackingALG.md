@@ -1350,7 +1350,297 @@ class Solution {
 
 
 
+### [78. 子集](https://leetcode.cn/problems/subsets/)
 
+中等
+
+给你一个整数数组 `nums` ，数组中的元素 **互不相同** 。返回该数组所有可能的
+
+子集（幂集）。
+
+解集 **不能** 包含重复的子集。你可以按 **任意顺序** 返回解集。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3]
+输出：[[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]
+```
+
+C++版本
+
+```c++
+// 方法一：迭代法实现子集枚举
+class Solution {
+public:
+    vector<int> t;
+    vector<vector<int>> ans;
+
+    vector<vector<int>> subsets(vector<int>& nums) {
+        int n = nums.size();
+        for (int mask = 0; mask < (1 << n); ++mask) {
+            t.clear();
+            for (int i = 0; i < n; ++i) {
+                if (mask & (1 << i)) {
+                    t.push_back(nums[i]);
+                }
+            }
+            ans.push_back(t);
+        }
+        return ans;
+    }
+};
+
+// 方法二：递归法实现子集枚举
+class Solution {
+public:
+    vector<int> t;
+    vector<vector<int>> ans;
+
+    void dfs(int cur, vector<int>& nums) {
+        if (cur == nums.size()) {
+            ans.push_back(t);
+            return;
+        }
+        t.push_back(nums[cur]);
+        dfs(cur + 1, nums);
+        t.pop_back();
+        dfs(cur + 1, nums);
+    }
+
+    vector<vector<int>> subsets(vector<int>& nums) {
+        dfs(0, nums);
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：迭代法实现子集枚举
+class Solution {
+    List<Integer> t = new ArrayList<Integer>();
+    List<List<Integer>> ans = new ArrayList<List<Integer>>();
+
+    public List<List<Integer>> subsets(int[] nums) {
+        int n = nums.length;
+        for (int mask = 0; mask < (1 << n); ++mask) {
+            t.clear();
+            for (int i = 0; i < n; ++i) {
+                if ((mask & (1 << i)) != 0) {
+                    t.add(nums[i]);
+                }
+            }
+            ans.add(new ArrayList<Integer>(t));
+        }
+        return ans;
+    }
+}
+
+// 方法二：递归法实现子集枚举
+class Solution {
+    List<Integer> t = new ArrayList<Integer>();
+    List<List<Integer>> ans = new ArrayList<List<Integer>>();
+
+    public List<List<Integer>> subsets(int[] nums) {
+        dfs(0, nums);
+        return ans;
+    }
+
+    public void dfs(int cur, int[] nums) {
+        if (cur == nums.length) {
+            ans.add(new ArrayList<Integer>(t));
+            return;
+        }
+        t.add(nums[cur]);
+        dfs(cur + 1, nums);
+        t.remove(t.size() - 1);
+        dfs(cur + 1, nums);
+    }
+}
+```
+
+
+
+### [90. 子集 II](https://leetcode.cn/problems/subsets-ii/)
+
+中等
+
+给你一个整数数组 `nums` ，其中可能包含重复元素，请你返回该数组所有可能的<span data-keyword="subset">子集</span>（幂集）。
+
+解集 **不能** 包含重复的子集。返回的解集中，子集可以按 **任意顺序** 排列。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,2]
+输出：[[],[1],[1,2],[1,2,2],[2],[2,2]]
+```
+
+C++版本
+
+```c++
+// 方法一：迭代法实现子集枚举
+class Solution {
+public:
+    vector<int> t;
+    vector<vector<int>> ans;
+
+    vector<vector<int>> subsetsWithDup(vector<int> &nums) {
+        sort(nums.begin(), nums.end());
+        int n = nums.size();
+        for (int mask = 0; mask < (1 << n); ++mask) {
+            t.clear();
+            bool flag = true;
+            for (int i = 0; i < n; ++i) {
+                if (mask & (1 << i)) {
+                    if (i > 0 && (mask >> (i - 1) & 1) == 0 && nums[i] == nums[i - 1]) {
+                        flag = false;
+                        break;
+                    }
+                    t.push_back(nums[i]);
+                }
+            }
+            if (flag) {
+                ans.push_back(t);
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：递归法实现子集枚举
+class Solution {
+public:
+    vector<int> t;
+    vector<vector<int>> ans;
+
+    void dfs(bool choosePre, int cur, vector<int> &nums) {
+        if (cur == nums.size()) {
+            ans.push_back(t);
+            return;
+        }
+        dfs(false, cur + 1, nums);
+        if (!choosePre && cur > 0 && nums[cur - 1] == nums[cur]) {
+            return;
+        }
+        t.push_back(nums[cur]);
+        dfs(true, cur + 1, nums);
+        t.pop_back();
+    }
+
+    vector<vector<int>> subsetsWithDup(vector<int> &nums) {
+        sort(nums.begin(), nums.end());
+        dfs(false, 0, nums);
+        return ans;
+    }
+};
+
+// 递归方法二
+class Solution {
+    List<List<Integer>> res = new ArrayList<>(); 
+
+    public List<List<Integer>> subsets(int[] nums) {
+        backtrack(nums, 0, new ArrayList<>());
+        return res;
+    }
+
+    public void backtrack(int[] nums, int index, List<Integer> arr) {
+        res.add(new ArrayList<>(arr));
+        if(index == nums.length) return;
+
+        for(int i = index; i < nums.length; i++) {
+            arr.add(nums[i]);
+            backtrack(nums, i + 1, arr);
+            arr.remove(arr.size() - 1);
+        }
+    }
+}
+```
+
+Java版本
+
+```java
+// 方法一：迭代法实现子集枚举
+class Solution {
+    List<Integer> t = new ArrayList<Integer>();
+    List<List<Integer>> ans = new ArrayList<List<Integer>>();
+
+    public List<List<Integer>> subsetsWithDup(int[] nums) {
+        Arrays.sort(nums);
+        int n = nums.length;
+        for (int mask = 0; mask < (1 << n); ++mask) {
+            t.clear();
+            boolean flag = true;
+            for (int i = 0; i < n; ++i) {
+                if ((mask & (1 << i)) != 0) {
+                    if (i > 0 && (mask >> (i - 1) & 1) == 0 && nums[i] == nums[i - 1]) {
+                        flag = false;
+                        break;
+                    }
+                    t.add(nums[i]);
+                }
+            }
+            if (flag) {
+                ans.add(new ArrayList<Integer>(t));
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：递归法实现子集枚举
+class Solution {
+    List<Integer> t = new ArrayList<Integer>();
+    List<List<Integer>> ans = new ArrayList<List<Integer>>();
+
+    public List<List<Integer>> subsetsWithDup(int[] nums) {
+        Arrays.sort(nums);
+        dfs(false, 0, nums);
+        return ans;
+    }
+
+    public void dfs(boolean choosePre, int cur, int[] nums) {
+        if (cur == nums.length) {
+            ans.add(new ArrayList<Integer>(t));
+            return;
+        }
+        dfs(false, cur + 1, nums);
+        if (!choosePre && cur > 0 && nums[cur - 1] == nums[cur]) {
+            return;
+        }
+        t.add(nums[cur]);
+        dfs(true, cur + 1, nums);
+        t.remove(t.size() - 1);
+    }
+}
+
+// 递归方法二
+class Solution {
+    List<List<Integer>> res = new ArrayList<>(); 
+
+    public List<List<Integer>> subsetsWithDup(int[] nums) {
+        Arrays.sort(nums);
+        backtrack(nums, 0, new ArrayList<>());
+        return res;
+    }
+
+    public void backtrack(int[] nums, int index, List<Integer> arr) {
+        res.add(new ArrayList<>(arr));
+        if(index == nums.length) return;
+
+        for(int i = index; i < nums.length; i++) {
+            if(i != index && nums[i] == nums[i-1]) {
+                continue;
+            }
+            arr.add(nums[i]);
+            backtrack(nums, i + 1, arr);
+            arr.remove(arr.size() - 1);
+        }
+    }
+}
+```
 
 
 
