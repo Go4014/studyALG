@@ -1644,6 +1644,233 @@ class Solution {
 
 
 
+### [473. 火柴拼正方形](https://leetcode.cn/problems/matchsticks-to-square/)
+
+中等
+
+你将得到一个整数数组 `matchsticks` ，其中 `matchsticks[i]` 是第 `i` 个火柴棒的长度。你要用 **所有的火柴棍** 拼成一个正方形。你 **不能折断** 任何一根火柴棒，但你可以把它们连在一起，而且每根火柴棒必须 **使用一次** 。
+
+如果你能使这个正方形，则返回 `true` ，否则返回 `false` 。
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2021/04/09/matchsticks1-grid.jpg)
+
+```
+输入: matchsticks = [1,1,2,2,2]
+输出: true
+解释: 能拼成一个边长为2的正方形，每边两根火柴。
+```
+
+C++版本
+
+```c++
+// 方法一：回溯
+class Solution {
+public:
+    bool dfs(int index, vector<int> &matchsticks, vector<int> &edges, int len) {
+        if (index == matchsticks.size()) {
+            return true;
+        }
+        for (int i = 0; i < edges.size(); i++) {
+            edges[i] += matchsticks[index];
+            if (edges[i] <= len && dfs(index + 1, matchsticks, edges, len)) {
+                return true;
+            }
+            edges[i] -= matchsticks[index];
+        }
+        return false;
+    }
+
+    bool makesquare(vector<int> &matchsticks) {
+        int totalLen = accumulate(matchsticks.begin(), matchsticks.end(), 0);
+        if (totalLen % 4 != 0) {
+            return false;
+        }
+        sort(matchsticks.begin(), matchsticks.end(), greater<int>()); // 减少搜索量
+
+        vector<int> edges(4);
+        return dfs(0, matchsticks, edges, totalLen / 4);
+    }
+};
+
+// 方法二：状态压缩 + 动态规划
+class Solution {
+public:
+    bool makesquare(vector<int>& matchsticks) {
+        int totalLen = accumulate(matchsticks.begin(), matchsticks.end(), 0);
+        if (totalLen % 4 != 0) {
+            return false;
+        }
+        int len = totalLen / 4, n = matchsticks.size();
+        vector<int> dp(1 << n, -1);
+        dp[0] = 0;
+        for (int s = 1; s < (1 << n); s++) {
+            for (int k = 0; k < n; k++) {
+                if ((s & (1 << k)) == 0) {
+                    continue;
+                }
+                int s1 = s & ~(1 << k);
+                if (dp[s1] >= 0 && dp[s1] + matchsticks[k] <= len) {
+                    dp[s] = (dp[s1] + matchsticks[k]) % len;
+                    break;
+                }
+            }
+        }
+        return dp[(1 << n) - 1] == 0;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：回溯
+class Solution {
+    public boolean makesquare(int[] matchsticks) {
+        int totalLen = Arrays.stream(matchsticks).sum();
+        if (totalLen % 4 != 0) {
+            return false;
+        }
+        Arrays.sort(matchsticks);
+        for (int i = 0, j = matchsticks.length - 1; i < j; i++, j--) {
+            int temp = matchsticks[i];
+            matchsticks[i] = matchsticks[j];
+            matchsticks[j] = temp;
+        }
+
+        int[] edges = new int[4];
+        return dfs(0, matchsticks, edges, totalLen / 4);
+    }
+
+    public boolean dfs(int index, int[] matchsticks, int[] edges, int len) {
+        if (index == matchsticks.length) {
+            return true;
+        }
+        for (int i = 0; i < edges.length; i++) {
+            edges[i] += matchsticks[index];
+            if (edges[i] <= len && dfs(index + 1, matchsticks, edges, len)) {
+                return true;
+            }
+            edges[i] -= matchsticks[index];
+        }
+        return false;
+    }
+}
+
+// 方法二：状态压缩 + 动态规划
+class Solution {
+    public boolean makesquare(int[] matchsticks) {
+        int totalLen = Arrays.stream(matchsticks).sum();
+        if (totalLen % 4 != 0) {
+            return false;
+        }
+        int len = totalLen / 4, n = matchsticks.length;
+        int[] dp = new int[1 << n];
+        Arrays.fill(dp, -1);
+        dp[0] = 0;
+        for (int s = 1; s < (1 << n); s++) {
+            for (int k = 0; k < n; k++) {
+                if ((s & (1 << k)) == 0) {
+                    continue;
+                }
+                int s1 = s & ~(1 << k);
+                if (dp[s1] >= 0 && dp[s1] + matchsticks[k] <= len) {
+                    dp[s] = (dp[s1] + matchsticks[k]) % len;
+                    break;
+                }
+            }
+        }
+        return dp[(1 << n) - 1] == 0;
+    }
+}
+```
+
+
+
+### [1593. 拆分字符串使唯一子字符串的数目最大](https://leetcode.cn/problems/split-a-string-into-the-max-number-of-unique-substrings/)
+
+中等
+
+给你一个字符串 `s` ，请你拆分该字符串，并返回拆分后唯一子字符串的最大数目。
+
+字符串 `s` 拆分后可以得到若干 **非空子字符串** ，这些子字符串连接后应当能够还原为原字符串。但是拆分出来的每个子字符串都必须是 **唯一的** 。
+
+注意：**子字符串** 是字符串中的一个连续字符序列。
+
+**示例 1：**
+
+```
+输入：s = "ababccc"
+输出：5
+解释：一种最大拆分方法为 ['a', 'b', 'ab', 'c', 'cc'] 。像 ['a', 'b', 'a', 'b', 'c', 'cc'] 这样拆分不满足题目要求，因为其中的 'a' 和 'b' 都出现了不止一次。
+```
+
+C++版本
+
+```c++
+// 方法一：回溯
+class Solution {
+public:
+    int maxSplit;
+
+    void backtrack(int index, int split, string &s, unordered_set<string> &us) {
+        int length = s.size();
+        if (index >= length) {
+            maxSplit = max(maxSplit, split);
+        } else {
+            for (int i = index; i < length; i++) {
+                string substr = s.substr(index, i - index + 1);
+                if (us.find(substr) == us.end()) {
+                    us.insert(substr);
+                    backtrack(i + 1, split + 1, s, us);
+                    us.erase(substr);
+                }
+            }
+        }
+    }
+
+    int maxUniqueSplit(string s) {
+        maxSplit = 1;
+        unordered_set<string> us;
+        backtrack(0, 0, s, us);
+        return maxSplit;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：回溯
+class Solution {
+    int maxSplit = 1;
+
+    public int maxUniqueSplit(String s) {
+        Set<String> set = new HashSet<String>();
+        backtrack(0, 0, s, set);
+        return maxSplit;
+    }
+
+    public void backtrack(int index, int split, String s, Set<String> set) {
+        int length = s.length();
+        if (index >= length) {
+            maxSplit = Math.max(maxSplit, split);
+        } else {
+            for (int i = index; i < length; i++) {
+                // 或 for (int i = index; i < length && set.size() + length-i > maxSplit; i++)
+                // 剪枝：剩余字符串的拆分加上当前集合大小已追不上当前最大拆分数 => set.size() + length-i > maxSplit 
+                String substr = s.substring(index, i + 1);
+                if (set.add(substr)) {
+                    backtrack(i + 1, split + 1, s, set);
+                    set.remove(substr);
+                }
+            }
+        }
+    }
+}
+```
+
 
 
 
