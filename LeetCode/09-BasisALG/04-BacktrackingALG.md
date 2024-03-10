@@ -1873,5 +1873,257 @@ class Solution {
 
 
 
+### [1079. 活字印刷](https://leetcode.cn/problems/letter-tile-possibilities/)
+
+中等
+
+你有一套活字字模 `tiles`，其中每个字模上都刻有一个字母 `tiles[i]`。返回你可以印出的非空字母序列的数目。
+
+**注意：**本题中，每个活字字模只能使用一次。
+
+**示例 1：**
+
+```
+输入："AAB"
+输出：8
+解释：可能的序列为 "A", "B", "AA", "AB", "BA", "AAB", "ABA", "BAA"。
+```
+
+C++版本
+
+```c++
+// 方法一：回溯
+class Solution {
+public:
+    int numTilePossibilities(string tiles) {
+        unordered_map<char, int> count;
+        set<char> tile;
+        int n = tiles.length();
+        for (char c : tiles) {
+            count[c]++;
+            tile.insert(c);
+        }
+        return dfs(count, tile, n) - 1;
+    }
+
+    int dfs(unordered_map<char, int>& count, set<char>& tile, int i) {
+        if (i == 0) {
+            return 1;
+        }
+        int res = 1;
+        for (char t : tile) {
+            if (count[t] > 0) {
+                count[t]--;
+                res += dfs(count, tile, i - 1);
+                count[t]++;
+            }
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：回溯
+class Solution {
+    public int numTilePossibilities(String tiles) {
+        Map<Character, Integer> count = new HashMap<>();
+        for (char t : tiles.toCharArray()) {
+            count.put(t, count.getOrDefault(t, 0) + 1);
+        }
+        Set<Character> tile = new HashSet<>(count.keySet());
+        return dfs(tiles.length(), count, tile) - 1;
+    }
+
+    private int dfs(int i, Map<Character, Integer> count, Set<Character> tile) {
+        if (i == 0) {
+            return 1;
+        }
+        int res = 1;
+        for (char t : tile) {
+            if (count.get(t) > 0) {
+                count.put(t, count.get(t) - 1);
+                res += dfs(i - 1, count, tile);
+                count.put(t, count.get(t) + 1);
+            }
+        }
+        return res;
+    }
+}
+
+// 回溯（代码二）
+class Solution {
+    private int sum = 0;
+
+    public int numTilePossibilities(String tiles) {
+        char[] tilesCharArray = tiles.toCharArray();
+        Arrays.sort(tilesCharArray);
+
+        backtrack(tilesCharArray, new boolean[tiles.length()], 0);
+
+        return sum;
+    }
+
+    private void backtrack(char[] tiles, boolean[] isUsed, int idx) {
+        if (idx == tiles.length) return;
+
+        for (int i = 0; i < tiles.length; i++) {
+            if (isUsed[i]) continue;
+            if (i - 1 >= 0 && tiles[i] == tiles[i-1] && !isUsed[i-1]) continue;
+
+            isUsed[i] = true;
+            sum++;
+            backtrack(tiles, isUsed, idx + 1);
+            isUsed[i] = false;
+        }
+    }
+}
+```
+
+
+
+### [93. 复原 IP 地址](https://leetcode.cn/problems/restore-ip-addresses/)
+
+中等
+
+**有效 IP 地址** 正好由四个整数（每个整数位于 `0` 到 `255` 之间组成，且不能含有前导 `0`），整数之间用 `'.'` 分隔。
+
+- 例如：`"0.1.2.201"` 和` "192.168.1.1"` 是 **有效** IP 地址，但是 `"0.011.255.245"`、`"192.168.1.312"` 和 `"192.168@1.1"` 是 **无效** IP 地址。
+
+给定一个只包含数字的字符串 `s` ，用以表示一个 IP 地址，返回所有可能的**有效 IP 地址**，这些地址可以通过在 `s` 中插入 `'.'` 来形成。你 **不能** 重新排序或删除 `s` 中的任何数字。你可以按 **任何** 顺序返回答案。
+
+**示例 1：**
+
+```
+输入：s = "25525511135"
+输出：["255.255.11.135","255.255.111.35"]
+```
+
+C++版本
+
+```c++
+// 方法一：回溯
+class Solution {
+private:
+    static constexpr int SEG_COUNT = 4;
+
+private:
+    vector<string> ans;
+    vector<int> segments;
+
+public:
+    void dfs(const string& s, int segId, int segStart) {
+        // 如果找到了 4 段 IP 地址并且遍历完了字符串，那么就是一种答案
+        if (segId == SEG_COUNT) {
+            if (segStart == s.size()) {
+                string ipAddr;
+                for (int i = 0; i < SEG_COUNT; ++i) {
+                    ipAddr += to_string(segments[i]);
+                    if (i != SEG_COUNT - 1) {
+                        ipAddr += ".";
+                    }
+                }
+                ans.push_back(move(ipAddr));
+            }
+            return;
+        }
+
+        // 如果还没有找到 4 段 IP 地址就已经遍历完了字符串，那么提前回溯
+        if (segStart == s.size()) {
+            return;
+        }
+
+        // 由于不能有前导零，如果当前数字为 0，那么这一段 IP 地址只能为 0
+        if (s[segStart] == '0') {
+            segments[segId] = 0;
+            dfs(s, segId + 1, segStart + 1);
+            return;
+        }
+
+        // 一般情况，枚举每一种可能性并递归
+        int addr = 0;
+        for (int segEnd = segStart; segEnd < s.size(); ++segEnd) {
+            addr = addr * 10 + (s[segEnd] - '0');
+            if (addr > 0 && addr <= 0xFF) {
+                segments[segId] = addr;
+                dfs(s, segId + 1, segEnd + 1);
+            } else {
+                break;
+            }
+        }
+    }
+
+    vector<string> restoreIpAddresses(string s) {
+        segments.resize(SEG_COUNT);
+        dfs(s, 0, 0);
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：回溯
+class Solution {
+    static final int SEG_COUNT = 4;
+    List<String> ans = new ArrayList<String>();
+    int[] segments = new int[SEG_COUNT];
+
+    public List<String> restoreIpAddresses(String s) {
+        segments = new int[SEG_COUNT];
+        dfs(s, 0, 0);
+        return ans;
+    }
+
+    public void dfs(String s, int segId, int segStart) {
+        // 如果找到了 4 段 IP 地址并且遍历完了字符串，那么就是一种答案
+        if (segId == SEG_COUNT) {
+            if (segStart == s.length()) {
+                StringBuffer ipAddr = new StringBuffer();
+                for (int i = 0; i < SEG_COUNT; ++i) {
+                    ipAddr.append(segments[i]);
+                    if (i != SEG_COUNT - 1) {
+                        ipAddr.append('.');
+                    }
+                }
+                ans.add(ipAddr.toString());
+            }
+            return;
+        }
+
+        // 如果还没有找到 4 段 IP 地址就已经遍历完了字符串，那么提前回溯
+        if (segStart == s.length()) {
+            return;
+        }
+
+        // 由于不能有前导零，如果当前数字为 0，那么这一段 IP 地址只能为 0
+        if (s.charAt(segStart) == '0') {
+            segments[segId] = 0;
+            dfs(s, segId + 1, segStart + 1);
+            return;
+        }
+
+        // 一般情况，枚举每一种可能性并递归
+        int addr = 0;
+        for (int segEnd = segStart; segEnd < s.length(); ++segEnd) {
+            addr = addr * 10 + (s.charAt(segEnd) - '0');
+            if (addr > 0 && addr <= 0xFF) {
+                segments[segId] = addr;
+                dfs(s, segId + 1, segEnd + 1);
+            } else {
+                break;
+            }
+        }
+    }
+}
+```
+
+
+
+
+
 
 
