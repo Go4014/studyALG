@@ -161,9 +161,242 @@ class Solution {
 
 
 
+### [56. 合并区间](https://leetcode.cn/problems/merge-intervals/)
+
+中等
+
+以数组 `intervals` 表示若干个区间的集合，其中单个区间为 `intervals[i] = [starti, endi]` 。请你合并所有重叠的区间，并返回 *一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间* 。
+
+**示例 1：**
+
+```
+输入：intervals = [[1,3],[2,6],[8,10],[15,18]]
+输出：[[1,6],[8,10],[15,18]]
+解释：区间 [1,3] 和 [2,6] 重叠, 将它们合并为 [1,6].
+```
+
+C++版本
+
+```c++
+// 方法一：排序
+class Solution {
+public:
+    vector<vector<int>> merge(vector<vector<int>>& intervals) {
+        if (intervals.size() == 0) {
+            return {};
+        }
+        sort(intervals.begin(), intervals.end());
+        vector<vector<int>> merged;
+        for (int i = 0; i < intervals.size(); ++i) {
+            int L = intervals[i][0], R = intervals[i][1];
+            if (!merged.size() || merged.back()[1] < L) {
+                merged.push_back({L, R});
+            }
+            else {
+                merged.back()[1] = max(merged.back()[1], R);
+            }
+        }
+        return merged;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：排序
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        if (intervals.length == 0) {
+            return new int[0][2];
+        }
+        Arrays.sort(intervals, new Comparator<int[]>() {
+            public int compare(int[] interval1, int[] interval2) {
+                return interval1[0] - interval2[0];
+            }
+        });
+        List<int[]> merged = new ArrayList<int[]>();
+        for (int i = 0; i < intervals.length; ++i) {
+            int L = intervals[i][0], R = intervals[i][1];
+            if (merged.size() == 0 || merged.get(merged.size() - 1)[1] < L) {
+                merged.add(new int[]{L, R});
+            } else {
+                merged.get(merged.size() - 1)[1] = Math.max(merged.get(merged.size() - 1)[1], R);
+            }
+        }
+        return merged.toArray(new int[merged.size()][]);
+    }
+}
+
+// 方法二
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        // 先使用数组，对各区间 按照起始点大小 排序
+        int max = Integer.MIN_VALUE;
+        int min = Integer.MAX_VALUE;
+        for (int[] ints : intervals) {
+            max = Math.max(ints[1], max);
+            min = Math.min(ints[0], min);
+        }
+        // min+index = ints[0]
+        // map数组存的是 每个区间起始点 对应的 最大的终止点
+        int[] map = new int[max - min + 1];
+        Arrays.fill(map, -1);
+        // 区间起始值相同, 则区最大右区间
+        for (int[] ints : intervals) {
+            int left = ints[0] - min;
+            map[left] = Math.max(map[left], ints[1]);
+        }
+
+        // 开始正常处理
+        LinkedList<int[]> res = new LinkedList<>();
+        for (int i = 0; i < map.length; i++) {
+            if (map[i] == -1) {
+                continue;
+            }
+            int left = i + min;
+            int right = map[i];
+            if (res.size() == 0 || left > res.getLast()[1]) {
+                // 当前区间的起始点，大于上一个区间的终止点，需要开辟一个新的区间
+                res.add(new int[]{left, right});
+            } else {
+                if (res.getLast()[1] < right) {
+                    // 当前区间的终止点 大于 上一个区间的终止点，需要更新区间的终止点
+                    res.getLast()[1] = right;
+                }
+            }
+        }
+        return res.toArray(new int[][]{});
+    }
+}
+```
 
 
 
+### [435. 无重叠区间](https://leetcode.cn/problems/non-overlapping-intervals/)
+
+中等
+
+给定一个区间的集合 `intervals` ，其中 `intervals[i] = [starti, endi]` 。返回 *需要移除区间的最小数量，使剩余区间互不重叠* 。
+
+**示例 1:**
+
+```
+输入: intervals = [[1,2],[2,3],[3,4],[1,3]]
+输出: 1
+解释: 移除 [1,3] 后，剩下的区间没有重叠。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int eraseOverlapIntervals(vector<vector<int>>& intervals) {
+        if (intervals.empty()) {
+            return 0;
+        }
+        
+        sort(intervals.begin(), intervals.end(), [](const auto& u, const auto& v) {
+            return u[0] < v[0];
+        });
+
+        int n = intervals.size();
+        vector<int> f(n, 1);
+        for (int i = 1; i < n; ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (intervals[j][1] <= intervals[i][0]) {
+                    f[i] = max(f[i], f[j] + 1);
+                }
+            }
+        }
+        return n - *max_element(f.begin(), f.end());
+    }
+};
+
+// 方法二：贪心
+class Solution {
+public:
+    int eraseOverlapIntervals(vector<vector<int>>& intervals) {
+        if (intervals.empty()) {
+            return 0;
+        }
+        
+        sort(intervals.begin(), intervals.end(), [](const auto& u, const auto& v) {
+            return u[1] < v[1];
+        });
+
+        int n = intervals.size();
+        int right = intervals[0][1];
+        int ans = 1;
+        for (int i = 1; i < n; ++i) {
+            if (intervals[i][0] >= right) {
+                ++ans;
+                right = intervals[i][1];
+            }
+        }
+        return n - ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int eraseOverlapIntervals(int[][] intervals) {
+        if (intervals.length == 0) {
+            return 0;
+        }
+        
+        Arrays.sort(intervals, new Comparator<int[]>() {
+            public int compare(int[] interval1, int[] interval2) {
+                return interval1[0] - interval2[0];
+            }
+        });
+
+        int n = intervals.length;
+        int[] f = new int[n];
+        Arrays.fill(f, 1);
+        for (int i = 1; i < n; ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (intervals[j][1] <= intervals[i][0]) {
+                    f[i] = Math.max(f[i], f[j] + 1);
+                }
+            }
+        }
+        return n - Arrays.stream(f).max().getAsInt();
+    }
+}
+
+// 方法二：贪心
+class Solution {
+    public int eraseOverlapIntervals(int[][] intervals) {
+        if (intervals.length == 0) {
+            return 0;
+        }
+        
+        Arrays.sort(intervals, new Comparator<int[]>() {
+            public int compare(int[] interval1, int[] interval2) {
+                return interval1[1] - interval2[1];
+            }
+        });
+
+        int n = intervals.length;
+        int right = intervals[0][1];
+        int ans = 1;
+        for (int i = 1; i < n; ++i) {
+            if (intervals[i][0] >= right) {
+                ++ans;
+                right = intervals[i][1];
+            }
+        }
+        return n - ans;
+    }
+}
+```
 
 
 
