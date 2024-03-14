@@ -400,6 +400,150 @@ class Solution {
 
 
 
+### [452. 用最少数量的箭引爆气球](https://leetcode.cn/problems/minimum-number-of-arrows-to-burst-balloons/)
+
+中等
+
+有一些球形气球贴在一堵用 XY 平面表示的墙面上。墙面上的气球记录在整数数组 `points` ，其中`points[i] = [xstart, xend]` 表示水平直径在 `xstart` 和 `xend`之间的气球。你不知道气球的确切 y 坐标。
+
+一支弓箭可以沿着 x 轴从不同点 **完全垂直** 地射出。在坐标 `x` 处射出一支箭，若有一个气球的直径的开始和结束坐标为 `x``start`，`x``end`， 且满足  `xstart ≤ x ≤ x``end`，则该气球会被 **引爆** 。可以射出的弓箭的数量 **没有限制** 。 弓箭一旦被射出之后，可以无限地前进。
+
+给你一个数组 `points` ，*返回引爆所有气球所必须射出的 **最小** 弓箭数* 。
+
+**示例 1：**
+
+```
+输入：points = [[10,16],[2,8],[1,6],[7,12]]
+输出：2
+解释：气球可以用2支箭来爆破:
+-在x = 6处射出箭，击破气球[2,8]和[1,6]。
+-在x = 11处发射箭，击破气球[10,16]和[7,12]。
+```
+
+C++版本
+
+```c++
+// 方法一：排序 + 贪心
+class Solution {
+public:
+    int findMinArrowShots(vector<vector<int>>& points) {
+        if (points.empty()) {
+            return 0;
+        }
+        sort(points.begin(), points.end(), [](const vector<int>& u, const vector<int>& v) {
+            return u[1] < v[1];
+        });
+        int pos = points[0][1];
+        int ans = 1;
+        for (const vector<int>& balloon: points) {
+            if (balloon[0] > pos) {
+                pos = balloon[1];
+                ++ans;
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：排序 + 贪心
+class Solution {
+    public int findMinArrowShots(int[][] points) {
+        if (points.length == 0) {
+            return 0;
+        }
+        Arrays.sort(points, new Comparator<int[]>() {
+            public int compare(int[] point1, int[] point2) {
+                if (point1[1] > point2[1]) {
+                    return 1;
+                } else if (point1[1] < point2[1]) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        });
+        int pos = points[0][1];
+        int ans = 1;
+        for (int[] balloon: points) {
+            if (balloon[0] > pos) {
+                pos = balloon[1];
+                ++ans;
+            }
+        }
+        return ans;
+    }
+}
+```
+
+
+
+### [55. 跳跃游戏](https://leetcode.cn/problems/jump-game/)
+
+中等
+
+给你一个非负整数数组 `nums` ，你最初位于数组的 **第一个下标** 。数组中的每个元素代表你在该位置可以跳跃的最大长度。
+
+判断你是否能够到达最后一个下标，如果可以，返回 `true` ；否则，返回 `false` 。
+
+**示例 1：**
+
+```
+输入：nums = [2,3,1,1,4]
+输出：true
+解释：可以先跳 1 步，从下标 0 到达下标 1, 然后再从下标 1 跳 3 步到达最后一个下标。
+```
+
+C++版本
+
+```c++
+// 方法一：贪心
+class Solution {
+public:
+    bool canJump(vector<int>& nums) {
+        int n = nums.size();
+        int rightmost = 0;
+        for (int i = 0; i < n; ++i) {
+            if (i <= rightmost) {
+                rightmost = max(rightmost, i + nums[i]);
+                if (rightmost >= n - 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：贪心
+public class Solution {
+    public boolean canJump(int[] nums) {
+        int n = nums.length;
+        int rightmost = 0;
+        for (int i = 0; i < n; ++i) {
+            if (i <= rightmost) {
+                rightmost = Math.max(rightmost, i + nums[i]);
+                if (rightmost >= n - 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
+```
+
+
+
+
+
 
 
 
