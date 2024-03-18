@@ -930,11 +930,316 @@ class Solution {
 
 
 
+### [1217. 玩筹码](https://leetcode.cn/problems/minimum-cost-to-move-chips-to-the-same-position/)
+
+简单
+
+有 `n` 个筹码。第 `i` 个筹码的位置是 `position[i]` 。
+
+我们需要把所有筹码移到同一个位置。在一步中，我们可以将第 `i` 个筹码的位置从 `position[i]` 改变为:
+
+- `position[i] + 2` 或 `position[i] - 2` ，此时 `cost = 0`
+- `position[i] + 1` 或 `position[i] - 1` ，此时 `cost = 1`
+
+返回将所有筹码移动到同一位置上所需要的 *最小代价* 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/08/15/chips_e1.jpg)
+
+```
+输入：position = [1,2,3]
+输出：1
+解释：第一步:将位置3的筹码移动到位置1，成本为0。
+第二步:将位置2的筹码移动到位置1，成本= 1。
+总成本是1。
+```
+
+C++版本
+
+```c++
+// 方法一：贪心
+class Solution {
+public:
+    int minCostToMoveChips(vector<int>& position) {
+        int even = 0, odd = 0;
+        for (int pos : position) {
+            if (pos % 2) {
+                odd++;
+            } else {
+                even++;
+            }
+        }
+        return min(odd, even);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：贪心
+class Solution {
+    public int minCostToMoveChips(int[] position) {
+        int even = 0, odd = 0;
+        for (int pos : position) {
+            if ((pos & 1) != 0) {
+                odd++;
+            } else {
+                even++;
+            }
+        }
+        return Math.min(odd, even);
+    }
+}
+```
 
 
 
+### [1247. 交换字符使得字符串相同](https://leetcode.cn/problems/minimum-swaps-to-make-strings-equal/)
+
+中等
+
+有两个长度相同的字符串 `s1` 和 `s2`，且它们其中 **只含有** 字符 `"x"` 和 `"y"`，你需要通过「交换字符」的方式使这两个字符串相同。
+
+每次「交换字符」的时候，你都可以在两个字符串中各选一个字符进行交换。
+
+交换只能发生在两个不同的字符串之间，绝对不能发生在同一个字符串内部。也就是说，我们可以交换 `s1[i]` 和 `s2[j]`，但不能交换 `s1[i]` 和 `s1[j]`。
+
+最后，请你返回使 `s1` 和 `s2` 相同的最小交换次数，如果没有方法能够使得这两个字符串相同，则返回 `-1` 。
+
+**示例 1：**
+
+```
+输入：s1 = "xx", s2 = "yy"
+输出：1
+解释：
+交换 s1[0] 和 s2[1]，得到 s1 = "yx"，s2 = "yx"。
+```
+
+C++版本
+
+```c++
+// 方法一：贪心
+class Solution {
+public:
+    int minimumSwap(string s1, string s2) {
+        int xy = 0, yx = 0;
+        int n = s1.size();
+        for (int i = 0; i < n; i++) {
+            char a = s1[i], b = s2[i];
+            if (a == 'x' and b == 'y') {
+                xy++;
+            }
+            if (a == 'y' and b == 'x') {
+                yx++;
+            }
+        }
+        if ((xy + yx) % 2 == 1) {
+            return -1;
+        }
+        return xy / 2 + yx / 2 + xy % 2 + yx % 2;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：贪心
+class Solution {
+    public int minimumSwap(String s1, String s2) {
+        int xy = 0, yx = 0;
+        int n = s1.length();
+        for (int i = 0; i < n; i++) {
+            char a = s1.charAt(i), b = s2.charAt(i);
+            if (a == 'x' && b == 'y') {
+                xy++;
+            }
+            if (a == 'y' && b == 'x') {
+                yx++;
+            }
+        }
+        if ((xy + yx) % 2 == 1) {
+            return -1;
+        }
+        return xy / 2 + yx / 2 + xy % 2 + yx % 2;
+    }
+}
+
+// 方法二
+class Solution {
+    public int minimumSwap(String s1, String s2) {
+        int x = 0, y = 0;
+        for(int i = 0; i < s1.length(); i++) {
+            char xc = s1.charAt(i), yc = s2.charAt(i);
+            if(xc != yc) {
+                if(xc == 'x') {
+                    x++;
+                } else {
+                    y++;
+                }
+            }
+        }
+        if((x + y) % 2 == 0) {
+            return x/2 + x%2 + y/2 + y%2;
+        }
+        return -1;
+    }
+}
+```
 
 
+
+### [1400. 构造 K 个回文字符串](https://leetcode.cn/problems/construct-k-palindrome-strings/)
+
+中等
+
+给你一个字符串 `s` 和一个整数 `k` 。请你用 `s` 字符串中 **所有字符** 构造 `k` 个非空 **回文串** 。
+
+如果你可以用 `s` 中所有字符构造 `k` 个回文字符串，那么请你返回 **True** ，否则返回 **False** 。
+
+**示例 1：**
+
+```
+输入：s = "annabelle", k = 2
+输出：true
+解释：可以用 s 中所有字符构造 2 个回文字符串。
+一些可行的构造方案包括："anna" + "elble"，"anbna" + "elle"，"anellena" + "b"
+```
+
+C++版本
+
+```c++
+// 方法一：找出可行的回文串个数
+class Solution {
+public:
+    bool canConstruct(string s, int k) {
+        // 右边界为字符串的长度
+        int right = s.size();
+        // 统计每个字符出现的次数
+        int occ[26] = {0};
+        for (char ch: s) {
+            ++occ[ch - 'a'];
+        }
+        // 左边界为出现奇数次字符的个数
+        int left = 0;
+        for (int i = 0; i < 26; ++i) {
+            if (occ[i] % 2 == 1) {
+                ++left;
+            }
+        }
+        // 注意没有出现奇数次的字符的特殊情况
+        left = max(left, 1);
+        return left <= k && k <= right;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：找出可行的回文串个数
+class Solution {
+    public boolean canConstruct(String s, int k) {
+        // 右边界为字符串的长度
+        int right = s.length();
+        // 统计每个字符出现的次数
+        int[] occ = new int[26];
+        for (int i = 0; i < right; ++i) {
+            ++occ[s.charAt(i) - 'a'];
+        }
+        // 左边界为出现奇数次字符的个数
+        int left = 0;
+        for (int i = 0; i < 26; ++i) {
+            if (occ[i] % 2 == 1) {
+                ++left;
+            }
+        }
+        // 注意没有出现奇数次的字符的特殊情况
+        left = Math.max(left, 1);
+        return left <= k && k <= right;
+    }
+}
+```
+
+
+
+### [921. 使括号有效的最少添加](https://leetcode.cn/problems/minimum-add-to-make-parentheses-valid/)
+
+中等
+
+只有满足下面几点之一，括号字符串才是有效的：
+
+- 它是一个空字符串，或者
+- 它可以被写成 `AB` （`A` 与 `B` 连接）, 其中 `A` 和 `B` 都是有效字符串，或者
+- 它可以被写作 `(A)`，其中 `A` 是有效字符串。
+
+给定一个括号字符串 `s` ，在每一次操作中，你都可以在字符串的任何位置插入一个括号
+
+- 例如，如果 `s = "()))"` ，你可以插入一个开始括号为 `"(()))"` 或结束括号为 `"())))"` 。
+
+返回 *为使结果字符串 `s` 有效而必须添加的最少括号数*。
+
+**示例 1：**
+
+```
+输入：s = "())"
+输出：1
+```
+
+C++版本
+
+```c++
+// 方法一：贪心
+class Solution {
+public:
+    int minAddToMakeValid(string s) {
+        int ans = 0;
+        int leftCount = 0;
+        for (auto &c : s) {
+            if (c == '(') {
+                leftCount++;
+            } else {
+                if (leftCount > 0) {
+                    leftCount--;
+                } else {
+                    ans++;
+                }
+            }
+        }
+        ans += leftCount;
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：贪心
+class Solution {
+    public int minAddToMakeValid(String s) {
+        int ans = 0;
+        int leftCount = 0;
+        int length = s.length();
+        for (int i = 0; i < length; i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                leftCount++;
+            } else {
+                if (leftCount > 0) {
+                    leftCount--;
+                } else {
+                    ans++;
+                }
+            }
+        }
+        ans += leftCount;
+        return ans;
+    }
+}
+```
 
 
 
