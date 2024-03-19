@@ -1243,5 +1243,157 @@ class Solution {
 
 
 
+### [1029. 两地调度](https://leetcode.cn/problems/two-city-scheduling/)
 
+中等
+
+公司计划面试 `2n` 人。给你一个数组 `costs` ，其中 `costs[i] = [aCosti, bCosti]` 。第 `i` 人飞往 `a` 市的费用为 `aCosti` ，飞往 `b` 市的费用为 `bCosti` 。
+
+返回将每个人都飞到 `a` 、`b` 中某座城市的最低费用，要求每个城市都有 `n` 人抵达**。**
+
+**示例 1：**
+
+```
+输入：costs = [[10,20],[30,200],[400,50],[30,20]]
+输出：110
+解释：
+第一个人去 a 市，费用为 10。
+第二个人去 a 市，费用为 30。
+第三个人去 b 市，费用为 50。
+第四个人去 b 市，费用为 20。
+
+最低总费用为 10 + 30 + 50 + 20 = 110，每个城市都有一半的人在面试。
+```
+
+C++版本
+
+```c++
+// 方法一：贪心
+class Solution {
+    public:
+    int twoCitySchedCost(vector<vector<int>>& costs) {
+        // Sort by a gain which company has 
+        // by sending a person to city A and not to city B
+        sort(begin(costs), end(costs),
+                [](const vector<int> &o1, const vector<int> &o2) {
+            return (o1[0] - o1[1] < o2[0] - o2[1]);
+        });
+
+        int total = 0;
+        int n = costs.size() / 2;
+        // To optimize the company expenses,
+        // send the first n persons to the city A
+        // and the others to the city B
+        for (int i = 0; i < n; ++i) total += costs[i][0] + costs[i + n][1];
+        return total;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：贪心
+class Solution {
+    public int twoCitySchedCost(int[][] costs) {
+      // Sort by a gain which company has 
+      // by sending a person to city A and not to city B
+      Arrays.sort(costs, new Comparator<int[]>() {
+          @Override
+          public int compare(int[] o1, int[] o2) {
+              return o1[0] - o1[1] - (o2[0] - o2[1]);
+          }
+      });
+
+      int total = 0;
+      int n = costs.length / 2;
+      // To optimize the company expenses,
+      // send the first n persons to the city A
+      // and the others to the city B
+      for (int i = 0; i < n; ++i) total += costs[i][0] + costs[i + n][1];
+      return total;
+    }
+}
+```
+
+
+
+### [1605. 给定行和列的和求可行矩阵](https://leetcode.cn/problems/find-valid-matrix-given-row-and-column-sums/)
+
+中等
+
+给你两个非负整数数组 `rowSum` 和 `colSum` ，其中 `rowSum[i]` 是二维矩阵中第 `i` 行元素的和， `colSum[j]` 是第 `j` 列元素的和。换言之你不知道矩阵里的每个元素，但是你知道每一行和每一列的和。
+
+请找到大小为 `rowSum.length x colSum.length` 的任意 **非负整数** 矩阵，且该矩阵满足 `rowSum` 和 `colSum` 的要求。
+
+请你返回任意一个满足题目要求的二维矩阵，题目保证存在 **至少一个** 可行矩阵。
+
+**示例 1：**
+
+```
+输入：rowSum = [3,8], colSum = [4,7]
+输出：[[3,0],
+      [1,7]]
+解释：
+第 0 行：3 + 0 = 3 == rowSum[0]
+第 1 行：1 + 7 = 8 == rowSum[1]
+第 0 列：3 + 1 = 4 == colSum[0]
+第 1 列：0 + 7 = 7 == colSum[1]
+行和列的和都满足题目要求，且所有矩阵元素都是非负的。
+另一个可行的矩阵为：[[1,2],
+                  [3,5]]
+```
+
+C++版本
+
+```c++
+// 方法一：贪心
+class Solution {
+public:
+    vector<vector<int>> restoreMatrix(vector<int>& rowSum, vector<int>& colSum) {
+        int n = rowSum.size(), m = colSum.size();
+        vector<vector<int>> matrix(n, vector<int>(m, 0));
+        int i = 0, j = 0;
+        while (i < n && j < m) {
+            int v = min(rowSum[i], colSum[j]);
+            matrix[i][j] = v;
+            rowSum[i] -= v;
+            colSum[j] -= v;
+            if (rowSum[i] == 0) {
+                ++i;
+            }
+            if (colSum[j] == 0) {
+                ++j;
+            }
+        }
+        return matrix;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：贪心
+class Solution {
+    public int[][] restoreMatrix(int[] rowSum, int[] colSum) {
+        int n = rowSum.length, m = colSum.length;
+        int[][] matrix = new int[n][m];
+        int i = 0, j = 0;
+        while (i < n && j < m) {
+            int v = Math.min(rowSum[i], colSum[j]);
+            matrix[i][j] = v;
+            rowSum[i] -= v;
+            colSum[j] -= v;
+            if (rowSum[i] == 0) {
+                ++i;
+            }
+            if (colSum[j] == 0) {
+                ++j;
+            }
+        }
+        return matrix;
+    }
+}
+```
 
