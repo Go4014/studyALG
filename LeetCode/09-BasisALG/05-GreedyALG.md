@@ -1397,3 +1397,234 @@ class Solution {
 }
 ```
 
+
+
+### [135. 分发糖果](https://leetcode.cn/problems/candy/)
+
+困难
+
+`n` 个孩子站成一排。给你一个整数数组 `ratings` 表示每个孩子的评分。
+
+你需要按照以下要求，给这些孩子分发糖果：
+
+- 每个孩子至少分配到 `1` 个糖果。
+- 相邻两个孩子评分更高的孩子会获得更多的糖果。
+
+请你给每个孩子分发糖果，计算并返回需要准备的 **最少糖果数目** 。
+
+**示例 1：**
+
+```
+输入：ratings = [1,0,2]
+输出：5
+解释：你可以分别给第一个、第二个、第三个孩子分发 2、1、2 颗糖果。
+```
+
+C++版本
+
+```c++
+// 方法一：两次遍历
+class Solution {
+public:
+    int candy(vector<int>& ratings) {
+        int n = ratings.size();
+        vector<int> left(n);
+        for (int i = 0; i < n; i++) {
+            if (i > 0 && ratings[i] > ratings[i - 1]) {
+                left[i] = left[i - 1] + 1;
+            } else {
+                left[i] = 1;
+            }
+        }
+        int right = 0, ret = 0;
+        for (int i = n - 1; i >= 0; i--) {
+            if (i < n - 1 && ratings[i] > ratings[i + 1]) {
+                right++;
+            } else {
+                right = 1;
+            }
+            ret += max(left[i], right);
+        }
+        return ret;
+    }
+};
+
+// 方法二：常数空间遍历
+class Solution {
+public:
+    int candy(vector<int>& ratings) {
+        int n = ratings.size();
+        int ret = 1;
+        int inc = 1, dec = 0, pre = 1;
+        for (int i = 1; i < n; i++) {
+            if (ratings[i] >= ratings[i - 1]) {
+                dec = 0;
+                pre = ratings[i] == ratings[i - 1] ? 1 : pre + 1;
+                ret += pre;
+                inc = pre;
+            } else {
+                dec++;
+                if (dec == inc) {
+                    dec++;
+                }
+                ret += dec;
+                pre = 1;
+            }
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：两次遍历
+class Solution {
+    public int candy(int[] ratings) {
+        int n = ratings.length;
+        int[] left = new int[n];
+        for (int i = 0; i < n; i++) {
+            if (i > 0 && ratings[i] > ratings[i - 1]) {
+                left[i] = left[i - 1] + 1;
+            } else {
+                left[i] = 1;
+            }
+        }
+        int right = 0, ret = 0;
+        for (int i = n - 1; i >= 0; i--) {
+            if (i < n - 1 && ratings[i] > ratings[i + 1]) {
+                right++;
+            } else {
+                right = 1;
+            }
+            ret += Math.max(left[i], right);
+        }
+        return ret;
+    }
+}
+
+// 方法二：常数空间遍历
+class Solution {
+    public int candy(int[] ratings) {
+        int n = ratings.length;
+        int ret = 1;
+        int inc = 1, dec = 0, pre = 1;
+        for (int i = 1; i < n; i++) {
+            if (ratings[i] >= ratings[i - 1]) {
+                dec = 0;
+                pre = ratings[i] == ratings[i - 1] ? 1 : pre + 1;
+                ret += pre;
+                inc = pre;
+            } else {
+                dec++;
+                if (dec == inc) {
+                    dec++;
+                }
+                ret += dec;
+                pre = 1;
+            }
+        }
+        return ret;
+    }
+}
+```
+
+
+
+### [134. 加油站](https://leetcode.cn/problems/gas-station/)
+
+中等
+
+在一条环路上有 `n` 个加油站，其中第 `i` 个加油站有汽油 `gas[i]` 升。
+
+你有一辆油箱容量无限的的汽车，从第 `i` 个加油站开往第 `i+1` 个加油站需要消耗汽油 `cost[i]` 升。你从其中的一个加油站出发，开始时油箱为空。
+
+给定两个整数数组 `gas` 和 `cost` ，如果你可以按顺序绕环路行驶一周，则返回出发时加油站的编号，否则返回 `-1` 。如果存在解，则 **保证** 它是 **唯一** 的。
+
+**示例 1:**
+
+```
+输入: gas = [1,2,3,4,5], cost = [3,4,5,1,2]
+输出: 3
+解释:
+从 3 号加油站(索引为 3 处)出发，可获得 4 升汽油。此时油箱有 = 0 + 4 = 4 升汽油
+开往 4 号加油站，此时油箱有 4 - 1 + 5 = 8 升汽油
+开往 0 号加油站，此时油箱有 8 - 2 + 1 = 7 升汽油
+开往 1 号加油站，此时油箱有 7 - 3 + 2 = 6 升汽油
+开往 2 号加油站，此时油箱有 6 - 4 + 3 = 5 升汽油
+开往 3 号加油站，你需要消耗 5 升汽油，正好足够你返回到 3 号加油站。
+因此，3 可为起始索引。
+```
+
+C++版本
+
+```c++
+// 方法一：一次遍历
+class Solution {
+public:
+    int canCompleteCircuit(vector<int>& gas, vector<int>& cost) {
+        int n = gas.size();
+        int i = 0;
+        while (i < n) {
+            int sumOfGas = 0, sumOfCost = 0;
+            int cnt = 0;
+            while (cnt < n) {
+                int j = (i + cnt) % n;
+                sumOfGas += gas[j];
+                sumOfCost += cost[j];
+                if (sumOfCost > sumOfGas) {
+                    break;
+                }
+                cnt++;
+            }
+            if (cnt == n) {
+                return i;
+            } else {
+                i = i + cnt + 1;
+            }
+        }
+        return -1;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：一次遍历
+class Solution {
+    public int canCompleteCircuit(int[] gas, int[] cost) {
+        int n = gas.length;
+        int i = 0;
+        while (i < n) {
+            int sumOfGas = 0, sumOfCost = 0;
+            int cnt = 0;
+            while (cnt < n) {
+                int j = (i + cnt) % n;
+                sumOfGas += gas[j];
+                sumOfCost += cost[j];
+                if (sumOfCost > sumOfGas) {
+                    break;
+                }
+                cnt++;
+            }
+            if (cnt == n) {
+                return i;
+            } else {
+                i = i + cnt + 1;
+            }
+        }
+        return -1;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
