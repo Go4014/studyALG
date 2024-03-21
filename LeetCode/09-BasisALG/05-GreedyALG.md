@@ -1314,6 +1314,24 @@ class Solution {
       return total;
     }
 }
+
+// 方法二
+class Solution {
+    public int twoCitySchedCost(int[][] costs) {
+        int totalCostForA = 0;
+        int[] refunds = new int[costs.length];
+        for (int i = 0; i < costs.length; i++) {
+            totalCostForA += costs[i][0];
+            refunds[i] = costs[i][0] - costs[i][1];
+        }
+        Arrays.sort(refunds);
+        int end = refunds.length / 2;
+        for (int i = refunds.length - 1; i >= end; i--) {
+            totalCostForA -= refunds[i];
+        }
+        return totalCostForA;
+    }
+}
 ```
 
 
@@ -1622,7 +1640,322 @@ class Solution {
 
 
 
+### [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
 
+中等
+
+给你一个整数数组 `nums` ，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+**子数组**
+
+是数组中的一个连续部分。
+
+**示例 1：**
+
+```
+输入：nums = [-2,1,-3,4,-1,2,1,-5,4]
+输出：6
+解释：连续子数组 [4,-1,2,1] 的和最大，为 6 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        int pre = 0, maxAns = nums[0];
+        for (const auto &x: nums) {
+            pre = max(pre + x, x);
+            maxAns = max(maxAns, pre);
+        }
+        return maxAns;
+    }
+};
+
+// 方法二：分治
+class Solution {
+public:
+    struct Status {
+        int lSum, rSum, mSum, iSum;
+    };
+
+    Status pushUp(Status l, Status r) {
+        int iSum = l.iSum + r.iSum;
+        int lSum = max(l.lSum, l.iSum + r.lSum);
+        int rSum = max(r.rSum, r.iSum + l.rSum);
+        int mSum = max(max(l.mSum, r.mSum), l.rSum + r.lSum);
+        return (Status) {lSum, rSum, mSum, iSum};
+    };
+
+    Status get(vector<int> &a, int l, int r) {
+        if (l == r) {
+            return (Status) {a[l], a[l], a[l], a[l]};
+        }
+        int m = (l + r) >> 1;
+        Status lSub = get(a, l, m);
+        Status rSub = get(a, m + 1, r);
+        return pushUp(lSub, rSub);
+    }
+
+    int maxSubArray(vector<int>& nums) {
+        return get(nums, 0, nums.size() - 1).mSum;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int maxSubArray(int[] nums) {
+        int pre = 0, maxAns = nums[0];
+        for (int x : nums) {
+            pre = Math.max(pre + x, x);
+            maxAns = Math.max(maxAns, pre);
+        }
+        return maxAns;
+    }
+}
+
+// 方法二：分治
+class Solution {
+    public class Status {
+        public int lSum, rSum, mSum, iSum;
+
+        public Status(int lSum, int rSum, int mSum, int iSum) {
+            this.lSum = lSum;
+            this.rSum = rSum;
+            this.mSum = mSum;
+            this.iSum = iSum;
+        }
+    }
+
+    public int maxSubArray(int[] nums) {
+        return getInfo(nums, 0, nums.length - 1).mSum;
+    }
+
+    public Status getInfo(int[] a, int l, int r) {
+        if (l == r) {
+            return new Status(a[l], a[l], a[l], a[l]);
+        }
+        int m = (l + r) >> 1;
+        Status lSub = getInfo(a, l, m);
+        Status rSub = getInfo(a, m + 1, r);
+        return pushUp(lSub, rSub);
+    }
+
+    public Status pushUp(Status l, Status r) {
+        int iSum = l.iSum + r.iSum;
+        int lSum = Math.max(l.lSum, l.iSum + r.lSum);
+        int rSum = Math.max(r.rSum, r.iSum + l.rSum);
+        int mSum = Math.max(Math.max(l.mSum, r.mSum), l.rSum + r.lSum);
+        return new Status(lSum, rSum, mSum, iSum);
+    }
+}
+```
+
+
+
+### [376. 摆动序列](https://leetcode.cn/problems/wiggle-subsequence/)
+
+中等
+
+如果连续数字之间的差严格地在正数和负数之间交替，则数字序列称为 **摆动序列 。**第一个差（如果存在的话）可能是正数或负数。仅有一个元素或者含两个不等元素的序列也视作摆动序列。
+
+- 例如， `[1, 7, 4, 9, 2, 5]` 是一个 **摆动序列** ，因为差值 `(6, -3, 5, -7, 3)` 是正负交替出现的。
+- 相反，`[1, 4, 7, 2, 5]` 和 `[1, 7, 4, 5, 5]` 不是摆动序列，第一个序列是因为它的前两个差值都是正数，第二个序列是因为它的最后一个差值为零。
+
+**子序列** 可以通过从原始序列中删除一些（也可以不删除）元素来获得，剩下的元素保持其原始顺序。
+
+给你一个整数数组 `nums` ，返回 `nums` 中作为 **摆动序列** 的 **最长子序列的长度** 。
+
+**示例 1：**
+
+```
+输入：nums = [1,7,4,9,2,5]
+输出：6
+解释：整个序列均为摆动序列，各元素之间的差值为 (6, -3, 5, -7, 3) 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int wiggleMaxLength(vector<int>& nums) {
+        int n = nums.size();
+        if (n < 2) {
+            return n;
+        }
+        vector<int> up(n), down(n);
+        up[0] = down[0] = 1;
+        for (int i = 1; i < n; i++) {
+            if (nums[i] > nums[i - 1]) {
+                up[i] = max(up[i - 1], down[i - 1] + 1);
+                down[i] = down[i - 1];
+            } else if (nums[i] < nums[i - 1]) {
+                up[i] = up[i - 1];
+                down[i] = max(up[i - 1] + 1, down[i - 1]);
+            } else {
+                up[i] = up[i - 1];
+                down[i] = down[i - 1];
+            }
+        }
+        return max(up[n - 1], down[n - 1]);
+    }
+};
+
+// 方法二：优化的动态规划
+class Solution {
+public:
+    int wiggleMaxLength(vector<int>& nums) {
+        int n = nums.size();
+        if (n < 2) {
+            return n;
+        }
+        int up = 1, down = 1;
+        for (int i = 1; i < n; i++) {
+            if (nums[i] > nums[i - 1]) {
+                up = max(up, down + 1);
+            } else if (nums[i] < nums[i - 1]) {
+                down = max(up + 1, down);
+            }
+        }
+        return max(up, down);
+    }
+};
+
+class Solution {
+public:
+    int wiggleMaxLength(vector<int>& nums) {
+        int n = nums.size();
+        if (n < 2) {
+            return n;
+        }
+        int up = 1, down = 1;
+        for (int i = 1; i < n; i++) {
+            if (nums[i] > nums[i - 1]) {
+                up = down + 1;
+            } else if (nums[i] < nums[i - 1]) {
+                down = up + 1;
+            }
+        }
+        return max(up, down);
+    }
+};
+
+// 方法三：贪心
+class Solution {
+public:
+    int wiggleMaxLength(vector<int>& nums) {
+        int n = nums.size();
+        if (n < 2) {
+            return n;
+        }
+        int prevdiff = nums[1] - nums[0];
+        int ret = prevdiff != 0 ? 2 : 1;
+        for (int i = 2; i < n; i++) {
+            int diff = nums[i] - nums[i - 1];
+            if ((diff > 0 && prevdiff <= 0) || (diff < 0 && prevdiff >= 0)) {
+                ret++;
+                prevdiff = diff;
+            }
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int wiggleMaxLength(int[] nums) {
+        int n = nums.length;
+        if (n < 2) {
+            return n;
+        }
+        int[] up = new int[n];
+        int[] down = new int[n];
+        up[0] = down[0] = 1;
+        for (int i = 1; i < n; i++) {
+            if (nums[i] > nums[i - 1]) {
+                up[i] = Math.max(up[i - 1], down[i - 1] + 1);
+                down[i] = down[i - 1];
+            } else if (nums[i] < nums[i - 1]) {
+                up[i] = up[i - 1];
+                down[i] = Math.max(up[i - 1] + 1, down[i - 1]);
+            } else {
+                up[i] = up[i - 1];
+                down[i] = down[i - 1];
+            }
+        }
+        return Math.max(up[n - 1], down[n - 1]);
+    }
+}
+
+// 方法二：优化的动态规划
+class Solution {
+    public int wiggleMaxLength(int[] nums) {
+        int n = nums.length;
+        if (n < 2) {
+            return n;
+        }
+        int up = 1, down = 1;
+        for (int i = 1; i < n; i++) {
+            if (nums[i] > nums[i - 1]) {
+                up = Math.max(up, down + 1);
+            } else if (nums[i] < nums[i - 1]) {
+                down = Math.max(up + 1, down);
+            }
+        }
+        return Math.max(up, down);
+    }
+}
+
+class Solution {
+    public int wiggleMaxLength(int[] nums) {
+        int n = nums.length;
+        if (n < 2) {
+            return n;
+        }
+        int up = 1, down = 1;
+        for (int i = 1; i < n; i++) {
+            if (nums[i] > nums[i - 1]) {
+                up = down + 1;
+            } else if (nums[i] < nums[i - 1]) {
+                down = up + 1;
+            }
+        }
+        return Math.max(up, down);
+    }
+}
+
+// 方法三：贪心
+class Solution {
+    public int wiggleMaxLength(int[] nums) {
+        int n = nums.length;
+        if (n < 2) {
+            return n;
+        }
+        int prevdiff = nums[1] - nums[0];
+        int ret = prevdiff != 0 ? 2 : 1;
+        for (int i = 2; i < n; i++) {
+            int diff = nums[i] - nums[i - 1];
+            if ((diff > 0 && prevdiff <= 0) || (diff < 0 && prevdiff >= 0)) {
+                ret++;
+                prevdiff = diff;
+            }
+        }
+        return ret;
+    }
+}
+```
 
 
 
