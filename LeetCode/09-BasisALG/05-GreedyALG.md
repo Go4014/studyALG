@@ -1296,8 +1296,7 @@ Java版本
 // 方法一：贪心
 class Solution {
     public int twoCitySchedCost(int[][] costs) {
-      // Sort by a gain which company has 
-      // by sending a person to city A and not to city B
+      // 按两地路费差从小到大排序
       Arrays.sort(costs, new Comparator<int[]>() {
           @Override
           public int compare(int[] o1, int[] o2) {
@@ -1307,9 +1306,7 @@ class Solution {
 
       int total = 0;
       int n = costs.length / 2;
-      // To optimize the company expenses,
-      // send the first n persons to the city A
-      // and the others to the city B
+      // 前N个人去A区，后N个人区B区
       for (int i = 0; i < n; ++i) total += costs[i][0] + costs[i + n][1];
       return total;
     }
@@ -1319,15 +1316,19 @@ class Solution {
 class Solution {
     public int twoCitySchedCost(int[][] costs) {
         int totalCostForA = 0;
-        int[] refunds = new int[costs.length];
+        int[] refunds = new int[costs.length]; // A区与B区的价格差
         for (int i = 0; i < costs.length; i++) {
-            totalCostForA += costs[i][0];
-            refunds[i] = costs[i][0] - costs[i][1];
+            totalCostForA += costs[i][0]; // 所有人全部前往A区
+            refunds[i] = costs[i][0] - costs[i][1]; // 前往A区与前往B区的价格差
         }
+        
+        // 按两地路费差从小到大排序
         Arrays.sort(refunds);
+        
+        
         int end = refunds.length / 2;
         for (int i = refunds.length - 1; i >= end; i--) {
-            totalCostForA -= refunds[i];
+            totalCostForA -= refunds[i]; // 排序后的后N个人需要前往B区 => 去B去价格=去A区价格-(去A去价格-去B区价格)
         }
         return totalCostForA;
     }
@@ -1959,5 +1960,155 @@ class Solution {
 
 
 
+### [738. 单调递增的数字](https://leetcode.cn/problems/monotone-increasing-digits/)
 
+中等
+
+当且仅当每个相邻 “位数” 上的数字 `x` 和 `y` 满足 `x <= y` 时，我们称这个整数是**单调递增**的。
+
+给定一个整数 `n` ，返回 *小于或等于 `n` 的最大数字，且数字呈 **单调递增*** 。
+
+**示例 1:**
+
+```
+输入: n = 10
+输出: 9
+```
+
+C++版本
+
+```c++
+// 方法一：贪心
+class Solution {
+public:
+    int monotoneIncreasingDigits(int n) {
+        string strN = to_string(n);
+        int i = 1;
+        while (i < strN.length() && strN[i - 1] <= strN[i]) {
+            i += 1;
+        }
+        if (i < strN.length()) {
+            while (i > 0 && strN[i - 1] > strN[i]) {
+                strN[i - 1] -= 1;
+                i -= 1;
+            }
+            for (i += 1; i < strN.length(); ++i) {
+                strN[i] = '9';
+            }
+        }
+        return stoi(strN);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：贪心
+class Solution {
+    public int monotoneIncreasingDigits(int n) {
+        char[] strN = Integer.toString(n).toCharArray();
+        int i = 1;
+        while (i < strN.length && strN[i - 1] <= strN[i]) {
+            i += 1;
+        }
+        if (i < strN.length) {
+            while (i > 0 && strN[i - 1] > strN[i]) {
+                strN[i - 1] -= 1;
+                i -= 1;
+            }
+            for (i += 1; i < strN.length; ++i) {
+                strN[i] = '9';
+            }
+        }
+        return Integer.parseInt(new String(strN));
+    }
+}
+```
+
+
+
+### [402. 移掉 K 位数字](https://leetcode.cn/problems/remove-k-digits/)
+
+中等
+
+给你一个以字符串表示的非负整数 `num` 和一个整数 `k` ，移除这个数中的 `k` 位数字，使得剩下的数字最小。请你以字符串形式返回这个最小的数字。
+
+**示例 1 ：**
+
+```
+输入：num = "1432219", k = 3
+输出："1219"
+解释：移除掉三个数字 4, 3, 和 2 形成一个新的最小的数字 1219 。
+```
+
+C++版本
+
+```c++
+// 方法一：贪心 + 单调栈
+class Solution {
+public:
+    string removeKdigits(string num, int k) {
+        vector<char> stk;
+        for (auto& digit: num) {
+            while (stk.size() > 0 && stk.back() > digit && k) {
+                stk.pop_back();
+                k -= 1;
+            }
+            stk.push_back(digit);
+        }
+
+        for (; k > 0; --k) {
+            stk.pop_back();
+        }
+
+        string ans = "";
+        bool isLeadingZero = true;
+        for (auto& digit: stk) {
+            if (isLeadingZero && digit == '0') {
+                continue;
+            }
+            isLeadingZero = false;
+            ans += digit;
+        }
+        return ans == "" ? "0" : ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：贪心 + 单调栈
+class Solution {
+    public String removeKdigits(String num, int k) {
+        Deque<Character> deque = new LinkedList<Character>();
+        int length = num.length();
+        for (int i = 0; i < length; ++i) {
+            char digit = num.charAt(i);
+            while (!deque.isEmpty() && k > 0 && deque.peekLast() > digit) {
+                deque.pollLast();
+                k--;
+            }
+            deque.offerLast(digit);
+        }
+        
+        for (int i = 0; i < k; ++i) {
+            deque.pollLast();
+        }
+        
+        StringBuilder ret = new StringBuilder();
+        boolean leadingZero = true;
+        while (!deque.isEmpty()) {
+            char digit = deque.pollFirst();
+            if (leadingZero && digit == '0') {
+                continue;
+            }
+            leadingZero = false;
+            ret.append(digit);
+        }
+        return ret.length() == 0 ? "0" : ret.toString();
+    }
+}
+```
 
