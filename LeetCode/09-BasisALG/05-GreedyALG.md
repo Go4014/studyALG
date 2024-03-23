@@ -2112,3 +2112,202 @@ class Solution {
 }
 ```
 
+
+
+### [861. 翻转矩阵后的得分](https://leetcode.cn/problems/score-after-flipping-matrix/)
+
+中等
+
+给你一个大小为 `m x n` 的二元矩阵 `grid` ，矩阵中每个元素的值为 `0` 或 `1` 。
+
+一次 **移动** 是指选择任一行或列，并转换该行或列中的每一个值：将所有 `0` 都更改为 `1`，将所有 `1` 都更改为 `0`。
+
+在做出任意次数的移动后，将该矩阵的每一行都按照二进制数来解释，矩阵的 **得分** 就是这些数字的总和。
+
+在执行任意次 **移动** 后（含 0 次），返回可能的最高分数。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/07/23/lc-toogle1.jpg)
+
+```
+输入：grid = [[0,0,1,1],[1,0,1,0],[1,1,0,0]]
+输出：39
+解释：0b1111 + 0b1001 + 0b1111 = 15 + 9 + 15 = 39
+```
+
+C++版本
+
+```c++
+// 方法一：贪心
+class Solution {
+public:
+    int matrixScore(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        int ret = m * (1 << (n - 1));
+
+        for (int j = 1; j < n; j++) {
+            int nOnes = 0;
+            for (int i = 0; i < m; i++) {
+                if (grid[i][0] == 1) {
+                    nOnes += grid[i][j];
+                } else {
+                    nOnes += (1 - grid[i][j]); // 如果这一行进行了行反转，则该元素的实际取值为 1 - grid[i][j]
+                }
+            }
+            int k = max(nOnes, m - nOnes);
+            ret += k * (1 << (n - j - 1));
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：贪心
+class Solution {
+    public int matrixScore(int[][] grid) {
+        int m = grid.length, n = grid[0].length;
+        int ret = m * (1 << (n - 1));
+
+        for (int j = 1; j < n; j++) {
+            int nOnes = 0;
+            for (int i = 0; i < m; i++) {
+                if (grid[i][0] == 1) {
+                    nOnes += grid[i][j];
+                } else {
+                    nOnes += (1 - grid[i][j]); // 如果这一行进行了行反转，则该元素的实际取值为 1 - grid[i][j]
+                }
+            }
+            int k = Math.max(nOnes, m - nOnes);
+            ret += k * (1 << (n - j - 1));
+        }
+        return ret;
+    }
+}
+```
+
+
+
+### [670. 最大交换](https://leetcode.cn/problems/maximum-swap/)
+
+中等
+
+给定一个非负整数，你**至多**可以交换一次数字中的任意两位。返回你能得到的最大值。
+
+**示例 1 :**
+
+```
+输入: 2736
+输出: 7236
+解释: 交换数字2和数字7。
+```
+
+C++版本
+
+```c++
+// 方法一：直接遍历
+class Solution {
+public:
+    int maximumSwap(int num) {
+        string charArray = to_string(num);
+        int n = charArray.size();
+        int maxNum = num;
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                swap(charArray[i], charArray[j]);
+                maxNum = max(maxNum, stoi(charArray));
+                swap(charArray[i], charArray[j]);
+            }
+        }
+        return maxNum;
+    }
+};
+
+// 方法二：贪心
+class Solution {
+public:
+    int maximumSwap(int num) {
+        string charArray = to_string(num);
+        int n = charArray.size();
+        int maxIdx = n - 1;
+        int idx1 = -1, idx2 = -1;
+        for (int i = n - 1; i >= 0; i--) {
+            if (charArray[i] > charArray[maxIdx]) {
+                maxIdx = i;
+            } else if (charArray[i] < charArray[maxIdx]) {
+                idx1 = i;
+                idx2 = maxIdx;
+            }
+        }
+        if (idx1 >= 0) {
+            swap(charArray[idx1], charArray[idx2]);
+            return stoi(charArray);
+        } else {
+            return num;
+        }
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：直接遍历
+class Solution {
+    public int maximumSwap(int num) {
+        char[] charArray = String.valueOf(num).toCharArray();
+        int n = charArray.length;
+        int maxNum = num;
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                swap(charArray, i, j);
+                maxNum = Math.max(maxNum, Integer.parseInt(new String(charArray)));
+                swap(charArray, i, j);
+            }
+        }
+        return maxNum;
+    }
+
+    public void swap(char[] charArray, int i, int j) {
+        char temp = charArray[i];
+        charArray[i] = charArray[j];
+        charArray[j] = temp;
+    }
+}
+
+// 方法二：贪心
+class Solution {
+    public int maximumSwap(int num) {
+        char[] charArray = String.valueOf(num).toCharArray();
+        int n = charArray.length;
+        int maxIdx = n - 1;
+        int idx1 = -1, idx2 = -1;
+        for (int i = n - 1; i >= 0; i--) {
+            if (charArray[i] > charArray[maxIdx]) {
+                maxIdx = i;
+            } else if (charArray[i] < charArray[maxIdx]) {
+                idx1 = i;
+                idx2 = maxIdx;
+            }
+        }
+        if (idx1 >= 0) {
+            swap(charArray, idx1, idx2);
+            return Integer.parseInt(new String(charArray));
+        } else {
+            return num;
+        }
+    }
+
+    public void swap(char[] charArray, int i, int j) {
+        char temp = charArray[i];
+        charArray[i] = charArray[j];
+        charArray[j] = temp;
+    }
+}
+```
+
+
+
