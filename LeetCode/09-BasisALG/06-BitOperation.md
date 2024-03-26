@@ -325,5 +325,130 @@ class Solution {
 
 
 
+### [191. 位1的个数](https://leetcode.cn/problems/number-of-1-bits/)
 
+简单
+
+编写一个函数，输入是一个无符号整数（以二进制串的形式），返回其二进制表达式中数字位数为 '1' 的个数（也被称为[汉明重量](https://baike.baidu.com/item/汉明重量)）。
+
+**提示：**
+
+- 请注意，在某些语言（如 Java）中，没有无符号整数类型。在这种情况下，输入和输出都将被指定为有符号整数类型，并且不应影响您的实现，因为无论整数是有符号的还是无符号的，其内部的二进制表示形式都是相同的。
+- 在 Java 中，编译器使用[二进制补码](https://baike.baidu.com/item/二进制补码/5295284)记法来表示有符号整数。因此，在 **示例 3** 中，输入表示有符号整数 `-3`。
+
+**示例 1：**
+
+```
+输入：n = 00000000000000000000000000001011
+输出：3
+解释：输入的二进制串 00000000000000000000000000001011 中，共有三位为 '1'。
+```
+
+C++版本
+
+```c++
+// 方法一：循环检查二进制位
+class Solution {
+public:
+    int hammingWeight(uint32_t n) {
+        int ret = 0;
+        for (int i = 0; i < 32; i++) {
+            if (n & (1 << i)) {
+                ret++;
+            }
+        }
+        return ret;
+    }
+};
+
+// 方法二：位运算优化
+class Solution {
+public:
+    int hammingWeight(uint32_t n) {
+        int ret = 0;
+        while (n) {
+            n &= n - 1;
+            ret++;
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：循环检查二进制位
+public class Solution {
+    public int hammingWeight(int n) {
+        int ret = 0;
+        for (int i = 0; i < 32; i++) {
+            if ((n & (1 << i)) != 0) {
+                ret++;
+            }
+        }
+        return ret;
+    }
+}
+
+// 方法二：位运算优化
+public class Solution {
+    public int hammingWeight(int n) {
+        int ret = 0;
+        while (n != 0) {
+            n &= n - 1;
+            ret++;
+        }
+        return ret;
+    }
+}
+```
+
+
+
+### [371. 两整数之和](https://leetcode.cn/problems/sum-of-two-integers/)
+
+中等
+
+给你两个整数 `a` 和 `b` ，**不使用** 运算符 `+` 和 `-` ，计算并返回两整数之和。
+
+**示例 1：**
+
+```
+输入：a = 1, b = 2
+输出：3
+```
+
+C++版本
+
+```c++
+// 方法一：位运算
+class Solution {
+public:
+    int getSum(int a, int b) {
+        while (b != 0) {
+            unsigned int carry = (unsigned int)(a & b) << 1;
+            a = a ^ b;
+            b = carry;
+        }
+        return a;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：位运算
+class Solution {
+    public int getSum(int a, int b) {
+        while (b != 0) {
+            int carry = (a & b) << 1;
+            a = a ^ b;
+            b = carry;
+        }
+        return a;
+    }
+}
+```
 
