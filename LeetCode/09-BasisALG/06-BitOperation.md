@@ -452,3 +452,566 @@ class Solution {
 }
 ```
 
+
+
+### [338. 比特位计数](https://leetcode.cn/problems/counting-bits/)
+
+简单
+
+给你一个整数 `n` ，对于 `0 <= i <= n` 中的每个 `i` ，计算其二进制表示中 **`1` 的个数** ，返回一个长度为 `n + 1` 的数组 `ans` 作为答案。
+
+**示例 1：**
+
+```
+输入：n = 2
+输出：[0,1,1]
+解释：
+0 --> 0
+1 --> 1
+2 --> 10
+```
+
+C++版本
+
+```c++
+// 方法一：Brian Kernighan 算法：对于任意整数x，令x=x&(x−1)，该运算将x的二进制表示的最后一个1变成0。因此，对x重复该操作，直到x变成0，则操作次数即为x的「一比特数」。
+class Solution {
+public:
+    int countOnes(int x) {
+        int ones = 0;
+        while (x > 0) {
+            x &= (x - 1);
+            ones++;
+        }
+        return ones;
+    }
+
+    vector<int> countBits(int n) {
+        vector<int> bits(n + 1);
+        for (int i = 0; i <= n; i++) {
+            bits[i] = countOnes(i);
+        }
+        return bits;
+    }
+};
+
+// 方法二：动态规划——最高有效位
+class Solution {
+public:
+    vector<int> countBits(int n) {
+        vector<int> bits(n + 1);
+        int highBit = 0;
+        for (int i = 1; i <= n; i++) {
+            if ((i & (i - 1)) == 0) {
+                highBit = i;
+            }
+            bits[i] = bits[i - highBit] + 1;
+        }
+        return bits;
+    }
+};
+
+// 方法三：动态规划——最低有效位
+class Solution {
+public:
+    vector<int> countBits(int n) {
+        vector<int> bits(n + 1);
+        for (int i = 1; i <= n; i++) {
+            bits[i] = bits[i >> 1] + (i & 1);
+        }
+        return bits;
+    }
+};
+
+// 方法四：动态规划——最低设置位
+class Solution {
+public:
+    vector<int> countBits(int n) {
+        vector<int> bits(n + 1);
+        for (int i = 1; i <= n; i++) {
+            bits[i] = bits[i & (i - 1)] + 1;
+        }
+        return bits;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：Brian Kernighan 算法：对于任意整数x，令x=x&(x−1)，该运算将x的二进制表示的最后一个1变成0。因此，对x重复该操作，直到x变成0，则操作次数即为x的「一比特数」。
+class Solution {
+    public int[] countBits(int n) {
+        int[] bits = new int[n + 1];
+        for (int i = 0; i <= n; i++) {
+            bits[i] = countOnes(i);
+        }
+        return bits;
+    }
+
+    public int countOnes(int x) {
+        int ones = 0;
+        while (x > 0) {
+            x &= (x - 1);
+            ones++;
+        }
+        return ones;
+    }
+}
+
+// 方法二：动态规划——最高有效位
+class Solution {
+    public int[] countBits(int n) {
+        int[] bits = new int[n + 1];
+        int highBit = 0;
+        for (int i = 1; i <= n; i++) {
+            if ((i & (i - 1)) == 0) {
+                highBit = i;
+            }
+            bits[i] = bits[i - highBit] + 1;
+        }
+        return bits;
+    }
+}
+
+// 方法三：动态规划——最低有效位
+class Solution {
+    public int[] countBits(int n) {
+        int[] bits = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            bits[i] = bits[i >> 1] + (i & 1);
+        }
+        return bits;
+    }
+}
+
+// 方法四：动态规划——最低设置位
+class Solution {
+    public int[] countBits(int n) {
+        int[] bits = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            bits[i] = bits[i & (i - 1)] + 1;
+        }
+        return bits;
+    }
+}
+
+// 方法五
+class Solution {
+    public int[] countBits(int n) {
+        int[] rs = new int[n + 1];
+        bitChanger(1, 1, rs);
+        return rs;
+    }
+
+    public void bitChanger(int index, int bit, int[] rs) {
+        if (index >= rs.length) {
+            return;
+        }
+        rs[index] = bit;
+        bitChanger(index << 1, bit, rs);
+        bitChanger((index << 1) + 1, bit + 1, rs);
+    }
+}
+```
+
+
+
+### [136. 只出现一次的数字](https://leetcode.cn/problems/single-number/)
+
+简单
+
+给你一个 **非空** 整数数组 `nums` ，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
+
+你必须设计并实现线性时间复杂度的算法来解决此问题，且该算法只使用常量额外空间。
+
+**示例 1 ：**
+
+```
+输入：nums = [2,2,1]
+输出：1
+```
+
+C++版本
+
+```c++
+// 方法一：位运算
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int ret = 0;
+        for (auto e: nums) ret ^= e;
+        return ret;
+    }
+};
+
+/*
+异或运算有以下三个性质。
+1、任何数和 0 做异或运算，结果仍然是原来的数，即 a⊕0=a
+2、任何数和其自身做异或运算，结果是 0，即 a⊕a=0
+3、异或运算满足交换律和结合律，即 a⊕b⊕a = b⊕a⊕a = b⊕(a⊕a) = b⊕0 = b
+*/
+```
+
+Java版本
+
+```java
+// 方法一：位运算
+class Solution {
+    public int singleNumber(int[] nums) {
+        int single = 0;
+        for (int num : nums) {
+            single ^= num;
+        }
+        return single;
+    }
+}
+
+/*
+异或运算有以下三个性质。
+1、任何数和 0 做异或运算，结果仍然是原来的数，即 a⊕0=a
+2、任何数和其自身做异或运算，结果是 0，即 a⊕a=0
+3、异或运算满足交换律和结合律，即 a⊕b⊕a = b⊕a⊕a = b⊕(a⊕a) = b⊕0 = b
+*/
+```
+
+
+
+### [268. 丢失的数字](https://leetcode.cn/problems/missing-number/)
+
+简单
+
+给定一个包含 `[0, n]` 中 `n` 个数的数组 `nums` ，找出 `[0, n]` 这个范围内没有出现在数组中的那个数。
+
+**示例 1：**
+
+``` 
+输入：nums = [3,0,1]
+输出：2
+解释：n = 3，因为有 3 个数字，所以所有的数字都在范围 [0,3] 内。2 是丢失的数字，因为它没有出现在 nums 中。
+```
+
+C++版本
+
+```c++
+// 方法一：排序
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        sort(nums.begin(),nums.end());
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            if (nums[i] != i) {
+                return i;
+            }
+        }
+        return n;
+    }
+};
+
+// 方法二：哈希集合
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        unordered_set<int> set;
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            set.insert(nums[i]);
+        }
+        int missing = -1;
+        for (int i = 0; i <= n; i++) {
+            if (!set.count(i)) {
+                missing = i;
+                break;
+            }
+        }
+        return missing;
+    }
+};
+
+// 方法三：位运算：与上述题（只出现一次的数字）同理
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        int res = 0;
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            res ^= nums[i];
+        }
+        for (int i = 0; i <= n; i++) {
+            res ^= i;
+        }
+        return res;
+    }
+};
+
+// 方法四：数学
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        int n = nums.size();
+        int total = n * (n + 1) / 2; // 等差数列求和
+        int arrSum = 0;
+        for (int i = 0; i < n; i++) {
+            arrSum += nums[i];
+        }
+        return total - arrSum;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：排序
+class Solution {
+    public int missingNumber(int[] nums) {
+        Arrays.sort(nums);
+        int n = nums.length;
+        for (int i = 0; i < n; i++) {
+            if (nums[i] != i) {
+                return i;
+            }
+        }
+        return n;
+    }
+}
+
+// 方法二：哈希集合
+class Solution {
+    public int missingNumber(int[] nums) {
+        Set<Integer> set = new HashSet<Integer>();
+        int n = nums.length;
+        for (int i = 0; i < n; i++) {
+            set.add(nums[i]);
+        }
+        int missing = -1;
+        for (int i = 0; i <= n; i++) {
+            if (!set.contains(i)) {
+                missing = i;
+                break;
+            }
+        }
+        return missing;
+    }
+}
+
+// 方法三：位运算：与上述题（只出现一次的数字）同理
+class Solution {
+    public int missingNumber(int[] nums) {
+        int xor = 0;
+        int n = nums.length;
+        for (int i = 0; i < n; i++) {
+            xor ^= nums[i];
+        }
+        for (int i = 0; i <= n; i++) {
+            xor ^= i;
+        }
+        return xor;
+    }
+}
+
+// 方法四：数学
+class Solution {
+    public int missingNumber(int[] nums) {
+        int n = nums.length;
+        int total = n * (n + 1) / 2; // 等差数列求和
+        int arrSum = 0;
+        for (int i = 0; i < n; i++) {
+            arrSum += nums[i];
+        }
+        return total - arrSum;
+    }
+}
+```
+
+
+
+### [645. 错误的集合](https://leetcode.cn/problems/set-mismatch/)
+
+简单
+
+集合 `s` 包含从 `1` 到 `n` 的整数。不幸的是，因为数据错误，导致集合里面某一个数字复制了成了集合里面的另外一个数字的值，导致集合 **丢失了一个数字** 并且 **有一个数字重复** 。
+
+给定一个数组 `nums` 代表了集合 `S` 发生错误后的结果。
+
+请你找出重复出现的整数，再找到丢失的整数，将它们以数组的形式返回。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,2,4]
+输出：[2,3]
+```
+
+C++版本
+
+```c++
+// 方法一：排序
+class Solution {
+public:
+    vector<int> findErrorNums(vector<int>& nums) {
+        vector<int> errorNums(2);
+        int n = nums.size();
+        sort(nums.begin(), nums.end());
+        int prev = 0;
+        for (int i = 0; i < n; i++) {
+            int curr = nums[i];
+            if (curr == prev) {
+                errorNums[0] = prev;
+            } else if (curr - prev > 1) {
+                errorNums[1] = prev + 1;
+            }
+            prev = curr;
+        }
+        if (nums[n - 1] != n) {
+            errorNums[1] = n;
+        }
+        return errorNums;
+    }
+};
+
+// 方法二：哈希表
+class Solution {
+public:
+    vector<int> findErrorNums(vector<int>& nums) {
+        vector<int> errorNums(2);
+        int n = nums.size();
+        unordered_map<int, int> mp;
+        for (auto& num : nums) {
+            mp[num]++;
+        }
+        for (int i = 1; i <= n; i++) {
+            int count = mp[i];
+            if (count == 2) {
+                errorNums[0] = i;
+            } else if (count == 0) {
+                errorNums[1] = i;
+            }
+        }
+        return errorNums;
+    }
+};
+
+// 方法三：位运算
+class Solution {
+public:
+    vector<int> findErrorNums(vector<int>& nums) {
+        int n = nums.size();
+        int xorSum = 0;
+        for (int num : nums) {
+            xorSum ^= num;
+        }
+        for (int i = 1; i <= n; i++) {
+            xorSum ^= i;
+        }
+        int lowbit = xorSum & (-xorSum);
+        int num1 = 0, num2 = 0;
+        for (int &num : nums) {
+            if ((num & lowbit) == 0) {
+                num1 ^= num;
+            } else {
+                num2 ^= num;
+            }
+        }
+        for (int i = 1; i <= n; i++) {
+            if ((i & lowbit) == 0) {
+                num1 ^= i;
+            } else {
+                num2 ^= i;
+            }
+        }
+        for (int num : nums) {
+            if (num == num1) {
+                return vector<int>{num1, num2};
+            }
+        }
+        return vector<int>{num2, num1};
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：排序
+class Solution {
+    public int[] findErrorNums(int[] nums) {
+        int[] errorNums = new int[2];
+        int n = nums.length;
+        Arrays.sort(nums);
+        int prev = 0;
+        for (int i = 0; i < n; i++) {
+            int curr = nums[i];
+            if (curr == prev) {
+                errorNums[0] = prev;
+            } else if (curr - prev > 1) {
+                errorNums[1] = prev + 1;
+            }
+            prev = curr;
+        }
+        if (nums[n - 1] != n) {
+            errorNums[1] = n;
+        }
+        return errorNums;
+    }
+}
+
+// 方法二：哈希表
+class Solution {
+    public int[] findErrorNums(int[] nums) {
+        int[] errorNums = new int[2];
+        int n = nums.length;
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        for (int num : nums) {
+            map.put(num, map.getOrDefault(num, 0) + 1);
+        }
+        for (int i = 1; i <= n; i++) {
+            int count = map.getOrDefault(i, 0);
+            if (count == 2) {
+                errorNums[0] = i;
+            } else if (count == 0) {
+                errorNums[1] = i;
+            }
+        }
+        return errorNums;
+    }
+}
+
+// 方法三：位运算
+class Solution {
+    public int[] findErrorNums(int[] nums) {
+        int n = nums.length;
+        int xor = 0;
+        for (int num : nums) {
+            xor ^= num;
+        }
+        for (int i = 1; i <= n; i++) {
+            xor ^= i;
+        }
+        int lowbit = xor & (-xor);
+        int num1 = 0, num2 = 0;
+        for (int num : nums) {
+            if ((num & lowbit) == 0) {
+                num1 ^= num;
+            } else {
+                num2 ^= num;
+            }
+        }
+        for (int i = 1; i <= n; i++) {
+            if ((i & lowbit) == 0) {
+                num1 ^= i;
+            } else {
+                num2 ^= i;
+            }
+        }
+        for (int num : nums) {
+            if (num == num1) {
+                return new int[]{num1, num2};
+            }
+        }
+        return new int[]{num2, num1};
+    }
+}
+```
+
