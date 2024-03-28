@@ -12,7 +12,7 @@
 
 ```
 输入: num = 100
-输出: "202"。
+输出: "202"
 ```
 
 C++版本
@@ -1014,4 +1014,180 @@ class Solution {
     }
 }
 ```
+
+
+
+### [89. 格雷编码](https://leetcode.cn/problems/gray-code/)
+
+中等
+
+**n 位格雷码序列** 是一个由 `2n` 个整数组成的序列，其中：
+
+- 每个整数都在范围 `[0, 2n - 1]` 内（含 `0` 和 `2n - 1`）
+- 第一个整数是 `0`
+- 一个整数在序列中出现 **不超过一次**
+- 每对 **相邻** 整数的二进制表示 **恰好一位不同** ，且
+- **第一个** 和 **最后一个** 整数的二进制表示 **恰好一位不同**
+
+给你一个整数 `n` ，返回任一有效的 **n 位格雷码序列** 。
+
+**示例 1：**
+
+```
+输入：n = 2
+输出：[0,1,3,2]
+解释：
+[0,1,3,2] 的二进制表示是 [00,01,11,10] 。
+- 00 和 01 有一位不同
+- 01 和 11 有一位不同
+- 11 和 10 有一位不同
+- 10 和 00 有一位不同
+[0,2,3,1] 也是一个有效的格雷码序列，其二进制表示是 [00,10,11,01] 。
+- 00 和 10 有一位不同
+- 10 和 11 有一位不同
+- 11 和 01 有一位不同
+- 01 和 00 有一位不同
+```
+
+C++版本
+
+```c++
+// 方法一：归纳法
+class Solution {
+public:
+    vector<int> grayCode(int n) {
+        vector<int> ret;
+        ret.reserve(1 << n);
+        ret.push_back(0);
+        for (int i = 1; i <= n; i++) {
+            int m = ret.size();
+            for (int j = m - 1; j >= 0; j--) {
+                ret.push_back(ret[j] | (1 << (i - 1)));
+            }
+        }
+        return ret;
+    }
+};
+
+// 方法二：公式法
+class Solution {
+public:
+    vector<int> grayCode(int n) {
+        vector<int> ret(1 << n);
+        for (int i = 0; i < ret.size(); i++) {
+            ret[i] = (i >> 1) ^ i;
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：归纳法
+class Solution {
+    public List<Integer> grayCode(int n) {
+        List<Integer> ret = new ArrayList<Integer>();
+        ret.add(0);
+        for (int i = 1; i <= n; i++) {
+            int m = ret.size();
+            for (int j = m - 1; j >= 0; j--) {
+                ret.add(ret.get(j) | (1 << (i - 1)));
+            }
+        }
+        return ret;
+    }
+}
+
+// 方法二：公式法
+class Solution {
+    public List<Integer> grayCode(int n) {
+        List<Integer> ret = new ArrayList<Integer>();
+        for (int i = 0; i < 1 << n; i++) {
+            ret.add((i >> 1) ^ i);
+        }
+        return ret;
+    }
+}
+```
+
+
+
+### [201. 数字范围按位与](https://leetcode.cn/problems/bitwise-and-of-numbers-range/)
+
+中等
+
+给你两个整数 `left` 和 `right` ，表示区间 `[left, right]` ，返回此区间内所有数字 **按位与** 的结果（包含 `left` 、`right` 端点）。
+
+**示例 1：**
+
+```
+输入：left = 5, right = 7
+输出：4
+```
+
+C++版本
+
+```c++
+// 方法一：位移
+class Solution {
+public:
+    int rangeBitwiseAnd(int m, int n) {
+        int shift = 0;
+        // 找到公共前缀
+        while (m < n) {
+            m >>= 1;
+            n >>= 1;
+            ++shift;
+        }
+        return m << shift;
+    }
+};
+
+// 方法二：Brian Kernighan 算法
+class Solution {
+public:
+    int rangeBitwiseAnd(int m, int n) {
+        while (m < n) {
+            // 抹去最右边的 1
+            n = n & (n - 1);
+        }
+        return n;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：位移
+class Solution {
+    public int rangeBitwiseAnd(int m, int n) {
+        int shift = 0;
+        // 找到公共前缀
+        while (m < n) {
+            m >>= 1;
+            n >>= 1;
+            ++shift;
+        }
+        return m << shift;
+    }
+}
+
+// 方法二：Brian Kernighan 算法：每次对number和number−1之间进行按位与运算后，number中最右边的1会被抹去变成00。
+class Solution {
+    public int rangeBitwiseAnd(int m, int n) {
+        while (m < n) {
+            // 抹去最右边的 1
+            n = n & (n - 1);
+        }
+        return n;
+    }
+}
+```
+
+
+
+
 
