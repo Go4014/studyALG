@@ -1189,5 +1189,462 @@ class Solution {
 
 
 
+### [137. 只出现一次的数字 II](https://leetcode.cn/problems/single-number-ii/)
 
+中等
+
+给你一个整数数组 `nums` ，除某个元素仅出现 **一次** 外，其余每个元素都恰出现 **三次 。**请你找出并返回那个只出现了一次的元素。
+
+你必须设计并实现线性时间复杂度的算法且使用常数级空间来解决此问题。
+
+**示例 1：**
+
+```
+输入：nums = [2,2,3,2]
+输出：3
+```
+
+C++版本
+
+```c++
+// 方法一：哈希表
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        unordered_map<int, int> freq;
+        for (int num: nums) {
+            ++freq[num];
+        }
+        int ans = 0;
+        for (auto [num, occ]: freq) {
+            if (occ == 1) {
+                ans = num;
+                break;
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：依次确定每一个二进制位
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int ans = 0;
+        for (int i = 0; i < 32; ++i) {
+            int total = 0;
+            for (int num: nums) {
+                total += ((num >> i) & 1);
+            }
+            if (total % 3) {
+                ans |= (1 << i);
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法三：数字电路设计
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int a = 0, b = 0;
+        for (int num: nums) {
+            tie(a, b) = pair{(~a & b & num) | (a & ~b & ~num), ~a & (b ^ num)};
+        }
+        return b;
+    }
+};
+
+// 方法四：数字电路设计优化
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int a = 0, b = 0;
+        for (int num: nums) {
+            b = ~a & (b ^ num);
+            a = ~b & (a ^ num);
+        }
+        return b;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：哈希表
+class Solution {
+    public int singleNumber(int[] nums) {
+        Map<Integer, Integer> freq = new HashMap<Integer, Integer>();
+        for (int num : nums) {
+            freq.put(num, freq.getOrDefault(num, 0) + 1);
+        }
+        int ans = 0;
+        for (Map.Entry<Integer, Integer> entry : freq.entrySet()) {
+            int num = entry.getKey(), occ = entry.getValue();
+            if (occ == 1) {
+                ans = num;
+                break;
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：依次确定每一个二进制位
+class Solution {
+    public int singleNumber(int[] nums) {
+        int ans = 0;
+        for (int i = 0; i < 32; ++i) {
+            int total = 0;
+            for (int num: nums) {
+                total += ((num >> i) & 1);
+            }
+            if (total % 3 != 0) {
+                ans |= (1 << i);
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法三：数字电路设计
+class Solution {
+    public int singleNumber(int[] nums) {
+        int a = 0, b = 0;
+        for (int num : nums) {
+            int aNext = (~a & b & num) | (a & ~b & ~num), bNext = ~a & (b ^ num);
+            a = aNext;
+            b = bNext;
+        }
+        return b;
+    }
+}
+
+// 方法四：数字电路设计优化
+class Solution {
+    public int singleNumber(int[] nums) {
+        int a = 0, b = 0;
+        for (int num : nums) {
+            b = ~a & (b ^ num);
+            a = ~b & (a ^ num);
+        }
+        return b;
+    }
+}
+```
+
+
+
+### [260. 只出现一次的数字 III](https://leetcode.cn/problems/single-number-iii/)
+
+中等
+
+给你一个整数数组 `nums`，其中恰好有两个元素只出现一次，其余所有元素均出现两次。 找出只出现一次的那两个元素。你可以按 **任意顺序** 返回答案。
+
+你必须设计并实现线性时间复杂度的算法且仅使用常量额外空间来解决此问题。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,1,3,2,5]
+输出：[3,5]
+解释：[5, 3] 也是有效的答案。
+```
+
+C++版本
+
+```c++
+// 方法一：哈希表
+class Solution {
+public:
+    vector<int> singleNumber(vector<int>& nums) {
+        unordered_map<int, int> freq;
+        for (int num: nums) {
+            ++freq[num];
+        }
+        vector<int> ans;
+        for (const auto& [num, occ]: freq) {
+            if (occ == 1) {
+                ans.push_back(num);
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：位运算
+class Solution {
+public:
+    vector<int> singleNumber(vector<int>& nums) {
+        int xorsum = 0;
+        for (int num: nums) {
+            xorsum ^= num;
+        }
+        // 防止溢出
+        int lsb = (xorsum == INT_MIN ? xorsum : xorsum & (-xorsum));
+        int type1 = 0, type2 = 0;
+        for (int num: nums) {
+            if (num & lsb) {
+                type1 ^= num;
+            }
+            else {
+                type2 ^= num;
+            }
+        }
+        return {type1, type2};
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：哈希表
+class Solution {
+    public int[] singleNumber(int[] nums) {
+        Map<Integer, Integer> freq = new HashMap<Integer, Integer>();
+        for (int num : nums) {
+            freq.put(num, freq.getOrDefault(num, 0) + 1);
+        }
+        int[] ans = new int[2];
+        int index = 0;
+        for (Map.Entry<Integer, Integer> entry : freq.entrySet()) {
+            if (entry.getValue() == 1) {
+                ans[index++] = entry.getKey();
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：位运算
+class Solution {
+    public int[] singleNumber(int[] nums) {
+        int xorsum = 0;
+        for (int num : nums) {
+            xorsum ^= num;
+        }
+        // 防止溢出
+        int lsb = (xorsum == Integer.MIN_VALUE ? xorsum : xorsum & (-xorsum));
+        int type1 = 0, type2 = 0;
+        for (int num : nums) {
+            if ((num & lsb) != 0) {
+                type1 ^= num;
+            } else {
+                type2 ^= num;
+            }
+        }
+        return new int[]{type1, type2};
+    }
+}
+```
+
+
+
+[1349. 参加考试的最大学生数](https://leetcode.cn/problems/maximum-students-taking-exam/)
+
+困难
+
+给你一个 `m * n` 的矩阵 `seats` 表示教室中的座位分布。如果座位是坏的（不可用），就用 `'#'` 表示；否则，用 `'.'` 表示。
+
+学生可以看到左侧、右侧、左上、右上这四个方向上紧邻他的学生的答卷，但是看不到直接坐在他前面或者后面的学生的答卷。请你计算并返回该考场可以容纳的同时参加考试且无法作弊的 **最大** 学生人数。
+
+学生必须坐在状况良好的座位上。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/02/09/image.png)
+
+```
+输入：seats = [["#",".","#","#",".","#"],
+              [".","#","#","#","#","."],
+              ["#",".","#","#",".","#"]]
+输出：4
+解释：教师可以让 4 个学生坐在可用的座位上，这样他们就无法在考试中作弊。 
+```
+
+C++版本
+
+```c++
+// 方法一：记忆化搜索 + 状态压缩
+class Solution {
+public:
+    int maxStudents(vector<vector<char>>& seats) {
+        int m = seats.size(), n = seats[0].size();
+        unordered_map<int, int> memo;
+
+        auto isSingleRowCompliant = [&](int status, int row) -> bool {
+            for (int j = 0; j < n; j++) {
+                if ((status >> j) & 1) {
+                    if (seats[row][j] == '#') {
+                        return false;
+                    }
+                    if (j > 0 && ((status >> (j - 1)) & 1)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+        
+        auto isCrossRowsCompliant = [&](int status, int upperRowStatus) -> bool {
+            for (int j = 0; j < n; j++) {
+                if ((status >> j) & 1) {
+                    if (j > 0 && ((upperRowStatus >> (j - 1)) & 1)) {
+                        return false;
+                    }
+                    if (j < n - 1 && ((upperRowStatus >> (j + 1)) & 1)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+
+        function<int(int, int)> dp = [&](int row, int status) -> int {
+            int key = (row << n) + status;
+            if (!memo.count(key)) {
+                if (!isSingleRowCompliant(status, row)) {
+                    memo[key] = INT_MIN;
+                    return INT_MIN;
+                }
+                int students = __builtin_popcount(status);
+                if (row == 0) {
+                    memo[key] = students;
+                    return students;
+                }
+                int mx = 0;
+                for (int upperRowStatus = 0; upperRowStatus < 1 << n; upperRowStatus++) {
+                    if (isCrossRowsCompliant(status, upperRowStatus)) {
+                        mx = max(mx, dp(row - 1, upperRowStatus));
+                    }
+                }
+                memo[key] = students + mx;
+            }
+            return memo[key];
+        };
+        
+        int mx = 0;
+        for (int i = 0; i < (1 << n); i++) {
+            mx = max(mx, dp(m - 1, i));
+        }
+        return mx;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：记忆化搜索 + 状态压缩
+class Solution {
+    Map<Integer, Integer> memo = new HashMap<Integer, Integer>();
+
+    public int maxStudents(char[][] seats) {
+        int m = seats.length, n = seats[0].length;
+        int mx = 0;
+        for (int i = 0; i < 1 << n; i++) {
+            mx = Math.max(mx, dp(seats, m - 1, i));
+        }
+        return mx;
+    }
+
+    public int dp(char[][] seats, int row, int status) {
+        int n = seats[0].length;
+        int key = (row << n) + status;
+        if (!memo.containsKey(key)) {
+            if (!isSingleRowCompliant(seats, status, n, row)) {
+                memo.put(key, Integer.MIN_VALUE);
+                return Integer.MIN_VALUE;
+            }
+            int students = Integer.bitCount(status);
+            if (row == 0) {
+                memo.put(key, students);
+                return students;
+            }
+            int mx = 0;
+            for (int upperRowStatus = 0; upperRowStatus < 1 << n; upperRowStatus++) {
+                if (isCrossRowsCompliant(status, upperRowStatus, n)) {
+                    mx = Math.max(mx, dp(seats, row - 1, upperRowStatus));
+                }
+            }
+            memo.put(key, students + mx);
+        }
+        return memo.get(key);
+    }
+
+    public boolean isSingleRowCompliant(char[][] seats, int status, int n, int row) {
+        for (int j = 0; j < n; j++) {
+            if (((status >> j) & 1) == 1) {
+                if (seats[row][j] == '#') {
+                    return false;
+                }
+                if (j > 0 && ((status >> (j - 1)) & 1) == 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isCrossRowsCompliant(int status, int upperRowStatus, int n) {
+        for (int j = 0; j < n; j++) {
+            if (((status >> j) & 1) == 1) {
+                if (j > 0 && ((upperRowStatus >> (j - 1)) & 1) == 1) {
+                    return false;
+                }
+                if (j < n - 1 && ((upperRowStatus >> (j + 1)) & 1) == 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+
+// 方法二
+public class Solution {
+    public int maxStudents(char[][] seats) {
+        int m = seats.length;
+        int n = seats[0].length;
+        int[] a = new int[m]; // a[i] 是第 i 排可用椅子的下标集合
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (seats[i][j] == '.') {
+                    a[i] |= 1 << j;
+                }
+            }
+        }
+
+        int[][] memo = new int[m][1 << n];
+        for (int[] row : memo) {
+            Arrays.fill(row, -1); // -1 表示没有计算过
+        }
+        return dfs(m - 1, a[m - 1], memo, a);
+    }
+
+    private int dfs(int i, int j, int[][] memo, int[] a) {
+        if (memo[i][j] != -1) { // 之前计算过
+            return memo[i][j];
+        }
+        if (i == 0) {
+            if (j == 0) { // 递归边界
+                return 0;
+            }
+            int lb = j & -j;
+            return memo[i][j] = dfs(i, j & ~(lb * 3), memo, a) + 1; // 记忆化
+        }
+        int res = dfs(i - 1, a[i - 1], memo, a); // 第 i 排空着
+        for (int s = j; s > 0; s = (s - 1) & j) { // 枚举 j 的子集 s
+            if ((s & (s >> 1)) == 0) { // s 没有连续的 1
+                int t = a[i - 1] & ~(s << 1 | s >> 1); // 去掉不能坐人的位置
+                res = Math.max(res, dfs(i - 1, t, memo, a) + Integer.bitCount(s));
+            }
+        }
+        return memo[i][j] = res; // 记忆化
+    }
+}
+```
 
