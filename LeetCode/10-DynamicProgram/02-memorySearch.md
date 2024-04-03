@@ -583,5 +583,328 @@ class Solution {
 
 
 
+### [87. 扰乱字符串](https://leetcode.cn/problems/scramble-string/)
+
+困难
+
+使用下面描述的算法可以扰乱字符串 `s` 得到字符串 `t` ：
+
+1. 如果字符串的长度为 1 ，算法停止
+2. 如果字符串的长度 > 1 ，执行下述步骤：
+   - 在一个随机下标处将字符串分割成两个非空的子字符串。即，如果已知字符串 `s` ，则可以将其分成两个子字符串 `x` 和 `y` ，且满足 `s = x + y` 。
+   - **随机** 决定是要「交换两个子字符串」还是要「保持这两个子字符串的顺序不变」。即，在执行这一步骤之后，`s` 可能是 `s = x + y` 或者 `s = y + x` 。
+   - 在 `x` 和 `y` 这两个子字符串上继续从步骤 1 开始递归执行此算法。
+
+给你两个 **长度相等** 的字符串 `s1` 和 `s2`，判断 `s2` 是否是 `s1` 的扰乱字符串。如果是，返回 `true` ；否则，返回 `false` 。
+
+**示例 1：**
+
+```
+输入：s1 = "great", s2 = "rgeat"
+输出：true
+解释：s1 上可能发生的一种情形是：
+"great" --> "gr/eat" // 在一个随机下标处分割得到两个子字符串
+"gr/eat" --> "gr/eat" // 随机决定：「保持这两个子字符串的顺序不变」
+"gr/eat" --> "g/r / e/at" // 在子字符串上递归执行此算法。两个子字符串分别在随机下标处进行一轮分割
+"g/r / e/at" --> "r/g / e/at" // 随机决定：第一组「交换两个子字符串」，第二组「保持这两个子字符串的顺序不变」
+"r/g / e/at" --> "r/g / e/ a/t" // 继续递归执行此算法，将 "at" 分割得到 "a/t"
+"r/g / e/ a/t" --> "r/g / e/ a/t" // 随机决定：「保持这两个子字符串的顺序不变」
+算法终止，结果字符串和 s2 相同，都是 "rgeat"
+这是一种能够扰乱 s1 得到 s2 的情形，可以认为 s2 是 s1 的扰乱字符串，返回 true
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+private:
+    // 记忆化搜索存储状态的数组
+    // -1 表示 false，1 表示 true，0 表示未计算
+    int memo[30][30][31];
+    string s1, s2;
+
+public:
+    bool checkIfSimilar(int i1, int i2, int length) {
+        unordered_map<int, int> freq;
+        for (int i = i1; i < i1 + length; ++i) {
+            ++freq[s1[i]];
+        }
+        for (int i = i2; i < i2 + length; ++i) {
+            --freq[s2[i]];
+        }
+        if (any_of(freq.begin(), freq.end(), [](const auto& entry) {return entry.second != 0;})) {
+            return false;
+        }
+        return true;
+    }
+
+    // 第一个字符串从 i1 开始，第二个字符串从 i2 开始，子串的长度为 length，是否和谐
+    bool dfs(int i1, int i2, int length) {
+        if (memo[i1][i2][length]) {
+            return memo[i1][i2][length] == 1;
+        }
+
+        // 判断两个子串是否相等
+        if (s1.substr(i1, length) == s2.substr(i2, length)) {
+            memo[i1][i2][length] = 1;
+            return true;
+        }
+
+        // 判断是否存在字符 c 在两个子串中出现的次数不同
+        if (!checkIfSimilar(i1, i2, length)) {
+            memo[i1][i2][length] = -1;
+            return false;
+        }
+        
+        // 枚举分割位置
+        for (int i = 1; i < length; ++i) {
+            // 不交换的情况
+            if (dfs(i1, i2, i) && dfs(i1 + i, i2 + i, length - i)) {
+                memo[i1][i2][length] = 1;
+                return true;
+            }
+            // 交换的情况
+            if (dfs(i1, i2 + length - i, i) && dfs(i1 + i, i2, length - i)) {
+                memo[i1][i2][length] = 1;
+                return true;
+            }
+        }
+
+        memo[i1][i2][length] = -1;
+        return false;
+    }
+
+    bool isScramble(string s1, string s2) {
+        memset(memo, 0, sizeof(memo));
+        this->s1 = s1;
+        this->s2 = s2;
+        return dfs(0, 0, s1.size());
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    // 记忆化搜索存储状态的数组
+    // -1 表示 false，1 表示 true，0 表示未计算
+    int[][][] memo;
+    String s1, s2;
+
+    public boolean isScramble(String s1, String s2) {
+        int length = s1.length();
+        this.memo = new int[length][length][length + 1];
+        this.s1 = s1;
+        this.s2 = s2;
+        return dfs(0, 0, length);
+    }
+
+    // 第一个字符串从 i1 开始，第二个字符串从 i2 开始，子串的长度为 length，是否和谐
+    public boolean dfs(int i1, int i2, int length) {
+        if (memo[i1][i2][length] != 0) {
+            return memo[i1][i2][length] == 1;
+        }
+
+        // 判断两个子串是否相等
+        if (s1.substring(i1, i1 + length).equals(s2.substring(i2, i2 + length))) {
+            memo[i1][i2][length] = 1;
+            return true;
+        }
+
+        // 判断是否存在字符 c 在两个子串中出现的次数不同
+        if (!checkIfSimilar(i1, i2, length)) {
+            memo[i1][i2][length] = -1;
+            return false;
+        }
+        
+        // 枚举分割位置
+        for (int i = 1; i < length; ++i) {
+            // 不交换的情况
+            if (dfs(i1, i2, i) && dfs(i1 + i, i2 + i, length - i)) {
+                memo[i1][i2][length] = 1;
+                return true;
+            }
+            // 交换的情况
+            if (dfs(i1, i2 + length - i, i) && dfs(i1 + i, i2, length - i)) {
+                memo[i1][i2][length] = 1;
+                return true;
+            }
+        }
+
+        memo[i1][i2][length] = -1;
+        return false;
+    }
+
+    public boolean checkIfSimilar(int i1, int i2, int length) {
+        Map<Character, Integer> freq = new HashMap<Character, Integer>();
+        for (int i = i1; i < i1 + length; ++i) {
+            char c = s1.charAt(i);
+            freq.put(c, freq.getOrDefault(c, 0) + 1);
+        }
+        for (int i = i2; i < i2 + length; ++i) {
+            char c = s2.charAt(i);
+            freq.put(c, freq.getOrDefault(c, 0) - 1);
+        }
+        for (Map.Entry<Character, Integer> entry : freq.entrySet()) {
+            int value = entry.getValue();
+            if (value != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
+
+
+
+### [403. 青蛙过河](https://leetcode.cn/problems/frog-jump/)
+
+困难
+
+一只青蛙想要过河。 假定河流被等分为若干个单元格，并且在每一个单元格内都有可能放有一块石子（也有可能没有）。 青蛙可以跳上石子，但是不可以跳入水中。
+
+给你石子的位置列表 `stones`（用单元格序号 **升序** 表示）， 请判定青蛙能否成功过河（即能否在最后一步跳至最后一块石子上）。开始时， 青蛙默认已站在第一块石子上，并可以假定它第一步只能跳跃 `1` 个单位（即只能从单元格 1 跳至单元格 2 ）。
+
+如果青蛙上一步跳跃了 `k` 个单位，那么它接下来的跳跃距离只能选择为 `k - 1`、`k` 或 `k + 1` 个单位。 另请注意，青蛙只能向前方（终点的方向）跳跃。
+
+**示例 1：**
+
+```
+输入：stones = [0,1,3,5,6,8,12,17]
+输出：true
+解释：青蛙可以成功过河，按照如下方案跳跃：跳 1 个单位到第 2 块石子, 然后跳 2 个单位到第 3 块石子, 接着 跳 2 个单位到第 4 块石子, 然后跳 3 个单位到第 6 块石子, 跳 4 个单位到第 7 块石子, 最后，跳 5 个单位到第 8 个石子（即最后一块石子）。
+```
+
+C++版本
+
+```c++
+// 方法一：记忆化搜索 + 二分查找
+class Solution {
+public:
+    vector<unordered_map<int, int>> rec;
+
+    bool dfs(vector<int>& stones, int i, int lastDis) {
+        if (i == stones.size() - 1) {
+            return true;
+        }
+        if (rec[i].count(lastDis)) {
+            return rec[i][lastDis];
+        }
+        for (int curDis = lastDis - 1; curDis <= lastDis + 1; curDis++) {
+            if (curDis > 0) {
+                int j = lower_bound(stones.begin(), stones.end(), curDis + stones[i]) - stones.begin();
+                if (j != stones.size() && stones[j] == curDis + stones[i] && dfs(stones, j, curDis)) {
+                    return rec[i][lastDis] = true;
+                }
+            }
+        }
+        return rec[i][lastDis] = false;
+    }
+
+    bool canCross(vector<int>& stones) {
+        int n = stones.size();
+        rec.resize(n);
+        return dfs(stones, 0, 0);
+    }
+};
+
+// 方法二：动态规划
+class Solution {
+public:
+    bool canCross(vector<int>& stones) {
+        int n = stones.size();
+        vector<vector<int>> dp(n, vector<int>(n));
+        dp[0][0] = true;
+        for (int i = 1; i < n; ++i) {
+            if (stones[i] - stones[i - 1] > i) {
+                return false;
+            }
+        }
+        for (int i = 1; i < n; ++i) {
+            for (int j = i - 1; j >= 0; --j) {
+                int k = stones[i] - stones[j];
+                if (k > j + 1) {
+                    break;
+                }
+                dp[i][k] = dp[j][k - 1] || dp[j][k] || dp[j][k + 1];
+                if (i == n - 1 && dp[i][k]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：记忆化搜索 + 二分查找
+class Solution {
+    private Boolean[][] rec;
+
+    public boolean canCross(int[] stones) {
+        int n = stones.length;
+        rec = new Boolean[n][n];
+        return dfs(stones, 0, 0);
+    }
+
+    private boolean dfs(int[] stones, int i, int lastDis) {
+        if (i == stones.length - 1) {
+            return true;
+        }
+        if (rec[i][lastDis] != null) {
+            return rec[i][lastDis];
+        }
+
+        for (int curDis = lastDis - 1; curDis <= lastDis + 1; curDis++) {
+            if (curDis > 0) {
+                int j = Arrays.binarySearch(stones, i + 1, stones.length, curDis + stones[i]);
+                if (j >= 0 && dfs(stones, j, curDis)) {
+                    return rec[i][lastDis] = true;
+                }
+            }
+        }
+        return rec[i][lastDis] = false;
+    }
+}
+
+// 方法二：动态规划
+class Solution {
+    public boolean canCross(int[] stones) {
+        int n = stones.length;
+        boolean[][] dp = new boolean[n][n];
+        dp[0][0] = true;
+        for (int i = 1; i < n; ++i) {
+            if (stones[i] - stones[i - 1] > i) {
+                return false;
+            }
+        }
+        for (int i = 1; i < n; ++i) {
+            for (int j = i - 1; j >= 0; --j) {
+                int k = stones[i] - stones[j];
+                if (k > j + 1) {
+                    break;
+                }
+                dp[i][k] = dp[j][k - 1] || dp[j][k] || dp[j][k + 1];
+                if (i == n - 1 && dp[i][k]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
+```
+
+
+
+
+
 
 
