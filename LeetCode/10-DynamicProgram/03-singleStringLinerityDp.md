@@ -1,0 +1,725 @@
+# 动态规划
+
+## 单串线性DP
+
+### [300. 最长递增子序列](https://leetcode.cn/problems/longest-increasing-subsequence/)
+
+中等
+
+给你一个整数数组 `nums` ，找到其中最长严格递增子序列的长度。
+
+**子序列** 是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，`[3,6,2,7]` 是数组 `[0,3,1,6,2,2,7]` 的子序列。
+
+**示例 1：**
+
+```
+输入：nums = [10,9,2,5,3,7,101,18]
+输出：4
+解释：最长递增子序列是 [2,3,7,101]，因此长度为 4 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        int n = (int)nums.size();
+        if (n == 0) {
+            return 0;
+        }
+        vector<int> dp(n, 0);
+        for (int i = 0; i < n; ++i) {
+            dp[i] = 1;
+            for (int j = 0; j < i; ++j) {
+                if (nums[j] < nums[i]) {
+                    dp[i] = max(dp[i], dp[j] + 1);
+                }
+            }
+        }
+        return *max_element(dp.begin(), dp.end());
+    }
+};
+
+// 方法二：贪心 + 二分查找
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        int len = 1, n = (int)nums.size();
+        if (n == 0) {
+            return 0;
+        }
+        vector<int> d(n + 1, 0);
+        d[len] = nums[0];
+        for (int i = 1; i < n; ++i) {
+            if (nums[i] > d[len]) {
+                d[++len] = nums[i];
+            } else {
+                int l = 1, r = len, pos = 0; // 如果找不到说明所有的数都比 nums[i] 大，此时要更新 d[1]，所以这里将 pos 设为 0
+                while (l <= r) {
+                    int mid = (l + r) >> 1;
+                    if (d[mid] < nums[i]) {
+                        pos = mid;
+                        l = mid + 1;
+                    } else {
+                        r = mid - 1;
+                    }
+                }
+                d[pos + 1] = nums[i];
+            }
+        }
+        return len;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int lengthOfLIS(int[] nums) {
+        if (nums.length == 0) {
+            return 0;
+        }
+        int[] dp = new int[nums.length];
+        dp[0] = 1;
+        int maxans = 1;
+        for (int i = 1; i < nums.length; i++) {
+            dp[i] = 1;
+            for (int j = 0; j < i; j++) {
+                if (nums[i] > nums[j]) {
+                    dp[i] = Math.max(dp[i], dp[j] + 1);
+                }
+            }
+            maxans = Math.max(maxans, dp[i]);
+        }
+        return maxans;
+    }
+}
+
+// 方法二：贪心 + 二分查找
+class Solution {
+    public int lengthOfLIS(int[] nums) {
+        int len = 1, n = nums.length;
+        if (n == 0) {
+            return 0;
+        }
+        int[] d = new int[n + 1];
+        d[len] = nums[0];
+        for (int i = 1; i < n; ++i) {
+            if (nums[i] > d[len]) {
+                d[++len] = nums[i];
+            } else {
+                int l = 1, r = len, pos = 0; // 如果找不到说明所有的数都比 nums[i] 大，此时要更新 d[1]，所以这里将 pos 设为 0
+                while (l <= r) {
+                    int mid = (l + r) >> 1;
+                    if (d[mid] < nums[i]) {
+                        pos = mid;
+                        l = mid + 1;
+                    } else {
+                        r = mid - 1;
+                    }
+                }
+                d[pos + 1] = nums[i];
+            }
+        }
+        return len;
+    }
+}
+```
+
+
+
+### [673. 最长递增子序列的个数](https://leetcode.cn/problems/number-of-longest-increasing-subsequence/)
+
+中等
+
+给定一个未排序的整数数组 `nums` ， *返回最长递增子序列的个数* 。
+
+**注意** 这个数列必须是 **严格** 递增的。
+
+**示例 1:**
+
+```
+输入: [1,3,5,4,7]
+输出: 2
+解释: 有两个最长递增子序列，分别是 [1, 3, 4, 7] 和[1, 3, 5, 7]。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int findNumberOfLIS(vector<int> &nums) {
+        int n = nums.size(), maxLen = 0, ans = 0;
+        vector<int> dp(n), cnt(n);
+        for (int i = 0; i < n; ++i) {
+            dp[i] = 1;
+            cnt[i] = 1;
+            for (int j = 0; j < i; ++j) {
+                if (nums[i] > nums[j]) {
+                    if (dp[j] + 1 > dp[i]) {
+                        dp[i] = dp[j] + 1;
+                        cnt[i] = cnt[j]; // 重置计数
+                    } else if (dp[j] + 1 == dp[i]) {
+                        cnt[i] += cnt[j];
+                    }
+                }
+            }
+            if (dp[i] > maxLen) {
+                maxLen = dp[i];
+                ans = cnt[i]; // 重置计数
+            } else if (dp[i] == maxLen) {
+                ans += cnt[i];
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：贪心 + 前缀和 + 二分查找
+class Solution {
+    int binarySearch(int n, function<bool(int)> f) {
+        int l = 0, r = n;
+        while (l < r) {
+            int mid = (l + r) / 2;
+            if (f(mid)) {
+                r = mid;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return l;
+    }
+
+public:
+    int findNumberOfLIS(vector<int> &nums) {
+        vector<vector<int>> d, cnt;
+        for (int v : nums) {
+            int i = binarySearch(d.size(), [&](int i) { return d[i].back() >= v; });
+            int c = 1;
+            if (i > 0) {
+                int k = binarySearch(d[i - 1].size(), [&](int k) { return d[i - 1][k] < v; });
+                c = cnt[i - 1].back() - cnt[i - 1][k];
+            }
+            if (i == d.size()) {
+                d.push_back({v});
+                cnt.push_back({0, c});
+            } else {
+                d[i].push_back(v);
+                cnt[i].push_back(cnt[i].back() + c);
+            }
+        }
+        return cnt.back().back();
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int findNumberOfLIS(int[] nums) {
+        int n = nums.length, maxLen = 0, ans = 0;
+        int[] dp = new int[n];
+        int[] cnt = new int[n];
+        for (int i = 0; i < n; ++i) {
+            dp[i] = 1;
+            cnt[i] = 1;
+            for (int j = 0; j < i; ++j) {
+                if (nums[i] > nums[j]) {
+                    if (dp[j] + 1 > dp[i]) {
+                        dp[i] = dp[j] + 1;
+                        cnt[i] = cnt[j]; // 重置计数
+                    } else if (dp[j] + 1 == dp[i]) {
+                        cnt[i] += cnt[j];
+                    }
+                }
+            }
+            if (dp[i] > maxLen) {
+                maxLen = dp[i];
+                ans = cnt[i]; // 重置计数
+            } else if (dp[i] == maxLen) {
+                ans += cnt[i];
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：贪心 + 前缀和 + 二分查找
+class Solution {
+    public int findNumberOfLIS(int[] nums) {
+        List<List<Integer>> d = new ArrayList<List<Integer>>();
+        List<List<Integer>> cnt = new ArrayList<List<Integer>>();
+        for (int v : nums) {
+            int i = binarySearch1(d.size(), d, v);
+            int c = 1;
+            if (i > 0) {
+                int k = binarySearch2(d.get(i - 1).size(), d.get(i - 1), v);
+                c = cnt.get(i - 1).get(cnt.get(i - 1).size() - 1) - cnt.get(i - 1).get(k);
+            }
+            if (i == d.size()) {
+                List<Integer> dList = new ArrayList<Integer>();
+                dList.add(v);
+                d.add(dList);
+                List<Integer> cntList = new ArrayList<Integer>();
+                cntList.add(0);
+                cntList.add(c);
+                cnt.add(cntList);
+            } else {
+                d.get(i).add(v);
+                int cntSize = cnt.get(i).size();
+                cnt.get(i).add(cnt.get(i).get(cntSize - 1) + c);
+            }
+        }
+
+        int size1 = cnt.size(), size2 = cnt.get(size1 - 1).size();
+        return cnt.get(size1 - 1).get(size2 - 1);
+    }
+
+    public int binarySearch1(int n, List<List<Integer>> d, int target) {
+        int l = 0, r = n;
+        while (l < r) {
+            int mid = (l + r) / 2;
+            List<Integer> list = d.get(mid);
+            if (list.get(list.size() - 1) >= target) {
+                r = mid;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return l;
+    }
+
+    public int binarySearch2(int n, List<Integer> list, int target) {
+        int l = 0, r = n;
+        while (l < r) {
+            int mid = (l + r) / 2;
+            if (list.get(mid) < target) {
+                r = mid;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return l;
+    }
+}
+```
+
+
+
+### [354. 俄罗斯套娃信封问题](https://leetcode.cn/problems/russian-doll-envelopes/)
+
+困难
+
+给你一个二维整数数组 `envelopes` ，其中 `envelopes[i] = [wi, hi]` ，表示第 `i` 个信封的宽度和高度。
+
+当另一个信封的宽度和高度都比这个信封大的时候，这个信封就可以放进另一个信封里，如同俄罗斯套娃一样。
+
+请计算 **最多能有多少个** 信封能组成一组“俄罗斯套娃”信封（即可以把一个信封放到另一个信封里面）。
+
+**注意**：不允许旋转信封。
+
+**示例 1：**
+
+```
+输入：envelopes = [[5,4],[6,4],[6,7],[2,3]]
+输出：3
+解释：最多信封的个数为 3, 组合为: [2,3] => [5,4] => [6,7]。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int maxEnvelopes(vector<vector<int>>& envelopes) {
+        if (envelopes.empty()) {
+            return 0;
+        }
+        
+        int n = envelopes.size();
+        sort(envelopes.begin(), envelopes.end(), [](const auto& e1, const auto& e2) {
+            return e1[0] < e2[0] || (e1[0] == e2[0] && e1[1] > e2[1]);
+        });
+
+        vector<int> f(n, 1);
+        for (int i = 1; i < n; ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (envelopes[j][1] < envelopes[i][1]) {
+                    f[i] = max(f[i], f[j] + 1);
+                }
+            }
+        }
+        return *max_element(f.begin(), f.end());
+    }
+};
+
+// 方法二：基于二分查找的动态规划
+class Solution {
+public:
+    int maxEnvelopes(vector<vector<int>>& envelopes) {
+        if (envelopes.empty()) {
+            return 0;
+        }
+        
+        int n = envelopes.size();
+        sort(envelopes.begin(), envelopes.end(), [](const auto& e1, const auto& e2) {
+            return e1[0] < e2[0] || (e1[0] == e2[0] && e1[1] > e2[1]);
+        });
+
+        vector<int> f = {envelopes[0][1]};
+        for (int i = 1; i < n; ++i) {
+            if (int num = envelopes[i][1]; num > f.back()) {
+                f.push_back(num);
+            }
+            else {
+                auto it = lower_bound(f.begin(), f.end(), num);
+                *it = num;
+            }
+        }
+        return f.size();
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int maxEnvelopes(int[][] envelopes) {
+        if (envelopes.length == 0) {
+            return 0;
+        }
+        
+        int n = envelopes.length;
+        Arrays.sort(envelopes, new Comparator<int[]>() {
+            public int compare(int[] e1, int[] e2) {
+                if (e1[0] != e2[0]) {
+                    return e1[0] - e2[0];
+                } else {
+                    return e2[1] - e1[1];
+                }
+            }
+        });
+
+        int[] f = new int[n];
+        Arrays.fill(f, 1);
+        int ans = 1;
+        for (int i = 1; i < n; ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (envelopes[j][1] < envelopes[i][1]) {
+                    f[i] = Math.max(f[i], f[j] + 1);
+                }
+            }
+            ans = Math.max(ans, f[i]);
+        }
+        return ans;
+    }
+}
+
+// 方法二：基于二分查找的动态规划
+class Solution {
+    public int maxEnvelopes(int[][] envelopes) {
+        if (envelopes.length == 0) {
+            return 0;
+        }
+        
+        int n = envelopes.length;
+        Arrays.sort(envelopes, new Comparator<int[]>() {
+            public int compare(int[] e1, int[] e2) {
+                if (e1[0] != e2[0]) {
+                    return e1[0] - e2[0];
+                } else {
+                    return e2[1] - e1[1];
+                }
+            }
+        });
+
+        List<Integer> f = new ArrayList<Integer>();
+        f.add(envelopes[0][1]);
+        for (int i = 1; i < n; ++i) {
+            int num = envelopes[i][1];
+            if (num > f.get(f.size() - 1)) {
+                f.add(num);
+            } else {
+                int index = binarySearch(f, num);
+                f.set(index, num);
+            }
+        }
+        return f.size();
+    }
+
+    public int binarySearch(List<Integer> f, int target) {
+        int low = 0, high = f.size() - 1;
+        while (low < high) {
+            int mid = (high - low) / 2 + low;
+            if (f.get(mid) < target) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+        return low;
+    }
+}
+```
+
+
+
+### [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
+
+中等
+
+给你一个整数数组 `nums` ，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+**子数组**是数组中的一个连续部分。
+
+**示例 1：**
+
+```
+输入：nums = [-2,1,-3,4,-1,2,1,-5,4]
+输出：6
+解释：连续子数组 [4,-1,2,1] 的和最大，为 6 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        int pre = 0, maxAns = nums[0];
+        for (const auto &x: nums) {
+            pre = max(pre + x, x);
+            maxAns = max(maxAns, pre);
+        }
+        return maxAns;
+    }
+};
+
+// 方法二：分治
+class Solution {
+public:
+    struct Status {
+        int lSum, rSum, mSum, iSum;
+    };
+
+    Status pushUp(Status l, Status r) {
+        int iSum = l.iSum + r.iSum;
+        int lSum = max(l.lSum, l.iSum + r.lSum);
+        int rSum = max(r.rSum, r.iSum + l.rSum);
+        int mSum = max(max(l.mSum, r.mSum), l.rSum + r.lSum);
+        return (Status) {lSum, rSum, mSum, iSum};
+    };
+
+    Status get(vector<int> &a, int l, int r) {
+        if (l == r) {
+            return (Status) {a[l], a[l], a[l], a[l]};
+        }
+        int m = (l + r) >> 1;
+        Status lSub = get(a, l, m);
+        Status rSub = get(a, m + 1, r);
+        return pushUp(lSub, rSub);
+    }
+
+    int maxSubArray(vector<int>& nums) {
+        return get(nums, 0, nums.size() - 1).mSum;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int maxSubArray(int[] nums) {
+        int pre = 0, maxAns = nums[0];
+        for (int x : nums) {
+            pre = Math.max(pre + x, x);
+            maxAns = Math.max(maxAns, pre);
+        }
+        return maxAns;
+    }
+}
+
+// 方法二：分治
+class Solution {
+    public class Status {
+        public int lSum, rSum, mSum, iSum;
+
+        public Status(int lSum, int rSum, int mSum, int iSum) {
+            this.lSum = lSum;
+            this.rSum = rSum;
+            this.mSum = mSum;
+            this.iSum = iSum;
+        }
+    }
+
+    public int maxSubArray(int[] nums) {
+        return getInfo(nums, 0, nums.length - 1).mSum;
+    }
+
+    public Status getInfo(int[] a, int l, int r) {
+        if (l == r) {
+            return new Status(a[l], a[l], a[l], a[l]);
+        }
+        int m = (l + r) >> 1;
+        Status lSub = getInfo(a, l, m);
+        Status rSub = getInfo(a, m + 1, r);
+        return pushUp(lSub, rSub);
+    }
+
+    public Status pushUp(Status l, Status r) {
+        int iSum = l.iSum + r.iSum;
+        int lSum = Math.max(l.lSum, l.iSum + r.lSum);
+        int rSum = Math.max(r.rSum, r.iSum + l.rSum);
+        int mSum = Math.max(Math.max(l.mSum, r.mSum), l.rSum + r.lSum);
+        return new Status(lSum, rSum, mSum, iSum);
+    }
+}
+```
+
+
+
+### [152. 乘积最大子数组](https://leetcode.cn/problems/maximum-product-subarray/)
+
+中等
+
+给你一个整数数组 `nums` ，请你找出数组中乘积最大的非空连续
+
+子数组（该子数组中至少包含一个数字），并返回该子数组所对应的乘积。
+
+测试用例的答案是一个 **32-位** 整数。
+
+**示例 1:**
+
+```
+输入: nums = [2,3,-2,4]
+输出: 6
+解释: 子数组 [2,3] 有最大乘积 6。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int maxProduct(vector<int>& nums) {
+        vector <int> maxF(nums), minF(nums);
+        for (int i = 1; i < nums.size(); ++i) {
+            maxF[i] = max(maxF[i - 1] * nums[i], max(nums[i], minF[i - 1] * nums[i]));
+            minF[i] = min(minF[i - 1] * nums[i], min(nums[i], maxF[i - 1] * nums[i]));
+        }
+        return *max_element(maxF.begin(), maxF.end());
+    }
+};
+
+// 或者
+class Solution {
+public:
+    int maxProduct(vector<int>& nums) {
+        int maxF = nums[0], minF = nums[0], ans = nums[0];
+        for (int i = 1; i < nums.size(); ++i) {
+            int mx = maxF, mn = minF;
+            maxF = max(mx * nums[i], max(nums[i], mn * nums[i]));
+            minF = min(mn * nums[i], min(nums[i], mx * nums[i]));
+            ans = max(maxF, ans);
+        }
+        return ans;
+    }
+};
+
+// 或者
+class Solution {
+    public int maxProduct(int[] nums) {
+        int length = nums.length, maxAns = nums[0];
+        int product = 1;
+        for (int i = 0; i < length; i++) {
+            product *= nums[i];
+            maxAns = Math.max(maxAns, product);
+            product = product == 0 ? 1 : product;
+        }
+        product = 1;
+        for (int i = length - 1; i >= 0; i--) {
+            product *= nums[i];
+            maxAns = Math.max(maxAns, product);
+            product = product == 0 ? 1 : product;
+        }
+        return maxAns;
+    }
+}
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int maxProduct(int[] nums) {
+        int length = nums.length;
+        int[] maxF = new int[length];
+        int[] minF = new int[length];
+        System.arraycopy(nums, 0, maxF, 0, length);
+        System.arraycopy(nums, 0, minF, 0, length);
+        for (int i = 1; i < length; ++i) {
+            maxF[i] = Math.max(maxF[i - 1] * nums[i], Math.max(nums[i], minF[i - 1] * nums[i]));
+            minF[i] = Math.min(minF[i - 1] * nums[i], Math.min(nums[i], maxF[i - 1] * nums[i]));
+        }
+        int ans = maxF[0];
+        for (int i = 1; i < length; ++i) {
+            ans = Math.max(ans, maxF[i]);
+        }
+        return ans;
+    }
+}
+
+// 或者
+class Solution {
+    public int maxProduct(int[] nums) {
+        int maxF = nums[0], minF = nums[0], ans = nums[0];
+        int length = nums.length;
+        for (int i = 1; i < length; ++i) {
+            int mx = maxF, mn = minF;
+            maxF = Math.max(mx * nums[i], Math.max(nums[i], mn * nums[i]));
+            minF = Math.min(mn * nums[i], Math.min(nums[i], mx * nums[i]));
+            ans = Math.max(maxF, ans);
+        }
+        return ans;
+    }
+}
+
+// 或者
+class Solution {
+    public int maxProduct(int[] nums) {
+        int length = nums.length, maxAns = nums[0];
+        int product = 1;
+        for (int i = 0; i < length; i++) {
+            product *= nums[i];
+            maxAns = Math.max(maxAns, product);
+            product = product == 0 ? 1 : product;
+        }
+        product = 1;
+        for (int i = length - 1; i >= 0; i--) {
+            product *= nums[i];
+            maxAns = Math.max(maxAns, product);
+            product = product == 0 ? 1 : product;
+        }
+        return maxAns;
+    }
+}
+```
+
+
+
