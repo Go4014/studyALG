@@ -723,3 +723,358 @@ class Solution {
 
 
 
+### [918. 环形子数组的最大和](https://leetcode.cn/problems/maximum-sum-circular-subarray/)
+
+中等
+
+给定一个长度为 `n` 的**环形整数数组** `nums` ，返回 *`nums` 的非空 **子数组** 的最大可能和* 。
+
+**环形数组** 意味着数组的末端将会与开头相连呈环状。形式上， `nums[i]` 的下一个元素是 `nums[(i + 1) % n]` ， `nums[i]` 的前一个元素是 `nums[(i - 1 + n) % n]` 。
+
+**子数组** 最多只能包含固定缓冲区 `nums` 中的每个元素一次。形式上，对于子数组 `nums[i], nums[i + 1], ..., nums[j]` ，不存在 `i <= k1, k2 <= j` 其中 `k1 % n == k2 % n` 。
+
+**示例 1：**
+
+```
+输入：nums = [1,-2,3,-2]
+输出：3
+解释：从子数组 [3] 得到最大和 3
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int maxSubarraySumCircular(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> leftMax(n);
+        // 对坐标为 0 处的元素单独处理，避免考虑子数组为空的情况
+        leftMax[0] = nums[0];
+        int leftSum = nums[0];
+        int pre = nums[0];
+        int res = nums[0];
+        for (int i = 1; i < n; i++) {
+            pre = max(pre + nums[i], nums[i]);
+            res = max(res, pre);
+            leftSum += nums[i];
+            leftMax[i] = max(leftMax[i - 1], leftSum);
+        }
+
+        // 从右到左枚举后缀，固定后缀，选择最大前缀
+        int rightSum = 0;
+        for (int i = n - 1; i > 0; i--) {
+            rightSum += nums[i];
+            res = max(res, rightSum + leftMax[i - 1]);
+        }
+        return res;
+    }
+};
+
+// 方法二：取反
+class Solution {
+public:
+    int maxSubarraySumCircular(vector<int>& nums) {
+        int n = nums.size();
+        int preMax = nums[0], maxRes = nums[0];
+        int preMin = nums[0], minRes = nums[0];
+        int sum = nums[0];
+        for (int i = 1; i < n; i++) {
+            preMax = max(preMax + nums[i], nums[i]);
+            maxRes = max(maxRes, preMax);
+            preMin = min(preMin + nums[i], nums[i]);
+            minRes = min(minRes, preMin);
+            sum += nums[i];
+        }
+        if (maxRes < 0) {
+            return maxRes;
+        } else {
+            return max(maxRes, sum - minRes);
+        }
+    }
+};
+
+// 方法三：单调队列
+class Solution {
+public:
+    int maxSubarraySumCircular(vector<int>& nums) {
+        int n = nums.size();
+        deque<pair<int, int>> q;
+        int pre = nums[0], res = nums[0];
+        q.push_back({0, pre});
+        for (int i = 1; i < 2 * n; i++) {
+            while (!q.empty() && q.front().first < i - n) {
+                q.pop_front();
+            }
+            pre += nums[i % n];
+            res = max(res, pre - q.front().second);
+            while (!q.empty() && q.back().second >= pre) {
+                q.pop_back();
+            }
+            q.push_back({i, pre});
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int maxSubarraySumCircular(int[] nums) {
+        int n = nums.length;
+        int[] leftMax = new int[n];
+        // 对坐标为 0 处的元素单独处理，避免考虑子数组为空的情况
+        leftMax[0] = nums[0];
+        int leftSum = nums[0];
+        int pre = nums[0];
+        int res = nums[0];
+        for (int i = 1; i < n; i++) {
+            pre = Math.max(pre + nums[i], nums[i]);
+            res = Math.max(res, pre);
+            leftSum += nums[i];
+            leftMax[i] = Math.max(leftMax[i - 1], leftSum);
+        }
+
+        // 从右到左枚举后缀，固定后缀，选择最大前缀
+        int rightSum = 0;
+        for (int i = n - 1; i > 0; i--) {
+            rightSum += nums[i];
+            res = Math.max(res, rightSum + leftMax[i - 1]);
+        }
+        return res;
+    }
+}
+
+// 方法二：取反
+class Solution {
+    public int maxSubarraySumCircular(int[] nums) {
+        int n = nums.length;
+        int preMax = nums[0], maxRes = nums[0];
+        int preMin = nums[0], minRes = nums[0];
+        int sum = nums[0];
+        for (int i = 1; i < n; i++) {
+            preMax = Math.max(preMax + nums[i], nums[i]);
+            maxRes = Math.max(maxRes, preMax);
+            preMin = Math.min(preMin + nums[i], nums[i]);
+            minRes = Math.min(minRes, preMin);
+            sum += nums[i];
+        }
+        if (maxRes < 0) {
+            return maxRes;
+        } else {
+            return Math.max(maxRes, sum - minRes);
+        }
+    }
+}
+
+// 方法三：单调队列
+class Solution {
+    public int maxSubarraySumCircular(int[] nums) {
+        int n = nums.length;
+        Deque<int[]> queue = new ArrayDeque<int[]>();
+        int pre = nums[0], res = nums[0];
+        queue.offerLast(new int[]{0, pre});
+        for (int i = 1; i < 2 * n; i++) {
+            while (!queue.isEmpty() && queue.peekFirst()[0] < i - n) {
+                queue.pollFirst();
+            }
+            pre += nums[i % n];
+            res = Math.max(res, pre - queue.peekFirst()[1]);
+            while (!queue.isEmpty() && queue.peekLast()[1] >= pre) {
+                queue.pollLast();
+            }
+            queue.offerLast(new int[]{i, pre});
+        }
+        return res;
+    }
+}
+```
+
+
+
+### [198. 打家劫舍](https://leetcode.cn/problems/house-robber/)
+
+中等
+
+你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，**如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警**。
+
+给定一个代表每个房屋存放金额的非负整数数组，计算你 **不触动警报装置的情况下** ，一夜之内能够偷窃到的最高金额。
+
+**示例 1：**
+
+```
+输入：[1,2,3,1]
+输出：4
+解释：偷窃 1 号房屋 (金额 = 1) ，然后偷窃 3 号房屋 (金额 = 3)。
+     偷窃到的最高金额 = 1 + 3 = 4 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        if (nums.empty()) {
+            return 0;
+        }
+        int size = nums.size();
+        if (size == 1) {
+            return nums[0];
+        }
+        vector<int> dp = vector<int>(size, 0);
+        dp[0] = nums[0];
+        dp[1] = max(nums[0], nums[1]);
+        for (int i = 2; i < size; i++) {
+            dp[i] = max(dp[i - 2] + nums[i], dp[i - 1]);
+        }
+        return dp[size - 1];
+    }
+};
+
+// 或者
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        if (nums.empty()) {
+            return 0;
+        }
+        int size = nums.size();
+        if (size == 1) {
+            return nums[0];
+        }
+        int first = nums[0], second = max(nums[0], nums[1]);
+        for (int i = 2; i < size; i++) {
+            int temp = second;
+            second = max(first + nums[i], second);
+            first = temp;
+        }
+        return second;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int rob(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        int length = nums.length;
+        if (length == 1) {
+            return nums[0];
+        }
+        int[] dp = new int[length];
+        dp[0] = nums[0];
+        dp[1] = Math.max(nums[0], nums[1]);
+        for (int i = 2; i < length; i++) {
+            dp[i] = Math.max(dp[i - 2] + nums[i], dp[i - 1]);
+        }
+        return dp[length - 1];
+    }
+}
+
+// 或者
+class Solution {
+    public int rob(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        int length = nums.length;
+        if (length == 1) {
+            return nums[0];
+        }
+        int first = nums[0], second = Math.max(nums[0], nums[1]);
+        for (int i = 2; i < length; i++) {
+            int temp = second;
+            second = Math.max(first + nums[i], second);
+            first = temp;
+        }
+        return second;
+    }
+}
+```
+
+
+
+
+
+### [213. 打家劫舍 II](https://leetcode.cn/problems/house-robber-ii/)
+
+中等
+
+你是一个专业的小偷，计划偷窃沿街的房屋，每间房内都藏有一定的现金。这个地方所有的房屋都 **围成一圈** ，这意味着第一个房屋和最后一个房屋是紧挨着的。同时，相邻的房屋装有相互连通的防盗系统，**如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警** 。
+
+给定一个代表每个房屋存放金额的非负整数数组，计算你 **在不触动警报装置的情况下** ，今晚能够偷窃到的最高金额。
+
+**示例 1：**
+
+```
+输入：nums = [2,3,2]
+输出：3
+解释：你不能先偷窃 1 号房屋（金额 = 2），然后偷窃 3 号房屋（金额 = 2）, 因为他们是相邻的。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int robRange(vector<int>& nums, int start, int end) {
+        int first = nums[start], second = max(nums[start], nums[start + 1]);
+        for (int i = start + 2; i <= end; i++) {
+            int temp = second;
+            second = max(first + nums[i], second);
+            first = temp;
+        }
+        return second;
+    }
+
+    int rob(vector<int>& nums) {
+        int length = nums.size();
+        if (length == 1) {
+            return nums[0];
+        } else if (length == 2) {
+            return max(nums[0], nums[1]);
+        }
+        return max(robRange(nums, 0, length - 2), robRange(nums, 1, length - 1));
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int rob(int[] nums) {
+        int length = nums.length;
+        if (length == 1) {
+            return nums[0];
+        } else if (length == 2) {
+            return Math.max(nums[0], nums[1]);
+        }
+        return Math.max(robRange(nums, 0, length - 2), robRange(nums, 1, length - 1));
+    }
+
+    public int robRange(int[] nums, int start, int end) {
+        int first = nums[start], second = Math.max(nums[start], nums[start + 1]);
+        for (int i = start + 2; i <= end; i++) {
+            int temp = second;
+            second = Math.max(first + nums[i], second);
+            first = temp;
+        }
+        return second;
+    }
+}
+```
+
