@@ -18,6 +18,10 @@
 解释：最长递增子序列是 [2,3,7,101]，因此长度为 4 。
 ```
 
+$$
+dp[i]=max(dp[i],dp[j]+1), 0≤j<i,nums[j]<nums[i]
+$$
+
 C++版本
 
 ```c++
@@ -147,6 +151,21 @@ class Solution {
 输出: 2
 解释: 有两个最长递增子序列，分别是 [1, 3, 4, 7] 和[1, 3, 5, 7]。
 ```
+
+$$
+定义 dp[i] 表示以 nums[i] 结尾的最长上升子序列的长度，cnt[i] 表示以 nums[i] 结尾的最长上升子序列的个数。\\
+设 nums 的最长上升子序列的长度为 maxLen，那么答案为所有满足 dp[i]=maxLen 的 i 所对应的 cnt[i] 之和。 \\
+
+从小到大计算 dp 数组的值，在计算 dp[i] 之前，我们已经计算出 dp[0…i−1] 的值，则状态转移方程为：\\
+\\ 
+dp[i]=max⁡(dp[j])+1,其中 0≤j<i 且 num[j]<num[i] \\ 
+\\
+即考虑往 dp[0…i−1] 中最长的上升子序列后面再加一个 nums[i]。\\
+由于 dp[j] 代表 nums[0…j] 中以 nums[j] 结尾的最长上升子序列，所以如果能从 dp[j] 这个状态转移过来，\\
+那么 nums[i] 必然要大于 nums[j]，才能将 nums[i] 放在 nums[j] 后面以形成更长的上升子序列。
+\\
+对于 cnt[i]\textit{cnt}[i]cnt[i]，其等于所有满足 dp[j]+1=dp[i] 的 cnt[j] 之和。
+$$
 
 C++版本
 
@@ -333,6 +352,13 @@ class Solution {
 输出：3
 解释：最多信封的个数为 3, 组合为: [2,3] => [5,4] => [6,7]。
 ```
+
+$$
+设 f[i] 表示 h 的前 i 个元素可以组成的最长严格递增子序列的长度，并且我们必须选择第i个元素 h_i。\\
+在进行状态转移时，我们可以考虑倒数第二个选择的元素 h_j，必须满足 h_j < h_i 且 j<i，因此可以写出状态转移方程：\\
+f[i] = \max_{j<i ~\wedge~ h_j<h_i } \{ f[j] \} + 1 \\
+如果不存在比 h_i小的元素 h_j，那么 f[i] 的值为 1，即只选择了唯一的第 i 个元素。
+$$
 
 C++版本
 
@@ -741,6 +767,10 @@ class Solution {
 解释：从子数组 [3] 得到最大和 3
 ```
 
+$$
+leftMax[i]=max(leftMax[i−1],sum(nums[0:i+1])
+$$
+
 C++版本
 
 ```c++
@@ -913,6 +943,16 @@ class Solution {
      偷窃到的最高金额 = 1 + 3 = 4 。
 ```
 
+$$
+用 dp[i] 表示前 i 间房屋能偷窃到的最高总金额，那么就有如下的状态转移方程：\\
+dp[i] = \max(\textit{dp}[i-2]+\textit{nums}[i], \textit{dp}[i-1])
+\\
+边界条件为：\\
+\begin{cases} 
+	\textit{dp}[0] = \textit{nums}[0] & 只有一间房屋，则偷窃该房屋 \\ 
+	\textit{dp}[1] = \max(\textit{nums}[0], \textit{nums}[1]) & 只有两间房屋，选择其中金额较高的房屋进行偷窃 \\  \end{cases}
+$$
+
 C++版本
 
 ```c++
@@ -1023,6 +1063,19 @@ class Solution {
 解释：你不能先偷窃 1 号房屋（金额 = 2），然后偷窃 3 号房屋（金额 = 2）, 因为他们是相邻的。
 ```
 
+$$
+解题方程式：\\
+假设偷窃房屋的下标范围是[start,end]，用dp[i]表示在下标范围[start,i]内可以偷窃到的最高总金额，那么就有如下的状态转移方程：
+\\
+\textit{dp}[i] = \max(\textit{dp}[i-2]+\textit{nums}[i], \textit{dp}[i-1])
+\\
+边界条件为： \\
+\begin{cases} 
+	\textit{dp}[\textit{start}] = \textit{nums}[\textit{start}] & 只有一间房屋，则偷窃该房屋 \\ 
+	\textit{dp}[\textit{start}+1] = \max(\textit{nums}[\textit{start}], \textit{nums}[\textit{start}+1]) & 只有两间房屋，偷窃其中金额较高的房屋 
+\end{cases}
+$$
+
 C++版本
 
 ```c++
@@ -1074,6 +1127,369 @@ class Solution {
             first = temp;
         }
         return second;
+    }
+}
+```
+
+
+
+### [740. 删除并获得点数](https://leetcode.cn/problems/delete-and-earn/)
+
+中等
+
+给你一个整数数组 `nums` ，你可以对它进行一些操作。
+
+每次操作中，选择任意一个 `nums[i]` ，删除它并获得 `nums[i]` 的点数。之后，你必须删除 **所有** 等于 `nums[i] - 1` 和 `nums[i] + 1` 的元素。
+
+开始你拥有 `0` 个点数。返回你能通过这些操作获得的最大点数。
+
+**示例 1：**
+
+```
+输入：nums = [3,4,2]
+输出：6
+解释：
+删除 4 获得 4 个点数，因此 3 也被删除。
+之后，删除 2 获得 2 个点数。总共获得 6 个点数。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+private:
+    int rob(vector<int> &nums) {
+        int size = nums.size();
+        int first = nums[0], second = max(nums[0], nums[1]);
+        for (int i = 2; i < size; i++) {
+            int temp = second;
+            second = max(first + nums[i], second);
+            first = temp;
+        }
+        return second;
+    }
+
+public:
+    int deleteAndEarn(vector<int> &nums) {
+        int maxVal = 0;
+        for (int val : nums) {
+            maxVal = max(maxVal, val);
+        }
+        vector<int> sum(maxVal + 1);
+        for (int val : nums) {
+            sum[val] += val;
+        }
+        return rob(sum);
+    }
+};
+
+// 方法二：排序 + 动态规划
+class Solution {
+private:
+    int rob(vector<int> &nums) {
+        int size = nums.size();
+        if (size == 1) {
+            return nums[0];
+        }
+        int first = nums[0], second = max(nums[0], nums[1]);
+        for (int i = 2; i < size; i++) {
+            int temp = second;
+            second = max(first + nums[i], second);
+            first = temp;
+        }
+        return second;
+    }
+
+public:
+    int deleteAndEarn(vector<int> &nums) {
+        int n = nums.size();
+        int ans = 0;
+        sort(nums.begin(), nums.end());
+        vector<int> sum = {nums[0]};
+        for (int i = 1; i < n; ++i) {
+            int val = nums[i];
+            if (val == nums[i - 1]) {
+                sum.back() += val;
+            } else if (val == nums[i - 1] + 1) {
+                sum.push_back(val);
+            } else {
+                ans += rob(sum);
+                sum = {val};
+            }
+        }
+        ans += rob(sum);
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int deleteAndEarn(int[] nums) {
+        int maxVal = 0;
+        for (int val : nums) {
+            maxVal = Math.max(maxVal, val);
+        }
+        int[] sum = new int[maxVal + 1];
+        for (int val : nums) {
+            sum[val] += val;
+        }
+        return rob(sum);
+    }
+
+    public int rob(int[] nums) {
+        int size = nums.length;
+        int first = nums[0], second = Math.max(nums[0], nums[1]);
+        for (int i = 2; i < size; i++) {
+            int temp = second;
+            second = Math.max(first + nums[i], second);
+            first = temp;
+        }
+        return second;
+    }
+}
+
+// 方法二：排序 + 动态规划
+class Solution {
+    public int deleteAndEarn(int[] nums) {
+        int n = nums.length;
+        int ans = 0;
+        Arrays.sort(nums);
+        List<Integer> sum = new ArrayList<Integer>();
+        sum.add(nums[0]);
+        int size = 1;
+        for (int i = 1; i < n; ++i) {
+            int val = nums[i];
+            if (val == nums[i - 1]) {
+                sum.set(size - 1, sum.get(size - 1) + val);
+            } else if (val == nums[i - 1] + 1) {
+                sum.add(val);
+                ++size;
+            } else {
+                ans += rob(sum);
+                sum.clear();
+                sum.add(val);
+                size = 1;
+            }
+        }
+        ans += rob(sum);
+        return ans;
+    }
+
+    public int rob(List<Integer> nums) {
+        int size = nums.size();
+        if (size == 1) {
+            return nums.get(0);
+        }
+        int first = nums.get(0), second = Math.max(nums.get(0), nums.get(1));
+        for (int i = 2; i < size; i++) {
+            int temp = second;
+            second = Math.max(first + nums.get(i), second);
+            first = temp;
+        }
+        return second;
+    }
+}
+```
+
+
+
+### [1388. 3n 块披萨](https://leetcode.cn/problems/pizza-with-3n-slices/)
+
+困难
+
+给你一个披萨，它由 3n 块不同大小的部分组成，现在你和你的朋友们需要按照如下规则来分披萨：
+
+- 你挑选 **任意** 一块披萨。
+- Alice 将会挑选你所选择的披萨逆时针方向的下一块披萨。
+- Bob 将会挑选你所选择的披萨顺时针方向的下一块披萨。
+- 重复上述过程直到没有披萨剩下。
+
+每一块披萨的大小按顺时针方向由循环数组 `slices` 表示。
+
+请你返回你可以获得的披萨大小总和的最大值。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/03/21/sample_3_1723.png)
+
+```
+输入：slices = [1,2,3,4,5,6]
+输出：10
+解释：选择大小为 4 的披萨，Alice 和 Bob 分别挑选大小为 3 和 5 的披萨。然后你选择大小为 6 的披萨，Alice 和 Bob 分别挑选大小为 2 和 1 的披萨。你获得的披萨总大小为 4 + 6 = 10 。
+```
+
+$$
+当 i<2 或 j=0 时：\\
+{dp} = \begin{cases} 
+	0, & j = 0 \\ 
+	\textit{slices}[0], & i = 0, j = 1 \\ 
+	\max(\textit{slices}[0], \textit{slices}[1]), & i = 1, j = 1 \\ 
+	-\infty, & i \lt 2,j \ge 2 
+\end{cases}
+ 	\\
+ 	\\
+当 i≥2 and j>0 时： \\
+dp[i][j]=max(dp[i−2][j−1]+slices[i],dp[i−1][j])
+$$
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int calculate(const vector<int>& slices) {
+        int N = slices.size(), n = (N + 1) / 3;
+        vector<vector<int>> dp(N, vector<int>(n + 1, INT_MIN));
+        dp[0][0] = 0;
+        dp[0][1] = slices[0];
+        dp[1][0] = 0;
+        dp[1][1] = max(slices[0], slices[1]);
+        for (int i = 2; i < N; i++) {
+            dp[i][0] = 0;
+            for (int j = 1; j <= n; j++) {
+                dp[i][j] = max(dp[i - 1][j], dp[i - 2][j - 1] + slices[i]);
+            }
+        }
+        return dp[N - 1][n];
+    }
+
+    int maxSizeSlices(vector<int>& slices) {
+        vector<int> v1(slices.begin() + 1, slices.end());
+        vector<int> v2(slices.begin(), slices.end() - 1);
+        int ans1 = calculate(v1);
+        int ans2 = calculate(v2);
+        return max(ans1, ans2);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int maxSizeSlices(int[] slices) {
+        int[] v1 = new int[slices.length - 1];
+        int[] v2 = new int[slices.length - 1];
+        System.arraycopy(slices, 1, v1, 0, slices.length - 1);
+        System.arraycopy(slices, 0, v2, 0, slices.length - 1);
+        int ans1 = calculate(v1);
+        int ans2 = calculate(v2);
+        return Math.max(ans1, ans2);
+    }
+
+    public int calculate(int[] slices) {
+        int N = slices.length, n = (N + 1) / 3;
+        int[][] dp = new int[N][n + 1];
+        for (int i = 0; i < N; i++) {
+            Arrays.fill(dp[i], Integer.MIN_VALUE);
+        }
+        dp[0][0] = 0;
+        dp[0][1] = slices[0];
+        dp[1][0] = 0;
+        dp[1][1] = Math.max(slices[0], slices[1]);
+        for (int i = 2; i < N; i++) {
+            dp[i][0] = 0;
+            for (int j = 1; j <= n; j++) {
+                dp[i][j] = Math.max(dp[i - 1][j], dp[i - 2][j - 1] + slices[i]);
+            }
+        }
+        return dp[N - 1][n];
+    }
+}
+```
+
+
+
+### [873. 最长的斐波那契子序列的长度](https://leetcode.cn/problems/length-of-longest-fibonacci-subsequence/)
+
+中等
+
+如果序列 `X_1, X_2, ..., X_n` 满足下列条件，就说它是 *斐波那契式* 的：
+
+- `n >= 3`
+- 对于所有 `i + 2 <= n`，都有 `X_i + X_{i+1} = X_{i+2}`
+
+给定一个**严格递增**的正整数数组形成序列 arr ，找到 arr 中最长的斐波那契式的子序列的长度。如果一个不存在，返回 0 。
+
+*（回想一下，子序列是从原序列 arr 中派生出来的，它从 arr 中删掉任意数量的元素（也可以不删），而不改变其余元素的顺序。例如， `[3, 5, 8]` 是 `[3, 4, 5, 6, 7, 8]` 的一个子序列）*
+
+**示例 1：**
+
+```
+输入: arr = [1,2,3,4,5,6,7,8]
+输出: 5
+解释: 最长的斐波那契式子序列为 [1,2,3,5,8] 。
+```
+
+$$
+{dp}[j][i] = 
+\begin{cases} 
+	\max(\textit{dp}[k][j] + 1, 3), & 0 \le k < j \\ 
+	0, & k < 0 \text{~or~} k \ge j 
+\end{cases}
+$$
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int lenLongestFibSubseq(vector<int>& arr) {
+        unordered_map<int, int> indices;
+        int n = arr.size();
+        for (int i = 0; i < n; i++) {
+            indices[arr[i]] = i;
+        }
+        vector<vector<int>> dp(n, vector<int>(n));
+        int ans = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = i - 1; j >= 0 && arr[j] * 2 > arr[i]; j--) {
+                int k = -1;
+                if (indices.count(arr[i] - arr[j])) {
+                    k = indices[arr[i] - arr[j]];
+                }
+                if (k >= 0) {
+                    dp[j][i] = max(dp[k][j] + 1, 3);
+                }
+                ans = max(ans, dp[j][i]);
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int lenLongestFibSubseq(int[] arr) {
+        Map<Integer, Integer> indices = new HashMap<Integer, Integer>();
+        int n = arr.length;
+        for (int i = 0; i < n; i++) {
+            indices.put(arr[i], i);
+        }
+        int[][] dp = new int[n][n];
+        int ans = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = i - 1; j >= 0 && arr[j] * 2 > arr[i]; j--) {
+                int k = indices.getOrDefault(arr[i] - arr[j], -1);
+                if (k >= 0) {
+                    dp[j][i] = Math.max(dp[k][j] + 1, 3);
+                }
+                ans = Math.max(ans, dp[j][i]);
+            }
+        }
+        return ans;
     }
 }
 ```
