@@ -1494,3 +1494,431 @@ class Solution {
 }
 ```
 
+
+
+### [1027. 最长等差数列](https://leetcode.cn/problems/longest-arithmetic-subsequence/)
+
+中等
+
+给你一个整数数组 `nums`，返回 `nums` 中最长等差子序列的**长度**。
+
+回想一下，`nums` 的子序列是一个列表 `nums[i1], nums[i2], ..., nums[ik]` ，且 `0 <= i1 < i2 < ... < ik <= nums.length - 1`。并且如果 `seq[i+1] - seq[i]`( `0 <= i < seq.length - 1`) 的值都相同，那么序列 `seq` 是等差的。
+
+**示例 1：**
+
+```
+输入：nums = [3,6,9,12]
+输出：4
+解释： 
+整个数组是公差为 3 的等差数列。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int longestArithSeqLength(vector<int>& nums) {
+        auto [minit, maxit] = minmax_element(nums.begin(), nums.end());
+        int diff = *maxit - *minit;
+        int ans = 1;
+        for (int d = -diff; d <= diff; ++d) {
+            vector<int> f(*maxit + 1, -1);
+            for (int num: nums) {
+                if (int prev = num - d; prev >= *minit && prev <= *maxit && f[prev] != -1) {
+                    f[num] = max(f[num], f[prev] + 1);
+                    ans = max(ans, f[num]);
+                }
+                f[num] = max(f[num], 1);
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int longestArithSeqLength(int[] nums) {
+        int minv = Arrays.stream(nums).min().getAsInt();
+        int maxv = Arrays.stream(nums).max().getAsInt();
+        int diff = maxv - minv;
+        int ans = 1;
+        for (int d = -diff; d <= diff; ++d) {
+            int[] f = new int[maxv + 1];
+            Arrays.fill(f, -1);
+            for (int num : nums) {
+                int prev = num - d;
+                if (prev >= minv && prev <= maxv && f[prev] != -1) {
+                    f[num] = Math.max(f[num], f[prev] + 1);
+                    ans = Math.max(ans, f[num]);
+                }
+                f[num] = Math.max(f[num], 1);
+            }
+        }
+        return ans;
+    }
+}
+
+// 或者
+class Solution {
+    public int longestArithSeqLength(int[] nums) {
+        int n = nums.length, ans = 0;
+		int[][] dp = new int[n][1001];
+		for(int i = 1; i < n; i++)
+			for(int j = 0; j < i; j++) {
+				int k = nums[i] - nums[j] + 500;
+				dp[i][k] = Math.max(dp[i][k], dp[j][k] + 1);
+				ans = ans > dp[i][k] ? ans : dp[i][k];
+			}
+        return ans + 1;
+    }
+}
+
+// 或者
+class Solution {
+    public int longestArithSeqLength(int[] nums) {
+        int[][] dp = new int[nums.length][1001];
+        int ans = 0;
+        for(int i = 1;i < nums.length;i++){
+            for(int j = i-1;j >= 0;j--){
+                int d = nums[i] - nums[j] + 500;
+                if(dp[i][d] > 0){
+                    continue;
+                }
+                dp[i][d] = dp[j][d] + 1;
+                ans = Math.max(ans,dp[i][d]);
+            }
+        }
+
+        return ans+1;
+    }
+}
+```
+
+
+
+### [368. 最大整除子集](https://leetcode.cn/problems/largest-divisible-subset/)
+
+中等
+
+给你一个由 **无重复** 正整数组成的集合 `nums` ，请你找出并返回其中最大的整除子集 `answer` ，子集中每一元素对 `(answer[i], answer[j])` 都应当满足：
+
+- `answer[i] % answer[j] == 0` ，或
+- `answer[j] % answer[i] == 0`
+
+如果存在多个有效解子集，返回其中任何一个均可。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3]
+输出：[1,2]
+解释：[1,3] 也会被视为正确答案。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    vector<int> largestDivisibleSubset(vector<int>& nums) {
+        int len = nums.size();
+        sort(nums.begin(), nums.end());
+
+        // 第 1 步：动态规划找出最大子集的个数、最大子集中的最大整数
+        vector<int> dp(len, 1);
+        int maxSize = 1;
+        int maxVal = dp[0];
+        for (int i = 1; i < len; i++) {
+            for (int j = 0; j < i; j++) {
+                // 题目中说「没有重复元素」很重要
+                if (nums[i] % nums[j] == 0) {
+                    dp[i] = max(dp[i], dp[j] + 1);
+                }
+            }
+
+            if (dp[i] > maxSize) {
+                maxSize = dp[i];
+                maxVal = nums[i];
+            }
+        }
+
+        // 第 2 步：倒推获得最大子集
+        vector<int> res;
+        if (maxSize == 1) {
+            res.push_back(nums[0]);
+            return res;
+        }
+
+        for (int i = len - 1; i >= 0 && maxSize > 0; i--) {
+            if (dp[i] == maxSize && maxVal % nums[i] == 0) {
+                res.push_back(nums[i]);
+                maxVal = nums[i];
+                maxSize--;
+            }
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public List<Integer> largestDivisibleSubset(int[] nums) {
+        int len = nums.length;
+        Arrays.sort(nums);
+
+        // 第 1 步：动态规划找出最大子集的个数、最大子集中的最大整数
+        int[] dp = new int[len];
+        Arrays.fill(dp, 1);
+        int maxSize = 1;
+        int maxVal = dp[0];
+        for (int i = 1; i < len; i++) {
+            for (int j = 0; j < i; j++) {
+                // 题目中说「没有重复元素」很重要
+                if (nums[i] % nums[j] == 0) {
+                    dp[i] = Math.max(dp[i], dp[j] + 1);
+                }
+            }
+
+            if (dp[i] > maxSize) {
+                maxSize = dp[i];
+                maxVal = nums[i];
+            }
+        }
+
+        // 第 2 步：倒推获得最大子集
+        List<Integer> res = new ArrayList<Integer>();
+        if (maxSize == 1) {
+            res.add(nums[0]);
+            return res;
+        }
+        
+        for (int i = len - 1; i >= 0 && maxSize > 0; i--) {
+            if (dp[i] == maxSize && maxVal % nums[i] == 0) {
+                res.add(nums[i]);
+                maxVal = nums[i];
+                maxSize--;
+            }
+        }
+        return res;
+    }
+}
+
+// 或者
+class Solution {
+    public List<Integer> largestDivisibleSubset(int[] nums) {
+        
+        int n = nums.length, maxIdx = 0;
+        List<Integer> ans = new LinkedList<>();
+        if (n == 0) return ans;
+        Arrays.sort(nums);
+        
+        int[] lens = new int[n], prevs = new int[n];
+        Arrays.fill(prevs, -1);
+        
+        for (int i = 0; nums[i] <= nums[n-1]/2; ++i) {
+            for (int j = i + 1, f = 2; nums[i] <= nums[n-1]/f; f = (nums[j] + nums[i] - 1)/nums[i]) {
+                
+                int idx = Arrays.binarySearch(nums, j, n, f*nums[i]);
+                
+                if (idx > 0 && lens[idx] <= lens[i]) {
+                    prevs[idx] = i;
+                    lens[idx] = lens[i] + 1;
+                    if (lens[idx] > lens[maxIdx]) maxIdx = idx;
+                }
+                
+                j = idx >= 0 ? idx + 1 : -(idx + 1);
+                if (j >= n) break;
+            }
+        }
+        for (int i = maxIdx; i >= 0; i = prevs[i]) ans.add(0, nums[i]);
+        return ans;
+    }
+}
+```
+
+
+
+### [32. 最长有效括号](https://leetcode.cn/problems/longest-valid-parentheses/)
+
+困难
+
+给你一个只包含 `'('` 和 `')'` 的字符串，找出最长有效（格式正确且连续）括号子串的长度。
+
+**示例 1：**
+
+```
+输入：s = "(()"
+输出：2
+解释：最长有效括号子串是 "()"
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int longestValidParentheses(string s) {
+        int maxans = 0, n = s.length();
+        vector<int> dp(n, 0);
+        for (int i = 1; i < n; i++) {
+            if (s[i] == ')') {
+                if (s[i - 1] == '(') {
+                    dp[i] = (i >= 2 ? dp[i - 2] : 0) + 2;
+                } else if (i - dp[i - 1] > 0 && s[i - dp[i - 1] - 1] == '(') {
+                    dp[i] = dp[i - 1] + ((i - dp[i - 1]) >= 2 ? dp[i - dp[i - 1] - 2] : 0) + 2;
+                }
+                maxans = max(maxans, dp[i]);
+            }
+        }
+        return maxans;
+    }
+};
+
+// 方法二：栈
+class Solution {
+public:
+    int longestValidParentheses(string s) {
+        int maxans = 0;
+        stack<int> stk;
+        stk.push(-1);
+        for (int i = 0; i < s.length(); i++) {
+            if (s[i] == '(') {
+                stk.push(i);
+            } else {
+                stk.pop();
+                if (stk.empty()) {
+                    stk.push(i);
+                } else {
+                    maxans = max(maxans, i - stk.top());
+                }
+            }
+        }
+        return maxans;
+    }
+};
+
+// 方法三：不需要额外的空间
+class Solution {
+public:
+    int longestValidParentheses(string s) {
+        int left = 0, right = 0, maxlength = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if (s[i] == '(') {
+                left++;
+            } else {
+                right++;
+            }
+            if (left == right) {
+                maxlength = max(maxlength, 2 * right);
+            } else if (right > left) {
+                left = right = 0;
+            }
+        }
+        left = right = 0;
+        for (int i = (int)s.length() - 1; i >= 0; i--) {
+            if (s[i] == '(') {
+                left++;
+            } else {
+                right++;
+            }
+            if (left == right) {
+                maxlength = max(maxlength, 2 * left);
+            } else if (left > right) {
+                left = right = 0;
+            }
+        }
+        return maxlength;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int longestValidParentheses(String s) {
+        int maxans = 0;
+        int[] dp = new int[s.length()];
+        for (int i = 1; i < s.length(); i++) {
+            if (s.charAt(i) == ')') {
+                if (s.charAt(i - 1) == '(') {
+                    dp[i] = (i >= 2 ? dp[i - 2] : 0) + 2;
+                } else if (i - dp[i - 1] > 0 && s.charAt(i - dp[i - 1] - 1) == '(') {
+                    dp[i] = dp[i - 1] + ((i - dp[i - 1]) >= 2 ? dp[i - dp[i - 1] - 2] : 0) + 2;
+                }
+                maxans = Math.max(maxans, dp[i]);
+            }
+        }
+        return maxans;
+    }
+}
+
+// 方法二：栈
+class Solution {
+    public int longestValidParentheses(String s) {
+        int maxans = 0;
+        Deque<Integer> stack = new LinkedList<Integer>();
+        stack.push(-1);
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '(') {
+                stack.push(i);
+            } else {
+                stack.pop();
+                if (stack.isEmpty()) {
+                    stack.push(i);
+                } else {
+                    maxans = Math.max(maxans, i - stack.peek());
+                }
+            }
+        }
+        return maxans;
+    }
+}
+
+// 方法三：不需要额外的空间
+class Solution {
+    public int longestValidParentheses(String s) {
+        int left = 0, right = 0, maxlength = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '(') {
+                left++;
+            } else {
+                right++;
+            }
+            if (left == right) {
+                maxlength = Math.max(maxlength, 2 * right);
+            } else if (right > left) {
+                left = right = 0;
+            }
+        }
+        left = right = 0;
+        for (int i = s.length() - 1; i >= 0; i--) {
+            if (s.charAt(i) == '(') {
+                left++;
+            } else {
+                right++;
+            }
+            if (left == right) {
+                maxlength = Math.max(maxlength, 2 * left);
+            } else if (left > right) {
+                left = right = 0;
+            }
+        }
+        return maxlength;
+    }
+}
+```
+
