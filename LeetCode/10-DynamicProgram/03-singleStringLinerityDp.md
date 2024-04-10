@@ -1425,7 +1425,7 @@ class Solution {
 ```
 输入: arr = [1,2,3,4,5,6,7,8]
 输出: 5
-解释: 最长的斐波那契式子序列为 [1,2,3,5,8] 。
+解释: 最长的斐波那契式子序列为 [1,2,3,5,8]。
 ```
 
 $$
@@ -1446,7 +1446,7 @@ public:
         unordered_map<int, int> indices;
         int n = arr.size();
         for (int i = 0; i < n; i++) {
-            indices[arr[i]] = i;
+            indices[arr[i]] = i; 
         }
         vector<vector<int>> dp(n, vector<int>(n));
         int ans = 0;
@@ -1487,6 +1487,31 @@ class Solution {
                     dp[j][i] = Math.max(dp[k][j] + 1, 3);
                 }
                 ans = Math.max(ans, dp[j][i]);
+            }
+        }
+        return ans;
+    }
+}
+
+// 或者
+class Solution {
+    public int lenLongestFibSubseq(int[] arr) {
+        int len = arr.length;
+        int[][] dp = new int[len][len];
+        int ans = 0;
+        for (int i = 2; i < len; i++) {
+            int l = 0, r = i - 1;
+            while (l < r) {
+                if (arr[l] + arr[r] == arr[i]) {
+                    dp[i][r] = Math.max(dp[r][l] + 1, 3);
+                    ans = Math.max(dp[i][r], ans);
+                    l++;
+                    r--;
+                } else if (arr[l] + arr[r] > arr[i]) {
+                    r--;
+                } else {
+                    l++;
+                } 
             }
         }
         return ans;
