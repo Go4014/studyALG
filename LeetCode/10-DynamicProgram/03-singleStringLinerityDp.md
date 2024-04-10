@@ -2122,3 +2122,231 @@ class Solution {
 }
 ```
 
+
+
+### [639. 解码方法 II](https://leetcode.cn/problems/decode-ways-ii/)
+
+困难
+
+一条包含字母 `A-Z` 的消息通过以下的方式进行了 **编码** ：
+
+> 'A' -> "1"
+> 'B' -> "2"
+> ...
+> 'Z' -> "26"
+
+要 **解码** 一条已编码的消息，所有的数字都必须分组，然后按原来的编码方案反向映射回字母（可能存在多种方式）。例如，`"11106"` 可以映射为：
+
+- `"AAJF"` 对应分组 `(1 1 10 6)`
+- `"KJF"` 对应分组 `(11 10 6)`
+
+注意，像 `(1 11 06)` 这样的分组是无效的，因为 `"06"` 不可以映射为 `'F'` ，因为 `"6"` 与 `"06"` 不同。
+
+**除了** 上面描述的数字字母映射方案，编码消息中可能包含 `'*'` 字符，可以表示从 `'1'` 到 `'9'` 的任一数字（不包括 `'0'`）。例如，编码字符串 `"1*"` 可以表示 `"11"`、`"12"`、`"13"`、`"14"`、`"15"`、`"16"`、`"17"`、`"18"` 或 `"19"` 中的任意一条消息。对 `"1*"` 进行解码，相当于解码该字符串可以表示的任何编码消息。
+
+给你一个字符串 `s` ，由数字和 `'*'` 字符组成，返回 **解码** 该字符串的方法 **数目** 。
+
+由于答案数目可能非常大，返回 `109 + 7` 的 **模** 。
+
+**示例 1：**
+
+```
+输入：s = "*"
+输出：9
+解释：这一条编码消息可以表示 "1"、"2"、"3"、"4"、"5"、"6"、"7"、"8" 或 "9" 中的任意一条。
+可以分别解码成字符串 "A"、"B"、"C"、"D"、"E"、"F"、"G"、"H" 和 "I" 。
+因此，"*" 总共有 9 种解码方法。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+private:
+    static constexpr int mod = 1000000007;
+
+public:
+    int numDecodings(string s) {
+        auto check1digit = [](char ch) -> int {
+            if (ch == '0') {
+                return 0;
+            }
+            return ch == '*' ? 9 : 1;
+        };
+
+        auto check2digits = [](char c0, char c1) -> int {
+            if (c0 == '*' && c1 == '*') {
+                return 15;
+            }
+            if (c0 == '*') {
+                return c1 <= '6' ? 2 : 1;
+            }
+            if (c1 == '*') {
+                if (c0 == '1') {
+                    return 9;
+                }
+                if (c0 == '2') {
+                    return 6;
+                }
+                return 0;
+            }
+            return c0 != '0' && (c0 - '0') * 10 + (c1 - '0') <= 26;
+        };
+
+        int n = s.size();
+        // a = f[i-2], b = f[i-1], c = f[i]
+        int a = 0, b = 1, c = 0;
+        for (int i = 1; i <= n; ++i) {
+            c = (long long)b * check1digit(s[i - 1]) % mod;
+            if (i > 1) {
+                c = (c + (long long)a * check2digits(s[i - 2], s[i - 1])) % mod;
+            }
+            a = b;
+            b = c;
+        }
+        return c;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    static final int MOD = 1000000007;
+
+    public int numDecodings(String s) {
+        int n = s.length();
+        // a = f[i-2], b = f[i-1], c = f[i]
+        long a = 0, b = 1, c = 0;
+        for (int i = 1; i <= n; ++i) {
+            c = b * check1digit(s.charAt(i - 1)) % MOD;
+            if (i > 1) {
+                c = (c + a * check2digits(s.charAt(i - 2), s.charAt(i - 1))) % MOD;
+            }
+            a = b;
+            b = c;
+        }
+        return (int) c;
+    }
+
+    public int check1digit(char ch) {
+        if (ch == '0') {
+            return 0;
+        }
+        return ch == '*' ? 9 : 1;
+    }
+
+    public int check2digits(char c0, char c1) {
+        if (c0 == '*' && c1 == '*') {
+            return 15;
+        }
+        if (c0 == '*') {
+            return c1 <= '6' ? 2 : 1;
+        }
+        if (c1 == '*') {
+            if (c0 == '1') {
+                return 9;
+            }
+            if (c0 == '2') {
+                return 6;
+            }
+            return 0;
+        }
+        return (c0 != '0' && (c0 - '0') * 10 + (c1 - '0') <= 26) ? 1 : 0;
+    }
+}
+```
+
+
+
+### [132. 分割回文串 II](https://leetcode.cn/problems/palindrome-partitioning-ii/)
+
+困难
+
+给你一个字符串 `s`，请你将 `s` 分割成一些子串，使每个子串都是回文串。
+
+返回符合要求的 **最少分割次数** 。
+
+**示例 1：**
+
+```
+输入：s = "aab"
+输出：1
+解释：只需一次分割
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int minCut(string s) {
+        int n = s.size();
+        vector<vector<int>> g(n, vector<int>(n, true));
+
+        for (int i = n - 1; i >= 0; --i) {
+            for (int j = i + 1; j < n; ++j) {
+                g[i][j] = (s[i] == s[j]) && g[i + 1][j - 1];
+            }
+        }
+
+        vector<int> f(n, INT_MAX);
+        for (int i = 0; i < n; ++i) {
+            if (g[0][i]) {
+                f[i] = 0;
+            }
+            else {
+                for (int j = 0; j < i; ++j) {
+                    if (g[j + 1][i]) {
+                        f[i] = min(f[i], f[j] + 1);
+                    }
+                }
+            }
+        }
+
+        return f[n - 1];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int minCut(String s) {
+        int n = s.length();
+        boolean[][] g = new boolean[n][n];
+        for (int i = 0; i < n; ++i) {
+            Arrays.fill(g[i], true);
+        }
+
+        for (int i = n - 1; i >= 0; --i) {
+            for (int j = i + 1; j < n; ++j) {
+                g[i][j] = s.charAt(i) == s.charAt(j) && g[i + 1][j - 1];
+            }
+        }
+
+        int[] f = new int[n];
+        Arrays.fill(f, Integer.MAX_VALUE);
+        for (int i = 0; i < n; ++i) {
+            if (g[0][i]) {
+                f[i] = 0;
+            } else {
+                for (int j = 0; j < i; ++j) {
+                    if (g[j + 1][i]) {
+                        f[i] = Math.min(f[i], f[j] + 1);
+                    }
+                }
+            }
+        }
+
+        return f[n - 1];
+    }
+}
+```
+
