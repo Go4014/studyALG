@@ -2375,3 +2375,432 @@ class Solution {
 }
 ```
 
+
+
+### [1220. 统计元音字母序列的数目](https://leetcode.cn/problems/count-vowels-permutation/)
+
+困难
+
+给你一个整数 `n`，请你帮忙统计一下我们可以按下述规则形成多少个长度为 `n` 的字符串：
+
+- 字符串中的每个字符都应当是小写元音字母（`'a'`, `'e'`, `'i'`, `'o'`, `'u'`）
+- 每个元音 `'a'` 后面都只能跟着 `'e'`
+- 每个元音 `'e'` 后面只能跟着 `'a'` 或者是 `'i'`
+- 每个元音 `'i'` 后面 **不能** 再跟着另一个 `'i'`
+- 每个元音 `'o'` 后面只能跟着 `'i'` 或者是 `'u'`
+- 每个元音 `'u'` 后面只能跟着 `'a'`
+
+由于答案可能会很大，所以请你返回 模 `10^9 + 7` 之后的结果。
+
+**示例 1：**
+
+```
+输入：n = 1
+输出：5
+解释：所有可能的字符串分别是："a", "e", "i" , "o" 和 "u"。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int countVowelPermutation(int n) {
+        long long mod = 1e9 + 7;
+        vector<long long> dp(5, 1);
+        vector<long long> ndp(5);
+        for (int i = 2; i <= n; ++i) {
+            /* a前面可以为e,u,i */
+            ndp[0] = (dp[1] + dp[2] + dp[4]) % mod;
+            /* e前面可以为a,i */
+            ndp[1] = (dp[0] + dp[2]) % mod;
+            /* i前面可以为e,o */
+            ndp[2] = (dp[1] + dp[3]) % mod;
+            /* o前面可以为i */
+            ndp[3] = dp[2];
+            /* u前面可以为i,o */
+            ndp[4] = (dp[2] + dp[3]) % mod;
+            dp = ndp;
+        }
+        return accumulate(dp.begin(), dp.end(), 0LL) % mod;
+    }
+};
+
+// 方法二：矩阵快速幂
+using LL = long long;
+using Mat = vector<vector<LL>>;
+
+class Solution {
+public:     
+    Mat multiply(const Mat & matrixA, const Mat & matrixB, LL mod) {
+        int m = matrixA.size();
+        int n = matrixB[0].size();
+        Mat res(m, vector<LL>(n, 0));
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                for (int k = 0; k < matrixA[i].size(); ++k) {
+                    res[i][j] = (res[i][j] + matrixA[i][k] * matrixB[k][j]) % mod;
+                }
+            }
+        }
+        return res;
+    }
+     
+    Mat fastPow(const Mat & matrix, LL n, LL mod) {
+        int m = matrix.size();
+        Mat res(m, vector<LL>(m, 0));
+        Mat curr = matrix;
+
+        for (int i = 0; i < m; ++i) {
+            res[i][i] = 1;
+        }
+        for (int i = n; i != 0; i >>= 1) {
+            if (i & 1) {
+                res = multiply(curr, res, mod);
+            }
+            curr = multiply(curr, curr, mod);
+        }
+        return res;
+    }
+
+    int countVowelPermutation(int n) {
+        LL mod = 1e9 + 7;
+        Mat factor =
+        {
+            {0, 1, 0, 0, 0}, 
+            {1, 0, 1, 0, 0}, 
+            {1, 1, 0, 1, 1}, 
+            {0, 0, 1, 0, 1}, 
+            {1, 0, 0, 0, 0}
+        };
+        Mat res = fastPow(factor, n - 1, mod);
+        long long ans = 0;
+        for (int i = 0; i < 5; ++i) {
+            ans = (ans + accumulate(res[i].begin(), res[i].end(), 0LL)) % mod;
+        }
+        return  ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int countVowelPermutation(int n) {
+        long mod = 1000000007;
+        long[] dp = new long[5];
+        long[] ndp = new long[5];
+        for (int i = 0; i < 5; ++i) {
+            dp[i] = 1;
+        }
+        for (int i = 2; i <= n; ++i) {
+            /* a前面可以为e,u,i */
+            ndp[0] = (dp[1] + dp[2] + dp[4]) % mod;
+            /* e前面可以为a,i */
+            ndp[1] = (dp[0] + dp[2]) % mod;
+            /* i前面可以为e,o */
+            ndp[2] = (dp[1] + dp[3]) % mod;
+            /* o前面可以为i */
+            ndp[3] = dp[2];
+            /* u前面可以为i,o */
+            ndp[4] = (dp[2] + dp[3]) % mod;
+            System.arraycopy(ndp, 0, dp, 0, 5);
+        }
+        long ans = 0;
+        for (int i = 0; i < 5; ++i) {
+            ans = (ans + dp[i]) % mod;
+        }
+        return (int)ans;
+    }
+}
+
+// 方法二：矩阵快速幂
+class Solution {
+    public int countVowelPermutation(int n) {
+        long mod = 1_000_000_007;
+        long[][] factor =
+        {
+            {0, 1, 0, 0, 0}, 
+            {1, 0, 1, 0, 0}, 
+            {1, 1, 0, 1, 1}, 
+            {0, 0, 1, 0, 1}, 
+            {1, 0, 0, 0, 0}
+        };
+
+        long[][] res = fastPow(factor, n - 1, mod);
+        long ans = 0;
+        for (int i = 0; i < 5; ++i) {
+            for (int j = 0; j < 5; ++j) {
+                ans = (ans + res[i][j]) % mod;
+            }
+        }
+        return (int)ans;
+    }
+
+    public long[][] fastPow(long[][] matrix, int n, long mod) {
+        int m = matrix.length;
+        long[][] res = new long[m][m];
+        long[][] curr = matrix;
+
+        for (int i = 0; i < m; ++i) {
+            res[i][i] = 1;
+        }
+        for (int i = n; i != 0; i >>= 1) {
+            if ((i % 2) == 1) {
+                res = multiply(curr, res, mod);
+            }
+            curr = multiply(curr, curr, mod);
+        }
+        return res;
+    }
+
+    public long[][] multiply(long[][] matrixA, long[][] matrixB, long mod) {
+        int m = matrixA.length;
+        int n = matrixB[0].length;
+        long[][] res = new long[m][n];
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                res[i][j] = 0;
+                for (int k = 0; k < matrixA[i].length; ++k) {
+                    res[i][j] = (res[i][j] + matrixA[i][k] * matrixB[k][j]) % mod;
+                }
+            }
+        }
+        return res;
+    }
+}
+```
+
+
+
+### [338. 比特位计数](https://leetcode.cn/problems/counting-bits/)
+
+简单
+
+给你一个整数 `n` ，对于 `0 <= i <= n` 中的每个 `i` ，计算其二进制表示中 **`1` 的个数** ，返回一个长度为 `n + 1` 的数组 `ans` 作为答案。
+
+**示例 1：**
+
+```
+输入：n = 2
+输出：[0,1,1]
+解释：
+0 --> 0
+1 --> 1
+2 --> 10
+```
+
+C++版本
+
+```c++
+// 方法一：Brian Kernighan 算法
+class Solution {
+public:
+    int countOnes(int x) {
+        int ones = 0;
+        while (x > 0) {
+            x &= (x - 1);
+            ones++;
+        }
+        return ones;
+    }
+
+    vector<int> countBits(int n) {
+        vector<int> bits(n + 1);
+        for (int i = 0; i <= n; i++) {
+            bits[i] = countOnes(i);
+        }
+        return bits;
+    }
+};
+
+// 方法二：动态规划——最高有效位
+class Solution {
+public:
+    vector<int> countBits(int n) {
+        vector<int> bits(n + 1);
+        int highBit = 0;
+        for (int i = 1; i <= n; i++) {
+            if ((i & (i - 1)) == 0) {
+                highBit = i;
+            }
+            bits[i] = bits[i - highBit] + 1;
+        }
+        return bits;
+    }
+};
+
+// 方法三：动态规划——最低有效位
+class Solution {
+public:
+    vector<int> countBits(int n) {
+        vector<int> bits(n + 1);
+        for (int i = 1; i <= n; i++) {
+            bits[i] = bits[i >> 1] + (i & 1);
+        }
+        return bits;
+    }
+};
+
+// 方法四：动态规划——最低设置位
+class Solution {
+public:
+    vector<int> countBits(int n) {
+        vector<int> bits(n + 1);
+        for (int i = 1; i <= n; i++) {
+            bits[i] = bits[i & (i - 1)] + 1;
+        }
+        return bits;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：Brian Kernighan 算法
+class Solution {
+    public int[] countBits(int n) {
+        int[] bits = new int[n + 1];
+        for (int i = 0; i <= n; i++) {
+            bits[i] = countOnes(i);
+        }
+        return bits;
+    }
+
+    public int countOnes(int x) {
+        int ones = 0;
+        while (x > 0) {
+            x &= (x - 1);
+            ones++;
+        }
+        return ones;
+    }
+}
+
+// 方法二：动态规划——最高有效位
+class Solution {
+    public int[] countBits(int n) {
+        int[] bits = new int[n + 1];
+        int highBit = 0;
+        for (int i = 1; i <= n; i++) {
+            if ((i & (i - 1)) == 0) {
+                highBit = i;
+            }
+            bits[i] = bits[i - highBit] + 1;
+        }
+        return bits;
+    }
+}
+
+// 方法三：动态规划——最低有效位
+class Solution {
+    public int[] countBits(int n) {
+        int[] bits = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            bits[i] = bits[i >> 1] + (i & 1);
+        }
+        return bits;
+    }
+}
+
+// 方法四：动态规划——最低设置位
+class Solution {
+    public int[] countBits(int n) {
+        int[] bits = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            bits[i] = bits[i & (i - 1)] + 1;
+        }
+        return bits;
+    }
+}
+```
+
+
+
+### [801. 使序列递增的最小交换次数](https://leetcode.cn/problems/minimum-swaps-to-make-sequences-increasing/)
+
+困难
+
+我们有两个长度相等且不为空的整型数组 `nums1` 和 `nums2` 。在一次操作中，我们可以交换 `nums1[i]` 和 `nums2[i]`的元素。
+
+- 例如，如果 `nums1 = [1,2,3,8]` ， `nums2 =[5,6,7,4]` ，你可以交换 `i = 3` 处的元素，得到 `nums1 =[1,2,3,4]` 和 `nums2 =[5,6,7,8]` 。
+
+返回 *使 `nums1` 和 `nums2` **严格递增** 所需操作的最小次数* 。
+
+数组 `arr` **严格递增** 且 `arr[0] < arr[1] < arr[2] < ... < arr[arr.length - 1]` 。
+
+**注意：**
+
+- 用例保证可以实现操作。
+
+**示例 1:**
+
+```
+输入: nums1 = [1,3,5,4], nums2 = [1,2,3,7]
+输出: 1
+解释: 
+交换 A[3] 和 B[3] 后，两个数组如下:
+A = [1, 3, 5, 7] ， B = [1, 2, 3, 4]
+两个数组均为严格递增的。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int minSwap(vector<int>& nums1, vector<int>& nums2) {
+        int n = nums1.size();
+        int a = 0, b = 1;
+        for (int i = 1; i < n; i++) {
+            int at = a, bt = b;
+            a = b = n;
+            if (nums1[i] > nums1[i - 1] && nums2[i] > nums2[i - 1])  {
+                a = min(a, at);
+                b = min(b, bt + 1);
+            }
+            if (nums1[i] > nums2[i - 1] && nums2[i] > nums1[i - 1]) {
+                a = min(a, bt);
+                b = min(b, at + 1);
+            }
+        }
+        return min(a, b);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int minSwap(int[] nums1, int[] nums2) {
+        int n = nums1.length;
+        int a = 0, b = 1;
+        for (int i = 1; i < n; i++) {
+            int at = a, bt = b;
+            a = b = n;
+            if (nums1[i] > nums1[i - 1] && nums2[i] > nums2[i - 1])  {
+                a = Math.min(a, at);
+                b = Math.min(b, bt + 1);
+            }
+            if (nums1[i] > nums2[i - 1] && nums2[i] > nums1[i - 1]) {
+                a = Math.min(a, bt);
+                b = Math.min(b, at + 1);
+            }
+        }
+        return Math.min(a, b);
+    }
+}
+```
+
+
+
+
+
