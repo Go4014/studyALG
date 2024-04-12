@@ -2802,5 +2802,378 @@ class Solution {
 
 
 
+### [871. 最低加油次数](https://leetcode.cn/problems/minimum-number-of-refueling-stops/)
 
+困难
+
+汽车从起点出发驶向目的地，该目的地位于出发位置东面 `target` 英里处。
+
+沿途有加油站，用数组 `stations` 表示。其中 `stations[i] = [positioni, fueli]` 表示第 `i` 个加油站位于出发位置东面 `positioni` 英里处，并且有 `fueli` 升汽油。
+
+假设汽车油箱的容量是无限的，其中最初有 `startFuel` 升燃料。它每行驶 1 英里就会用掉 1 升汽油。当汽车到达加油站时，它可能停下来加油，将所有汽油从加油站转移到汽车中。
+
+为了到达目的地，汽车所必要的最低加油次数是多少？如果无法到达目的地，则返回 `-1` 。
+
+注意：如果汽车到达加油站时剩余燃料为 `0`，它仍然可以在那里加油。如果汽车到达目的地时剩余燃料为 `0`，仍然认为它已经到达目的地。
+
+**示例 1：**
+
+```
+输入：target = 1, startFuel = 1, stations = []
+输出：0
+解释：可以在不加油的情况下到达目的地。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int minRefuelStops(int target, int startFuel, vector<vector<int>>& stations) {
+        int n = stations.size();
+        vector<long> dp(n + 1);
+        dp[0] = startFuel;
+        for (int i = 0; i < n; i++) {
+            for (int j = i; j >= 0; j--) {
+                if (dp[j] >= stations[i][0]) {
+                    dp[j + 1] = max(dp[j + 1], dp[j] + stations[i][1]);
+                }
+            }
+        }
+        for (int i = 0; i <= n; i++) {
+            if (dp[i] >= target) {
+                return i;
+            }
+        }
+        return -1;
+    }
+};
+
+// 方法二：贪心
+class Solution {
+public:
+    int minRefuelStops(int target, int startFuel, vector<vector<int>>& stations) {
+        priority_queue<int> pq;
+        int ans = 0, prev = 0, fuel = startFuel;
+        int n = stations.size();
+        for (int i = 0; i <= n; i++) {
+            int curr = i < n ? stations[i][0] : target;
+            fuel -= curr - prev;
+            while (fuel < 0 && !pq.empty()) {
+                fuel += pq.top();
+                pq.pop();
+                ans++;
+            }
+            if (fuel < 0) {
+                return -1;
+            }
+            if (i < n) {
+                pq.emplace(stations[i][1]);
+                prev = curr;
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int minRefuelStops(int target, int startFuel, int[][] stations) {
+        int n = stations.length;
+        long[] dp = new long[n + 1];
+        dp[0] = startFuel;
+        for (int i = 0; i < n; i++) {
+            for (int j = i; j >= 0; j--) {
+                if (dp[j] >= stations[i][0]) {
+                    dp[j + 1] = Math.max(dp[j + 1], dp[j] + stations[i][1]);
+                }
+            }
+        }
+        for (int i = 0; i <= n; i++) {
+            if (dp[i] >= target) {
+                return i;
+            }
+        }
+        return -1;
+    }
+}
+
+// 方法二：贪心
+class Solution {
+    public int minRefuelStops(int target, int startFuel, int[][] stations) {
+        PriorityQueue<Integer> pq = new PriorityQueue<Integer>((a, b) -> b - a);
+        int ans = 0, prev = 0, fuel = startFuel;
+        int n = stations.length;
+        for (int i = 0; i <= n; i++) {
+            int curr = i < n ? stations[i][0] : target;
+            fuel -= curr - prev;
+            while (fuel < 0 && !pq.isEmpty()) {
+                fuel += pq.poll();
+                ans++;
+            }
+            if (fuel < 0) {
+                return -1;
+            }
+            if (i < n) {
+                pq.offer(stations[i][1]);
+                prev = curr;
+            }
+        }
+        return ans;
+    }
+}
+```
+
+
+
+### [45. 跳跃游戏 II](https://leetcode.cn/problems/jump-game-ii/)
+
+中等
+
+给定一个长度为 `n` 的 **0 索引**整数数组 `nums`。初始位置为 `nums[0]`。
+
+每个元素 `nums[i]` 表示从索引 `i` 向前跳转的最大长度。换句话说，如果你在 `nums[i]` 处，你可以跳转到任意 `nums[i + j]` 处:
+
+- `0 <= j <= nums[i]` 
+- `i + j < n`
+
+返回到达 `nums[n - 1]` 的最小跳跃次数。生成的测试用例可以到达 `nums[n - 1]`。
+
+**示例 1:**
+
+```
+输入: nums = [2,3,1,1,4]
+输出: 2
+解释: 跳到最后一个位置的最小跳跃数是 2。
+     从下标为 0 跳到下标为 1 的位置，跳 1 步，然后跳 3 步到达数组的最后一个位置。
+```
+
+C++版本
+
+```c++
+// 方法一：反向查找出发位置
+
+// 方法二：正向查找可到达的最大位置
+class Solution {
+public:
+    int jump(vector<int>& nums) {
+        int maxPos = 0, n = nums.size(), end = 0, step = 0;
+        for (int i = 0; i < n - 1; ++i) {
+            if (maxPos >= i) {
+                maxPos = max(maxPos, i + nums[i]);
+                if (i == end) {
+                    end = maxPos;
+                    ++step;
+                }
+            }
+        }
+        return step;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：反向查找出发位置
+class Solution {
+    public int jump(int[] nums) {
+        int position = nums.length - 1;
+        int steps = 0;
+        while (position > 0) {
+            for (int i = 0; i < position; i++) {
+                if (i + nums[i] >= position) {
+                    position = i;
+                    steps++;
+                    break;
+                }
+            }
+        }
+        return steps;
+    }
+}
+
+// 方法二：正向查找可到达的最大位置
+class Solution {
+    public int jump(int[] nums) {
+        int length = nums.length;
+        int end = 0;
+        int maxPosition = 0; 
+        int steps = 0;
+        for (int i = 0; i < length - 1; i++) {
+            maxPosition = Math.max(maxPosition, i + nums[i]); 
+            if (i == end) {
+                end = maxPosition;
+                steps++;
+            }
+        }
+        return steps;
+    }
+}
+```
+
+
+
+### [813. 最大平均值和的分组](https://leetcode.cn/problems/largest-sum-of-averages/)
+
+中等
+
+给定数组 `nums` 和一个整数 `k` 。我们将给定的数组 `nums` 分成 **最多** `k` 个非空子数组，且数组内部是连续的 。 **分数** 由每个子数组内的平均值的总和构成。
+
+注意我们必须使用 `nums` 数组中的每一个数进行分组，并且分数不一定需要是整数。
+
+返回我们所能得到的最大 **分数** 是多少。答案误差在 `10-6` 内被视为是正确的。
+
+**示例 1:**
+
+```
+输入: nums = [9,1,2,3,9], k = 3
+输出: 20.00000
+解释: 
+nums 的最优分组是[9], [1, 2, 3], [9]. 得到的分数是 9 + (1 + 2 + 3) / 3 + 9 = 20. 
+我们也可以把 nums 分成[9, 1], [2], [3, 9]. 
+这样的分组得到的分数为 5 + 2 + 6 = 13, 但不是最大值.
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    double largestSumOfAverages(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<double> prefix(n + 1);
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + nums[i];
+        }
+        vector<vector<double>> dp(n + 1, vector<double>(k + 1));
+        for (int i = 1; i <= n; i++) {
+            dp[i][1] = prefix[i] / i;
+        }
+        for (int j = 2; j <= k; j++) {
+            for (int i = j; i <= n; i++) {
+                for (int x = j - 1; x < i; x++) {
+                    dp[i][j] = max(dp[i][j], dp[x][j - 1] + (prefix[i] - prefix[x]) / (i - x));
+                }
+            }
+        }
+        return dp[n][k];
+    }
+};
+
+// 或者
+class Solution {
+public:
+    double largestSumOfAverages(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<double> prefix(n + 1);
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + nums[i];
+        }
+        vector<double> dp(n + 1);
+        for (int i = 1; i <= n; i++) {
+            dp[i] = prefix[i] / i;
+        }
+        for (int j = 2; j <= k; j++) {
+            for (int i = n; i >= j; i--) {
+                for (int x = j - 1; x < i; x++) {
+                    dp[i] = max(dp[i], dp[x] + (prefix[i] - prefix[x]) / (i - x));
+                }
+            }
+        }
+        return dp[n];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public double largestSumOfAverages(int[] nums, int k) {
+        int n = nums.length;
+        double[] prefix = new double[n + 1];
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + nums[i];
+        }
+        double[][] dp = new double[n + 1][k + 1];
+        for (int i = 1; i <= n; i++) {
+            dp[i][1] = prefix[i] / i;
+        }
+        for (int j = 2; j <= k; j++) {
+            for (int i = j; i <= n; i++) {
+                for (int x = j - 1; x < i; x++) {
+                    dp[i][j] = Math.max(dp[i][j], dp[x][j - 1] + (prefix[i] - prefix[x]) / (i - x));
+                }
+            }
+        }
+        return dp[n][k];
+    }
+}
+
+// 或者
+class Solution {
+    public double largestSumOfAverages(int[] nums, int k) {
+        int n = nums.length;
+        double[] prefix = new double[n + 1];
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + nums[i];
+        }
+        double[] dp = new double[n + 1];
+        for (int i = 1; i <= n; i++) {
+            dp[i] = prefix[i] / i;
+        }
+        for (int j = 2; j <= k; j++) {
+            for (int i = n; i >= j; i--) {
+                for (int x = j - 1; x < i; x++) {
+                    dp[i] = Math.max(dp[i], dp[x] + (prefix[i] - prefix[x]) / (i - x));
+                }
+            }
+        }
+        return dp[n];
+    }
+}
+
+// 深度遍历搜索
+class Solution {
+    public double largestSumOfAverages(int[] nums, int k) {
+        return helper(nums, 0, k, new double[nums.length][k + 1]);
+    }
+
+    private double helper(int[] nums, int start, int k, double[][] dp) {
+        if (start >= nums.length)
+            return 0;
+        if (k <= 0)
+            return 0;
+        if (dp[start][k] > 0)
+            return dp[start][k];
+        if (k == 1) {
+            double total = 0.0;
+            for (int i = start; i < nums.length; i++) {
+                total += nums[i];
+            }
+            total = total / (double) (nums.length - start);
+            dp[start][k] = total;
+            return total;
+        }
+
+        double currSum = 0;
+        double max = 0;
+        for (int end = start + 1; end <= nums.length - k + 1; end++) {
+            currSum += nums[end - 1];
+            double next = helper(nums, end, k - 1, dp);
+            max = Math.max(max, (currSum / (double) (end - start)) + next);
+        }
+        dp[start][k] = max;
+        return max;
+    }
+}
+```
 
