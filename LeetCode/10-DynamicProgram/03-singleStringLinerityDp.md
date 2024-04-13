@@ -3177,3 +3177,549 @@ class Solution {
 }
 ```
 
+
+
+### [887. 鸡蛋掉落](https://leetcode.cn/problems/super-egg-drop/)
+
+困难
+
+给你 `k` 枚相同的鸡蛋，并可以使用一栋从第 `1` 层到第 `n` 层共有 `n` 层楼的建筑。
+
+已知存在楼层 `f` ，满足 `0 <= f <= n` ，任何从 **高于** `f` 的楼层落下的鸡蛋都会碎，从 `f` 楼层或比它低的楼层落下的鸡蛋都不会破。
+
+每次操作，你可以取一枚没有碎的鸡蛋并把它从任一楼层 `x` 扔下（满足 `1 <= x <= n`）。如果鸡蛋碎了，你就不能再次使用它。如果某枚鸡蛋扔下后没有摔碎，则可以在之后的操作中 **重复使用** 这枚鸡蛋。
+
+请你计算并返回要确定 `f` **确切的值** 的 **最小操作次数** 是多少？
+
+**示例 1：**
+
+```
+输入：k = 1, n = 2
+输出：2
+解释：
+鸡蛋从 1 楼掉落。如果它碎了，肯定能得出 f = 0 。 
+否则，鸡蛋从 2 楼掉落。如果它碎了，肯定能得出 f = 1 。 
+如果它没碎，那么肯定能得出 f = 2 。 
+因此，在最坏的情况下我们需要移动 2 次以确定 f 是多少。 
+```
+
+$$
+方法一：动态规划 + 二分查找 \\
+状态转移方程：\\
+\textit{dp}(k, n) = 1 + \min\limits_{1 \leq x \leq n} \Big( \max(\textit{dp}(k-1, x-1), \textit{dp}(k, n-x)) \Big) \\
+
+\\ 
+
+方法二：决策单调性 \\
+状态转移方程：\\
+dp(k, n) = 1 + \min\limits_{1 \leq x \leq n} \Big( \max(dp(k-1, x-1), dp(k, n-x)) \Big) \\
+
+并且假设 x_\textit{opt} 是使得 dp(k,n) 取到最优值的最小决策点 x_0。 \\
+
+x_\textit{opt} = \arg \min\limits_{1 \leq x \leq n} \Big( \max(dp(k-1, x-1), dp(k, n-x)) \Big) \\
+
+\\
+
+方法三：数学法 \\
+状态转移方程：\\
+f(t,k)=1+f(t−1,k−1)+f(t−1,k) \\
+边界条件为： \\
+当 t≥1 的时候 f(t,1)=t，\\
+当 k≥1 时，f(1,k)=1 \\
+$$
+
+
+
+C++版本
+
+```c++
+// 方法一：动态规划 + 二分查找
+class Solution {
+    unordered_map<int, int> memo;
+    int dp(int k, int n) {
+        if (memo.find(n * 100 + k) == memo.end()) {
+            int ans;
+            if (n == 0) {
+                ans = 0;
+            } else if (k == 1) {
+                ans = n;
+            } else {
+                int lo = 1, hi = n;
+                while (lo + 1 < hi) {
+                    int x = (lo + hi) / 2;
+                    int t1 = dp(k - 1, x - 1);
+                    int t2 = dp(k, n - x);
+
+                    if (t1 < t2) {
+                        lo = x;
+                    } else if (t1 > t2) {
+                        hi = x;
+                    } else {
+                        lo = hi = x;
+                    }
+                }
+
+                ans = 1 + min(
+                    max(dp(k - 1, lo - 1), dp(k, n - lo)),   
+                    max(dp(k - 1, hi - 1), dp(k, n - hi))
+                );
+            }
+
+            memo[n * 100 + k] = ans;
+        }
+
+        return memo[n * 100 + k];
+    }
+public:
+    int superEggDrop(int k, int n) {
+        return dp(k, n);
+    }
+};
+
+// 方法二：决策单调性
+class Solution {
+public:
+    int superEggDrop(int k, int n) {
+        int dp[n + 1];
+        for (int i = 0; i <= n; ++i) {
+            dp[i] = i;
+        }
+
+        for (int j = 2; j <= k; ++j) {
+            int dp2[n + 1];
+            int x = 1; 
+            dp2[0] = 0;
+            for (int m = 1; m <= n; ++m) {
+                while (x < m && max(dp[x - 1], dp2[m - x]) >= max(dp[x], dp2[m - x - 1])) {
+                    x++;
+                }
+                dp2[m] = 1 + max(dp[x - 1], dp2[m - x]);
+            }
+            for (int m = 1; m <= n; ++m) {
+                dp[m] = dp2[m];
+            }
+        }
+        return dp[n];
+    }
+};
+
+// 方法三：数学法
+class Solution {
+public:
+    int superEggDrop(int k, int n) {
+        if (n == 1) {
+            return 1;
+        }
+        vector<vector<int>> f(n + 1, vector<int>(k + 1));
+        for (int i = 1; i <= k; ++i) {
+            f[1][i] = 1;
+        }
+        int ans = -1;
+        for (int i = 2; i <= n; ++i) {
+            for (int j = 1; j <= k; ++j) {
+                f[i][j] = 1 + f[i - 1][j - 1] + f[i - 1][j];
+            }
+            if (f[i][k] >= n) {
+                ans = i;
+                break;
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划 + 二分查找
+class Solution {
+    Map<Integer, Integer> memo = new HashMap<Integer, Integer>();
+
+    public int superEggDrop(int k, int n) {
+        return dp(k, n);
+    }
+
+    public int dp(int k, int n) {
+        if (!memo.containsKey(n * 100 + k)) {
+            int ans;
+            if (n == 0) {
+                ans = 0;
+            } else if (k == 1) {
+                ans = n;
+            } else {
+                int lo = 1, hi = n;
+                while (lo + 1 < hi) {
+                    int x = (lo + hi) / 2;
+                    int t1 = dp(k - 1, x - 1);
+                    int t2 = dp(k, n - x);
+
+                    if (t1 < t2) {
+                        lo = x;
+                    } else if (t1 > t2) {
+                        hi = x;
+                    } else {
+                        lo = hi = x;
+                    }
+                }
+
+                ans = 1 + Math.min(
+                    Math.max(dp(k - 1, lo - 1), dp(k, n - lo)), 
+                    Math.max(dp(k - 1, hi - 1), dp(k, n - hi))
+                );
+            }
+
+            memo.put(n * 100 + k, ans);
+        }
+
+        return memo.get(n * 100 + k);
+    }
+}
+
+// 方法二：决策单调性
+class Solution {
+    public int superEggDrop(int k, int n) {
+        // Right now, dp[i] represents dp(1, i)
+        int[] dp = new int[n + 1];
+        for (int i = 0; i <= n; ++i) {
+            dp[i] = i;
+        }
+
+        for (int j = 2; j <= k; ++j) {
+            // Now, we will develop dp2[i] = dp(j, i)
+            int[] dp2 = new int[n + 1];
+            int x = 1;
+            for (int m = 1; m <= n; ++m) {
+                // Let's find dp2[m] = dp(j, m)
+                // Increase our optimal x while we can make our answer better.
+                // Notice max(dp[x-1], dp2[m-x]) > max(dp[x], dp2[m-x-1])
+                // is simply max(T1(x-1), T2(x-1)) > max(T1(x), T2(x)).
+                while (x < m && Math.max(dp[x - 1], dp2[m - x]) > Math.max(dp[x], dp2[m - x - 1])) {
+                    x++;
+                }
+
+                // The final answer happens at this x.
+                dp2[m] = 1 + Math.max(dp[x - 1], dp2[m - x]);
+            }
+
+            dp = dp2;
+        }
+
+        return dp[n];
+    }
+}
+
+// 方法三：数学法
+class Solution {
+    public int superEggDrop(int k, int n) {
+        if (n == 1) {
+            return 1;
+        }
+        int[][] f = new int[n + 1][k + 1];
+        for (int i = 1; i <= k; ++i) {
+            f[1][i] = 1;
+        }
+        int ans = -1;
+        for (int i = 2; i <= n; ++i) {
+            for (int j = 1; j <= k; ++j) {
+                f[i][j] = 1 + f[i - 1][j - 1] + f[i - 1][j];
+            }
+            if (f[i][k] >= n) {
+                ans = i;
+                break;
+            }
+        }
+        return ans;
+    }
+}
+```
+
+
+
+### [1473. 粉刷房子 III](https://leetcode.cn/problems/paint-house-iii/)
+
+困难
+
+在一个小城市里，有 `m` 个房子排成一排，你需要给每个房子涂上 `n` 种颜色之一（颜色编号为 `1` 到 `n` ）。有的房子去年夏天已经涂过颜色了，所以这些房子不可以被重新涂色。
+
+我们将连续相同颜色尽可能多的房子称为一个街区。（比方说 `houses = [1,2,2,3,3,2,1,1]` ，它包含 5 个街区 ` [{1}, {2,2}, {3,3}, {2}, {1,1}]` 。）
+
+给你一个数组 `houses` ，一个 `m * n` 的矩阵 `cost` 和一个整数 `target` ，其中：
+
+- `houses[i]`：是第 `i` 个房子的颜色，**0** 表示这个房子还没有被涂色。
+- `cost[i][j]`：是将第 `i` 个房子涂成颜色 `j+1` 的花费。
+
+请你返回房子涂色方案的最小总花费，使得每个房子都被涂色后，恰好组成 `target` 个街区。如果没有可用的涂色方案，请返回 **-1** 。
+
+**示例 1：**
+
+```
+输入：houses = [0,0,0,0,0], cost = [[1,10],[10,1],[10,1],[1,10],[5,1]], m = 5, n = 2, target = 3
+输出：9
+解释：房子涂色方案为 [1,2,2,1,1]
+此方案包含 target = 3 个街区，分别是 [{1}, {2,2}, {1,1}]。
+涂色的总花费为 (1 + 1 + 1 + 1 + 5) = 9。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+private:
+    // 极大值
+    // 选择 INT_MAX / 2 的原因是防止整数相加溢出
+    static constexpr int INFTY = INT_MAX / 2;
+
+public:
+    int minCost(vector<int>& houses, vector<vector<int>>& cost, int m, int n, int target) {
+        // 将颜色调整为从 0 开始编号，没有被涂色标记为 -1
+        for (int& c: houses) {
+            --c;
+        }
+
+        // dp 所有元素初始化为极大值
+        vector<vector<vector<int>>> dp(m, vector<vector<int>>(n, vector<int>(target, INFTY)));
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (houses[i] != -1 && houses[i] != j) {
+                    continue;
+                }
+                
+                for (int k = 0; k < target; ++k) {
+                    for (int j0 = 0; j0 < n; ++j0) {
+                        if (j == j0) {
+                            if (i == 0) {
+                                if (k == 0) {
+                                    dp[i][j][k] = 0;
+                                }
+                            }
+                            else {
+                                dp[i][j][k] = min(dp[i][j][k], dp[i - 1][j][k]);
+                            }
+                        }
+                        else if (i > 0 && k > 0) {
+                            dp[i][j][k] = min(dp[i][j][k], dp[i - 1][j0][k - 1]);
+                        }
+                    }
+
+                    if (dp[i][j][k] != INFTY && houses[i] == -1) {
+                        dp[i][j][k] += cost[i][j];
+                    }
+                }
+            }
+        }
+
+        int ans = INFTY;
+        for (int j = 0; j < n; ++j) {
+            ans = min(ans, dp[m - 1][j][target - 1]);
+        }
+        return ans == INFTY ? -1 : ans;
+    }
+};
+
+// 方法二：动态规划 + 优化
+class Solution {
+private:
+    // 极大值
+    // 选择 INT_MAX / 2 的原因是防止整数相加溢出
+    static constexpr int INFTY = INT_MAX / 2;
+
+    using TIII = tuple<int, int, int>;
+
+public:
+    int minCost(vector<int>& houses, vector<vector<int>>& cost, int m, int n, int target) {
+        // 将颜色调整为从 0 开始编号，没有被涂色标记为 -1
+        for (int& c: houses) {
+            --c;
+        }
+
+        // dp 所有元素初始化为极大值
+        vector<vector<vector<int>>> dp(m, vector<vector<int>>(n, vector<int>(target, INFTY)));
+        vector<vector<TIII>> best(m, vector<TIII>(target, {INFTY, -1, INFTY}));
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (houses[i] != -1 && houses[i] != j) {
+                    continue;
+                }
+                
+                for (int k = 0; k < target; ++k) {
+                    if (i == 0) {
+                        if (k == 0) {
+                            dp[i][j][k] = 0;
+                        }
+                    }
+                    else {
+                        dp[i][j][k] = dp[i - 1][j][k];
+                        if (k > 0) {
+                            // 使用 best(i-1,k-1) 直接得到 dp(i,j,k) 的值
+                            auto&& [first, first_idx, second] = best[i - 1][k - 1];
+                            dp[i][j][k] = min(dp[i][j][k], (j == first_idx ? second : first));
+                        }
+                    }
+
+                    if (dp[i][j][k] != INFTY && houses[i] == -1) {
+                        dp[i][j][k] += cost[i][j];
+                    }
+
+                    // 用 dp(i,j,k) 更新 best(i,k)
+                    auto&& [first, first_idx, second] = best[i][k];
+                    if (dp[i][j][k] < first) {
+                        second = first;
+                        first = dp[i][j][k];
+                        first_idx = j;
+                    }
+                    else if (dp[i][j][k] < second) {
+                        second = dp[i][j][k];
+                    }
+                }
+            }
+        }
+
+        int ans = INFTY;
+        for (int j = 0; j < n; ++j) {
+            ans = min(ans, dp[m - 1][j][target - 1]);
+        }
+        return ans == INFTY ? -1 : ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    // 极大值
+    // 选择 Integer.MAX_VALUE / 2 的原因是防止整数相加溢出
+    static final int INFTY = Integer.MAX_VALUE / 2;
+
+    public int minCost(int[] houses, int[][] cost, int m, int n, int target) {
+        // 将颜色调整为从 0 开始编号，没有被涂色标记为 -1
+        for (int i = 0; i < m; ++i) {
+            --houses[i];
+        }
+
+        // dp 所有元素初始化为极大值
+        int[][][] dp = new int[m][n][target];
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                Arrays.fill(dp[i][j], INFTY);
+            }
+        }
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (houses[i] != -1 && houses[i] != j) {
+                    continue;
+                }
+                
+                for (int k = 0; k < target; ++k) {
+                    for (int j0 = 0; j0 < n; ++j0) {
+                        if (j == j0) {
+                            if (i == 0) {
+                                if (k == 0) {
+                                    dp[i][j][k] = 0;
+                                }
+                            } else {
+                                dp[i][j][k] = Math.min(dp[i][j][k], dp[i - 1][j][k]);
+                            }
+                        } else if (i > 0 && k > 0) {
+                            dp[i][j][k] = Math.min(dp[i][j][k], dp[i - 1][j0][k - 1]);
+                        }
+                    }
+
+                    if (dp[i][j][k] != INFTY && houses[i] == -1) {
+                        dp[i][j][k] += cost[i][j];
+                    }
+                }
+            }
+        }
+
+        int ans = INFTY;
+        for (int j = 0; j < n; ++j) {
+            ans = Math.min(ans, dp[m - 1][j][target - 1]);
+        }
+        return ans == INFTY ? -1 : ans;
+    }
+}
+
+// 方法二：动态规划 + 优化
+class Solution {
+    // 极大值
+    // 选择 Integer.MAX_VALUE / 2 的原因是防止整数相加溢出
+    static final int INFTY = Integer.MAX_VALUE / 2;
+
+    public int minCost(int[] houses, int[][] cost, int m, int n, int target) {
+        // 将颜色调整为从 0 开始编号，没有被涂色标记为 -1
+        for (int i = 0; i < m; ++i) {
+            --houses[i];
+        }
+
+        // dp 所有元素初始化为极大值
+        int[][][] dp = new int[m][n][target];
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                Arrays.fill(dp[i][j], INFTY);
+            }
+        }
+        int[][][] best = new int[m][target][3];
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < target; ++j) {
+                best[i][j][0] = best[i][j][2] = INFTY;
+                best[i][j][1] = -1;
+            }
+        }
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (houses[i] != -1 && houses[i] != j) {
+                    continue;
+                }
+                
+                for (int k = 0; k < target; ++k) {
+                    if (i == 0) {
+                        if (k == 0) {
+                            dp[i][j][k] = 0;
+                        }
+                    } else {
+                        dp[i][j][k] = dp[i - 1][j][k];
+                        if (k > 0) {
+                            // 使用 best(i-1,k-1) 直接得到 dp(i,j,k) 的值
+                            int first = best[i - 1][k - 1][0];
+                            int firstIdx = best[i - 1][k - 1][1];
+                            int second = best[i - 1][k - 1][2];
+                            dp[i][j][k] = Math.min(dp[i][j][k], (j == firstIdx ? second : first));
+                        }
+                    }
+
+                    if (dp[i][j][k] != INFTY && houses[i] == -1) {
+                        dp[i][j][k] += cost[i][j];
+                    }
+
+                    // 用 dp(i,j,k) 更新 best(i,k)
+                    int first = best[i][k][0];
+                    int firstIdx = best[i][k][1];
+                    int second = best[i][k][2];
+                    if (dp[i][j][k] < first) {
+                        best[i][k][2] = first;
+                        best[i][k][0] = dp[i][j][k];
+                        best[i][k][1] = j;
+                    } else if (dp[i][j][k] < second) {
+                        best[i][k][2] = dp[i][j][k];
+                    }
+                }
+            }
+        }
+
+        int ans = INFTY;
+        for (int j = 0; j < n; ++j) {
+            ans = Math.min(ans, dp[m - 1][j][target - 1]);
+        }
+        return ans == INFTY ? -1 : ans;
+    }
+}
+```
+
