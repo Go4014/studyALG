@@ -3225,7 +3225,7 @@ x_\textit{opt} = \arg \min\limits_{1 \leq x \leq n} \Big( \max(dp(k-1, x-1), dp(
 f(t,k)=1+f(t−1,k−1)+f(t−1,k) \\
 边界条件为： \\
 当 t≥1 的时候 f(t,1)=t，\\
-当 k≥1 时，f(1,k)=1 \\
+当 k≥1 时，f(1,k)=1 \\
 $$
 
 
@@ -3719,6 +3719,434 @@ class Solution {
             ans = Math.min(ans, dp[m - 1][j][target - 1]);
         }
         return ans == INFTY ? -1 : ans;
+    }
+}
+```
+
+
+
+### [975. 奇偶跳](https://leetcode.cn/problems/odd-even-jump/)
+
+困难
+
+给定一个整数数组 `A`，你可以从某一起始索引出发，跳跃一定次数。在你跳跃的过程中，第 1、3、5... 次跳跃称为奇数跳跃，而第 2、4、6... 次跳跃称为偶数跳跃。
+
+你可以按以下方式从索引 `i` 向后跳转到索引 `j`（其中 `i < j`）：
+
+- 在进行奇数跳跃时（如，第 1，3，5... 次跳跃），你将会跳到索引 `j`，使得 `A[i] <= A[j]`，`A[j]` 是可能的最小值。如果存在多个这样的索引 `j`，你只能跳到满足要求的**最小**索引 `j` 上。
+- 在进行偶数跳跃时（如，第 2，4，6... 次跳跃），你将会跳到索引 `j`，使得 `A[i] >= A[j]`，`A[j]` 是可能的最大值。如果存在多个这样的索引 `j`，你只能跳到满足要求的**最小**索引 `j` 上。
+- （对于某些索引 `i`，可能无法进行合乎要求的跳跃。）
+
+如果从某一索引开始跳跃一定次数（可能是 0 次或多次），就可以到达数组的末尾（索引 `A.length - 1`），那么该索引就会被认为是好的起始索引。
+
+返回好的起始索引的数量。
+
+**示例 1：**
+
+```
+输入：[10,13,12,14,15]
+输出：2
+解释： 
+从起始索引 i = 0 出发，我们可以跳到 i = 2，（因为 A[2] 是 A[1]，A[2]，A[3]，A[4] 中大于或等于 A[0] 的最小值），然后我们就无法继续跳下去了。
+从起始索引 i = 1 和 i = 2 出发，我们可以跳到 i = 3，然后我们就无法继续跳下去了。
+从起始索引 i = 3 出发，我们可以跳到 i = 4，到达数组末尾。
+从起始索引 i = 4 出发，我们已经到达数组末尾。
+总之，我们可以从 2 个不同的起始索引（i = 3, i = 4）出发，通过一定数量的跳跃到达数组末尾。
+```
+
+C++版本
+
+```c++
+// 方法一：单调栈
+class Solution {
+private:
+    vector<int> make(vector<int>& idxArr, vector<int>& arr) {
+        vector<int> rs(idxArr.size(), -1);
+        stack<int> s;
+        for (int idx : idxArr) {
+            while (!s.empty() && s.top() < idx) {
+                int tmp = s.top(); s.pop();
+                rs[tmp] = idx;
+            }
+            s.push(idx);
+        }
+        return rs;
+    }
+
+public:
+    int oddEvenJumps(vector<int>& arr) {
+        int n = arr.size();
+        if (n <= 1) return n;
+
+        vector<int> iArr(n), odd(n), even(n);
+        odd[n - 1] = even[n - 1] = true;
+
+        for (int i = 0; i < n; i++) iArr[i] = i;
+
+        sort(iArr.begin(), iArr.end(), [&](auto a, auto b) {
+            return arr[a] == arr[b] ? a < b : arr[a] < arr[b];
+        });
+        vector<int> oddNext = make(iArr, arr);
+
+        sort(iArr.begin(), iArr.end(), [&](auto a, auto b) {
+            return arr[a] == arr[b] ? a < b : arr[a] > arr[b];
+        });
+        vector<int> evenNext = make(iArr, arr);
+
+        for (int i = n - 2; i >= 0; i--) {
+            if (oddNext[i] != -1) {
+                int nxt = oddNext[i];
+                odd[i] = even[nxt];
+            }
+            if (evenNext[i] != -1) {
+                int nxt = evenNext[i];
+                even[i] = odd[nxt];
+            }
+        }
+        
+        return count(odd.begin(), odd.end(), true);
+    }
+};
+
+// 方法二： 树映射（Tree Map）
+class Solution {
+public:
+    int oddEvenJumps(vector<int>& A) {
+        int N = A.size();
+        if (N <= 1) return N;
+        vector<bool> odd(N), even(N);
+        odd[N-1] = even[N-1] = true;
+
+        map<int, int> vals;
+        vals[A[N-1]] = N-1;
+        for (int i = N-2; i >= 0; --i) {
+            int v = A[i];
+            if (vals.count(v)) {
+                odd[i] = even[vals[v]];
+                even[i] = odd[vals[v]];
+            } else {
+                auto lower = vals.lower_bound(v);
+                auto higher = vals.upper_bound(v);
+
+                if (lower != vals.begin())
+                    even[i] = odd[prev(lower)->second];
+                if (higher != vals.end()) {
+                    odd[i] = even[higher->second];
+                }
+            }
+            vals[v] = i;
+        }
+
+        int ans = 0;
+        for (bool b: odd)
+            if (b) ans++;
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：单调栈
+class Solution {
+    public int oddEvenJumps(int[] arr) {
+        int n = arr.length;
+        Integer[] ids = new Integer[n];
+        for (int i = 0; i < n; i++) ids[i] = i;
+        Arrays.sort(ids, Comparator.comparingInt(o -> arr[o]));
+        Integer[] odd_next = make(ids);
+        Arrays.sort(ids, Comparator.comparingInt(o -> -arr[o]));
+        Integer[] even_next = make(ids);
+
+        int[] odd = new int[n];
+        int[] even = new int[n];
+        odd[n - 1] = even[n - 1] = 1;
+        for (int i = n - 2; i >= 0; i--) {
+            if (odd_next[i] != null) odd[i] = even[odd_next[i]];
+            if (even_next[i] != null) even[i] = odd[even_next[i]];
+        }
+        return Arrays.stream(odd).sum();
+    }
+
+    private Integer[] make(Integer[] ids) {
+        Integer[] ans = new Integer[ids.length];
+        Deque<Integer> st = new ArrayDeque<>();
+        for (Integer i : ids) {
+            while (!st.isEmpty() && i > st.peek()) {
+                ans[st.pop()] = i;
+            }
+            st.push(i);
+        }
+        return ans;
+    }
+}
+
+// 方法二： 树映射（Tree Map）
+class Solution {
+    public int oddEvenJumps(int[] A) {
+        int N = A.length;
+        if (N <= 1) return N;
+        boolean[] odd = new boolean[N];
+        boolean[] even = new boolean[N];
+        odd[N-1] = even[N-1] = true;
+
+        TreeMap<Integer, Integer> vals = new TreeMap();
+        vals.put(A[N-1], N-1);
+        for (int i = N-2; i >= 0; --i) {
+            int v = A[i];
+            if (vals.containsKey(v)) {
+                odd[i] = even[vals.get(v)];
+                even[i] = odd[vals.get(v)];
+            } else {
+                Integer lower = vals.lowerKey(v);
+                Integer higher = vals.higherKey(v);
+
+                if (lower != null)
+                    even[i] = odd[vals.get(lower)];
+                if (higher != null) {
+                    odd[i] = even[vals.get(higher)];
+                }
+            }
+            vals.put(v, i);
+        }
+
+        int ans = 0;
+        for (boolean b: odd)
+            if (b) ans++;
+        return ans;
+    }
+}
+```
+
+
+
+### [403. 青蛙过河](https://leetcode.cn/problems/frog-jump/)
+
+困难
+
+一只青蛙想要过河。 假定河流被等分为若干个单元格，并且在每一个单元格内都有可能放有一块石子（也有可能没有）。 青蛙可以跳上石子，但是不可以跳入水中。
+
+给你石子的位置列表 `stones`（用单元格序号 **升序** 表示）， 请判定青蛙能否成功过河（即能否在最后一步跳至最后一块石子上）。开始时， 青蛙默认已站在第一块石子上，并可以假定它第一步只能跳跃 `1` 个单位（即只能从单元格 1 跳至单元格 2 ）。
+
+如果青蛙上一步跳跃了 `k` 个单位，那么它接下来的跳跃距离只能选择为 `k - 1`、`k` 或 `k + 1` 个单位。 另请注意，青蛙只能向前方（终点的方向）跳跃。
+
+**示例 1：**
+
+```
+输入：stones = [0,1,3,5,6,8,12,17]
+输出：true
+解释：青蛙可以成功过河，按照如下方案跳跃：跳 1 个单位到第 2 块石子, 然后跳 2 个单位到第 3 块石子, 接着 跳 2 个单位到第 4 块石子, 然后跳 3 个单位到第 6 块石子, 跳 4 个单位到第 7 块石子, 最后，跳 5 个单位到第 8 个石子（即最后一块石子）。
+```
+
+C++版本
+
+```c++
+// 方法一：记忆化搜索 + 二分查找
+class Solution {
+public:
+    vector<unordered_map<int, int>> rec;
+
+    bool dfs(vector<int>& stones, int i, int lastDis) {
+        if (i == stones.size() - 1) {
+            return true;
+        }
+        if (rec[i].count(lastDis)) {
+            return rec[i][lastDis];
+        }
+        for (int curDis = lastDis - 1; curDis <= lastDis + 1; curDis++) {
+            if (curDis > 0) {
+                int j = lower_bound(stones.begin(), stones.end(), curDis + stones[i]) - stones.begin();
+                if (j != stones.size() && stones[j] == curDis + stones[i] && dfs(stones, j, curDis)) {
+                    return rec[i][lastDis] = true;
+                }
+            }
+        }
+        return rec[i][lastDis] = false;
+    }
+
+    bool canCross(vector<int>& stones) {
+        int n = stones.size();
+        rec.resize(n);
+        return dfs(stones, 0, 0);
+    }
+};
+
+// 方法二：动态规划
+class Solution {
+public:
+    bool canCross(vector<int>& stones) {
+        int n = stones.size();
+        vector<vector<int>> dp(n, vector<int>(n));
+        dp[0][0] = true;
+        for (int i = 1; i < n; ++i) {
+            if (stones[i] - stones[i - 1] > i) {
+                return false;
+            }
+        }
+        for (int i = 1; i < n; ++i) {
+            for (int j = i - 1; j >= 0; --j) {
+                int k = stones[i] - stones[j];
+                if (k > j + 1) {
+                    break;
+                }
+                dp[i][k] = dp[j][k - 1] || dp[j][k] || dp[j][k + 1];
+                if (i == n - 1 && dp[i][k]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：记忆化搜索 + 二分查找
+class Solution {
+    private Boolean[][] rec;
+
+    public boolean canCross(int[] stones) {
+        int n = stones.length;
+        rec = new Boolean[n][n];
+        return dfs(stones, 0, 0);
+    }
+
+    private boolean dfs(int[] stones, int i, int lastDis) {
+        if (i == stones.length - 1) {
+            return true;
+        }
+        if (rec[i][lastDis] != null) {
+            return rec[i][lastDis];
+        }
+
+        for (int curDis = lastDis - 1; curDis <= lastDis + 1; curDis++) {
+            if (curDis > 0) {
+                int j = Arrays.binarySearch(stones, i + 1, stones.length, curDis + stones[i]);
+                if (j >= 0 && dfs(stones, j, curDis)) {
+                    return rec[i][lastDis] = true;
+                }
+            }
+        }
+        return rec[i][lastDis] = false;
+    }
+}
+
+// 方法二：动态规划
+class Solution {
+    public boolean canCross(int[] stones) {
+        int n = stones.length;
+        boolean[][] dp = new boolean[n][n];
+        dp[0][0] = true;
+        for (int i = 1; i < n; ++i) {
+            if (stones[i] - stones[i - 1] > i) {
+                return false;
+            }
+        }
+        for (int i = 1; i < n; ++i) {
+            for (int j = i - 1; j >= 0; --j) {
+                int k = stones[i] - stones[j];
+                if (k > j + 1) {
+                    break;
+                }
+                dp[i][k] = dp[j][k - 1] || dp[j][k] || dp[j][k + 1];
+                if (i == n - 1 && dp[i][k]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
+```
+
+
+
+### [1478. 安排邮筒](https://leetcode.cn/problems/allocate-mailboxes/)
+
+困难
+
+给你一个房屋数组`houses` 和一个整数 `k` ，其中 `houses[i]` 是第 `i` 栋房子在一条街上的位置，现需要在这条街上安排 `k` 个邮筒。
+
+请你返回每栋房子与离它最近的邮筒之间的距离的 **最小** 总和。
+
+答案保证在 32 位有符号整数范围以内。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/06/13/sample_11_1816.png)
+
+```
+输入：houses = [1,4,8,10,20], k = 3
+输出：5
+解释：将邮筒分别安放在位置 3， 9 和 20 处。
+每个房子到最近邮筒的距离和为 |3-1| + |4-3| + |9-8| + |10-9| + |20-20| = 5 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int minDistance(vector<int>& houses, int k) {
+        int n = houses.size();
+        sort(houses.begin(), houses.end());
+
+        vector<vector<int>> medsum(n, vector<int>(n));
+        for (int i = n - 2; i >= 0; --i) {
+            for (int j = i + 1; j < n; ++j) {
+                medsum[i][j] = medsum[i + 1][j - 1] + houses[j] - houses[i];
+            }
+        }
+
+        vector<vector<int>> f(n, vector<int>(k + 1, INT_MAX / 2));
+        for (int i = 0; i < n; ++i) {
+            f[i][1] = medsum[0][i];
+            for (int j = 2; j <= k && j <= i + 1; ++j) {
+                for (int i0 = 0; i0 < i; ++i0) {
+                    f[i][j] = min(f[i][j], f[i0][j - 1] + medsum[i0 + 1][i]);
+                }
+            }
+        }
+
+        return f[n - 1][k];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int minDistance(int[] houses, int k) {
+        int n = houses.length;
+        Arrays.sort(houses);
+
+        int[][] medsum = new int[n][n];
+        for (int i = n - 2; i >= 0; --i) {
+            for (int j = i + 1; j < n; ++j) {
+                medsum[i][j] = medsum[i + 1][j - 1] + houses[j] - houses[i];
+            }
+        }
+
+        int[][] f = new int[n][k + 1];
+        for (int i = 0; i < n; ++i) {
+            Arrays.fill(f[i], Integer.MAX_VALUE / 2);
+        }
+        for (int i = 0; i < n; ++i) {
+            f[i][1] = medsum[0][i];
+            for (int j = 2; j <= k && j <= i + 1; ++j) {
+                for (int i0 = 0; i0 < i; ++i0) {
+                    f[i][j] = Math.min(f[i][j], f[i0][j - 1] + medsum[i0 + 1][i]);
+                }
+            }
+        }
+
+        return f[n - 1][k];
     }
 }
 ```
