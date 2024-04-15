@@ -4151,3 +4151,441 @@ class Solution {
 }
 ```
 
+
+
+### [410. 分割数组的最大值](https://leetcode.cn/problems/split-array-largest-sum/)
+
+困难
+
+给定一个非负整数数组 `nums` 和一个整数 `k` ，你需要将这个数组分成 `k` 个非空的连续子数组。
+
+设计一个算法使得这 `k` 个子数组各自和的最大值最小。
+
+**示例 1：**
+
+```
+输入：nums = [7,2,5,10,8], k = 2
+输出：18
+解释：
+一共有四种方法将 nums 分割为 2 个子数组。 
+其中最好的方式是将其分为 [7,2,5] 和 [10,8] 。
+因为此时这两个子数组各自的和的最大值为18，在所有情况中最小。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int splitArray(vector<int>& nums, int m) {
+        int n = nums.size();
+        vector<vector<long long>> f(n + 1, vector<long long>(m + 1, LLONG_MAX));
+        vector<long long> sub(n + 1, 0);
+        for (int i = 0; i < n; i++) {
+            sub[i + 1] = sub[i] + nums[i];
+        }
+        f[0][0] = 0;
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= min(i, m); j++) {
+                for (int k = 0; k < i; k++) {
+                    f[i][j] = min(f[i][j], max(f[k][j - 1], sub[i] - sub[k]));
+                }
+            }
+        }
+        return (int)f[n][m];
+    }
+};
+
+// 方法二：二分查找 + 贪心
+class Solution {
+public:
+    bool check(vector<int>& nums, int x, int m) {
+        long long sum = 0;
+        int cnt = 1;
+        for (int i = 0; i < nums.size(); i++) {
+            if (sum + nums[i] > x) {
+                cnt++;
+                sum = nums[i];
+            } else {
+                sum += nums[i];
+            }
+        }
+        return cnt <= m;
+    }
+
+    int splitArray(vector<int>& nums, int m) {
+        long long left = 0, right = 0;
+        for (int i = 0; i < nums.size(); i++) {
+            right += nums[i];
+            if (left < nums[i]) {
+                left = nums[i];
+            }
+        }
+        while (left < right) {
+            long long mid = (left + right) >> 1;
+            if (check(nums, mid, m)) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int splitArray(int[] nums, int m) {
+        int n = nums.length;
+        int[][] f = new int[n + 1][m + 1];
+        for (int i = 0; i <= n; i++) {
+            Arrays.fill(f[i], Integer.MAX_VALUE);
+        }
+        int[] sub = new int[n + 1];
+        for (int i = 0; i < n; i++) {
+            sub[i + 1] = sub[i] + nums[i];
+        }
+        f[0][0] = 0;
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= Math.min(i, m); j++) {
+                for (int k = 0; k < i; k++) {
+                    f[i][j] = Math.min(f[i][j], Math.max(f[k][j - 1], sub[i] - sub[k]));
+                }
+            }
+        }
+        return f[n][m];
+    }
+}
+
+// 方法二：二分查找 + 贪心
+class Solution {
+    public int splitArray(int[] nums, int m) {
+        int left = 0, right = 0;
+        for (int i = 0; i < nums.length; i++) {
+            right += nums[i];
+            if (left < nums[i]) {
+                left = nums[i];
+            }
+        }
+        while (left < right) {
+            int mid = (right - left) / 2 + left;
+            if (check(nums, mid, m)) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+
+    public boolean check(int[] nums, int x, int m) {
+        int sum = 0;
+        int cnt = 1;
+        for (int i = 0; i < nums.length; i++) {
+            if (sum + nums[i] > x) {
+                cnt++;
+                sum = nums[i];
+            } else {
+                sum += nums[i];
+            }
+        }
+        return cnt <= m;
+    }
+}
+```
+
+
+
+### [1751. 最多可以参加的会议数目 II](https://leetcode.cn/problems/maximum-number-of-events-that-can-be-attended-ii/)
+
+困难
+
+给你一个 `events` 数组，其中 `events[i] = [startDayi, endDayi, valuei]` ，表示第 `i` 个会议在 `startDayi` 天开始，第 `endDayi` 天结束，如果你参加这个会议，你能得到价值 `valuei` 。同时给你一个整数 `k` 表示你能参加的最多会议数目。
+
+你同一时间只能参加一个会议。如果你选择参加某个会议，那么你必须 **完整** 地参加完这个会议。会议结束日期是包含在会议内的，也就是说你不能同时参加一个开始日期与另一个结束日期相同的两个会议。
+
+请你返回能得到的会议价值 **最大和** 。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2021/02/06/screenshot-2021-01-11-at-60048-pm.png)
+
+```
+输入：events = [[1,2,4],[3,4,3],[2,3,1]], k = 2
+输出：7
+解释：选择绿色的活动会议 0 和 1，得到总价值和为 4 + 3 = 7 。
+```
+
+C++版本
+
+```c++
+// 动态规划
+
+// 二分 + 动态规划
+```
+
+Java版本
+
+```java
+// 动态规划
+class Solution {
+    public int maxValue(int[][] es, int k) {
+        int n = es.length;
+        Arrays.sort(es, (a, b)->a[1]-b[1]);
+        // f[i][j] 代表考虑前 i 个事件，选择不超过 j 的最大价值
+        int[][] f = new int[n + 1][k + 1];
+        for (int i = 1; i <= n; i++) {
+            int[] ev = es[i - 1];
+            int s = ev[0], e = ev[1], v = ev[2];
+            
+            // 找到第 i 件事件之前，与第 i 件事件不冲突的事件
+            // 对于当前事件而言，冲突与否，与 j 无关
+            int last = 0;
+            for (int p = i - 1; p >= 1; p--) {
+                int[] prev = es[p - 1];
+                if (prev[1] < s) {
+                    last = p;
+                    break;
+                }
+            }
+            
+            for (int j = 1; j <= k; j++) {
+                f[i][j] = Math.max(f[i - 1][j], f[last][j - 1] + v);    
+            }
+        }
+        return f[n][k];
+    }
+}
+
+// 二分 + 动态规划
+class Solution {
+    public int maxValue(int[][] es, int k) {
+        int n = es.length;
+        Arrays.sort(es, (a, b)->a[1]-b[1]);
+        // f[i][j] 代表考虑前 i 个事件，选择不超过 j 的最大价值
+        int[][] f = new int[n + 1][k + 1];
+        for (int i = 1; i <= n; i++) {
+            int[] ev = es[i - 1];
+            int s = ev[0], e = ev[1], v = ev[2];
+            
+            // 通过「二分」，找到第 i 件事件之前，与第 i 件事件不冲突的事件
+            // 对于当前事件而言，冲突与否，与 j 无关
+            int l = 1, r = i - 1;
+            while (l < r) {
+                int mid = l + r + 1 >> 1;
+                int[] prev = es[mid - 1];
+                if (prev[1] < s) l = mid;    
+                else r = mid - 1;
+            }
+            int last = (r > 0 && es[r - 1][1] < s) ? r : 0;
+            
+            for (int j = 1; j <= k; j++) {
+                f[i][j] = Math.max(f[i - 1][j], f[last][j - 1] + v);    
+            }
+        }
+        return f[n][k];
+    }
+}
+
+// 或者
+class Solution {
+    int[][] dp;
+    int[][] events;
+    int K;
+    public int maxValue(int[][] events, int k) {
+        dp = new int[events.length][k + 1];
+        K = k;
+        this.events = events;
+        Arrays.sort(events, (e1, e2) -> e1[0] - e2[0]);
+        
+        return findMaxAt(0, 0);
+    }
+    
+  
+    private int findMaxAt(int current, int eventsAttended) {
+        if (current >= events.length || eventsAttended == K)
+            return 0;
+        
+        if (dp[current][K - eventsAttended] != 0)
+            return dp[current][K - eventsAttended];
+        
+        int nextIndex = binarySearch(current + 1, events[current][1]);
+        
+        //next index is the next possible event to attend while attending current event
+        int include = events[current][2] + findMaxAt(nextIndex, eventsAttended + 1);
+        //when we do not attend current event, we can move onto the next event
+        int exclude = findMaxAt(current + 1, eventsAttended);
+        
+        dp[current][K - eventsAttended] = Math.max(include, exclude);
+        
+        return dp[current][K - eventsAttended];
+    }
+    
+    private int binarySearch(int left, int currentEndTime) {
+        
+        int right = events.length - 1;
+        int middle = -1;
+        while (left < right) {
+            middle = (left + right) / 2;
+            if (events[middle][0] >= currentEndTime)
+                right = middle - 1;
+            else
+                left = middle + 1;
+        }
+        
+        while (right < events.length && events[right][0] <= currentEndTime)
+            right++;
+        return right;
+    }
+}
+
+// 或者
+class Solution {
+    public int maxValue(int[][] es, int k) {
+        int n = es.length;
+        // 按数组第二个数（结束时间）进行升序排序
+        Arrays.sort(es, (a, b)->a[1] - b[1]);
+        int[][] f = new int[n + 1][k + 1];
+        for (int i = 1; i <= n; i++) {
+            int[] ev = es[i - 1];
+            int s = ev[0], e = ev[1], v= ev[2];
+            int last = 0;
+            for (int p = i - 1; p >= 1; p--) {
+                int[] prev = es[p - 1];
+                if (prev[1] < s) {
+                    last = p;
+                    break;
+                }
+            }
+
+            for (int j = 1; j <= k; j++) {
+                f[i][j] = Math.max(f[i - 1][j], f[last][j - 1] + v);;
+            }
+        }
+        return f[n][k];
+    }
+}
+```
+
+
+
+### [1787. 使所有区间的异或结果为零](https://leetcode.cn/problems/make-the-xor-of-all-segments-equal-to-zero/)
+
+困难
+
+给你一个整数数组 `nums` 和一个整数 `k` 。区间 `[left, right]`（`left <= right`）的 **异或结果** 是对下标位于 `left` 和 `right`（包括 `left` 和 `right` ）之间所有元素进行 `XOR` 运算的结果：`nums[left] XOR nums[left+1] XOR ... XOR nums[right]` 。
+
+返回数组中 **要更改的最小元素数** ，以使所有长度为 `k` 的区间异或结果等于零。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,0,3,0], k = 1
+输出：3
+解释：将数组 [1,2,0,3,0] 修改为 [0,0,0,0,0]
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+private:
+    // x 的范围为 [0, 2^10)
+    static constexpr int MAXX = 1 << 10;
+    // 极大值，为了防止整数溢出选择 INT_MAX / 2
+    static constexpr int INFTY = INT_MAX / 2;
+    
+public:
+    int minChanges(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> f(MAXX, INFTY);
+        // 边界条件 f(-1,0)=0
+        f[0] = 0;
+        
+        for (int i = 0; i < k; ++i) {
+            // 第 i 个组的哈希映射
+            unordered_map<int, int> cnt;
+            int size = 0;
+            for (int j = i; j < n; j += k) {
+                ++cnt[nums[j]];
+                ++size;
+            }
+
+            // 求出 t2
+            int t2min = *min_element(f.begin(), f.end());
+
+            vector<int> g(MAXX, t2min);
+            for (int mask = 0; mask < MAXX; ++mask) {
+                // t1 则需要枚举 x 才能求出
+                for (auto [x, countx]: cnt) {
+                    g[mask] = min(g[mask], f[mask ^ x] - countx);
+                }
+            }
+            
+            // 别忘了加上 size
+            for_each(g.begin(), g.end(), [&](int& val) {val += size;});
+            f = move(g);
+        }
+
+        return f[0];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    // x 的范围为 [0, 2^10)
+    static final int MAXX = 1 << 10;
+    // 极大值，为了防止整数溢出选择 INT_MAX / 2
+    static final int INFTY = Integer.MAX_VALUE / 2;
+
+    public int minChanges(int[] nums, int k) {
+        int n = nums.length;
+        int[] f = new int[MAXX];
+        Arrays.fill(f, INFTY);
+        // 边界条件 f(-1,0)=0
+        f[0] = 0;
+        
+        for (int i = 0; i < k; ++i) {
+            // 第 i 个组的哈希映射
+            Map<Integer, Integer> cnt = new HashMap<Integer, Integer>();
+            int size = 0;
+            for (int j = i; j < n; j += k) {
+                cnt.put(nums[j], cnt.getOrDefault(nums[j], 0) + 1);
+                ++size;
+            }
+
+            // 求出 t2
+            int t2min = Arrays.stream(f).min().getAsInt();
+
+            int[] g = new int[MAXX];
+            Arrays.fill(g, t2min);
+            for (int mask = 0; mask < MAXX; ++mask) {
+                // t1 则需要枚举 x 才能求出
+                for (Map.Entry<Integer, Integer> entry : cnt.entrySet()) {
+                    int x = entry.getKey(), countx = entry.getValue();
+                    g[mask] = Math.min(g[mask], f[mask ^ x] - countx);
+                }
+            }
+            
+            // 别忘了加上 size
+            for (int j = 0; j < MAXX; ++j) {
+                g[j] += size;
+            }
+            f = g;
+        }
+
+        return f[0];
+    }
+}
+```
+
