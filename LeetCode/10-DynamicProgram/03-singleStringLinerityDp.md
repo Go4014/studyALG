@@ -4589,3 +4589,430 @@ class Solution {
 }
 ```
 
+
+
+### [121. 买卖股票的最佳时机](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/)
+
+简单
+
+给定一个数组 `prices` ，它的第 `i` 个元素 `prices[i]` 表示一支给定股票第 `i` 天的价格。
+
+你只能选择 **某一天** 买入这只股票，并选择在 **未来的某一个不同的日子** 卖出该股票。设计一个算法来计算你所能获取的最大利润。
+
+返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 `0` 。
+
+**示例 1：**
+
+```
+输入：[7,1,5,3,6,4]
+输出：5
+解释：在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+     注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格；同时，你不能在买入前卖出股票。
+```
+
+C++版本
+
+```c++
+// 方法一：暴力法【超时】
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = (int)prices.size(), ans = 0;
+        for (int i = 0; i < n; ++i){
+            for (int j = i + 1; j < n; ++j) {
+                ans = max(ans, prices[j] - prices[i]);
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：一次遍历
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int inf = 1e9;
+        int minprice = inf, maxprofit = 0;
+        for (int price: prices) {
+            maxprofit = max(maxprofit, price - minprice);
+            minprice = min(price, minprice);
+        }
+        return maxprofit;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：暴力法【超时】
+public class Solution {
+    public int maxProfit(int[] prices) {
+        int maxprofit = 0;
+        for (int i = 0; i < prices.length - 1; i++) {
+            for (int j = i + 1; j < prices.length; j++) {
+                int profit = prices[j] - prices[i];
+                if (profit > maxprofit) {
+                    maxprofit = profit;
+                }
+            }
+        }
+        return maxprofit;
+    }
+}
+
+// 方法二：一次遍历
+public class Solution {
+    public int maxProfit(int prices[]) {
+        int minprice = Integer.MAX_VALUE;
+        int maxprofit = 0;
+        for (int i = 0; i < prices.length; i++) {
+            if (prices[i] < minprice) {
+                minprice = prices[i];
+            } else if (prices[i] - minprice > maxprofit) {
+                maxprofit = prices[i] - minprice;
+            }
+        }
+        return maxprofit;
+    }
+}
+```
+
+
+
+### [122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)
+
+中等
+
+给你一个整数数组 `prices` ，其中 `prices[i]` 表示某支股票第 `i` 天的价格。
+
+在每一天，你可以决定是否购买和/或出售股票。你在任何时候 **最多** 只能持有 **一股** 股票。你也可以先购买，然后在 **同一天** 出售。
+
+返回 *你能获得的 **最大** 利润* 。
+
+**示例 1：**
+
+```
+输入：prices = [7,1,5,3,6,4]
+输出：7
+解释：在第 2 天（股票价格 = 1）的时候买入，在第 3 天（股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5 - 1 = 4 。
+     随后，在第 4 天（股票价格 = 3）的时候买入，在第 5 天（股票价格 = 6）的时候卖出, 这笔交易所能获得利润 = 6 - 3 = 3 。
+     总利润为 4 + 3 = 7 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        int dp[n][2];
+        dp[0][0] = 0, dp[0][1] = -prices[0];
+        for (int i = 1; i < n; ++i) {
+            dp[i][0] = max(dp[i - 1][0], dp[i - 1][1] + prices[i]);
+            dp[i][1] = max(dp[i - 1][1], dp[i - 1][0] - prices[i]);
+        }
+        return dp[n - 1][0];
+    }
+};
+
+// 或者
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        int dp0 = 0, dp1 = -prices[0];
+        for (int i = 1; i < n; ++i) {
+            int newDp0 = max(dp0, dp1 + prices[i]);
+            int newDp1 = max(dp1, dp0 - prices[i]);
+            dp0 = newDp0;
+            dp1 = newDp1;
+        }
+        return dp0;
+    }
+};
+
+// 方法二：贪心
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {   
+        int ans = 0;
+        int n = prices.size();
+        for (int i = 1; i < n; ++i) {
+            ans += max(0, prices[i] - prices[i - 1]);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int maxProfit(int[] prices) {
+        int n = prices.length;
+        int[][] dp = new int[n][2];
+        dp[0][0] = 0;
+        dp[0][1] = -prices[0];
+        for (int i = 1; i < n; ++i) {
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[i]);
+            dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] - prices[i]);
+        }
+        return dp[n - 1][0];
+    }
+}
+
+// 或者
+class Solution {
+    public int maxProfit(int[] prices) {
+        int n = prices.length;
+        int dp0 = 0, dp1 = -prices[0];
+        for (int i = 1; i < n; ++i) {
+            int newDp0 = Math.max(dp0, dp1 + prices[i]);
+            int newDp1 = Math.max(dp1, dp0 - prices[i]);
+            dp0 = newDp0;
+            dp1 = newDp1;
+        }
+        return dp0;
+    }
+}
+
+// 方法二：贪心
+class Solution {
+    public int maxProfit(int[] prices) {
+        int ans = 0;
+        int n = prices.length;
+        for (int i = 1; i < n; ++i) {
+            ans += Math.max(0, prices[i] - prices[i - 1]);
+        }
+        return ans;
+    }
+}
+```
+
+
+
+### [123. 买卖股票的最佳时机 III](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iii/)
+
+困难
+
+给定一个数组，它的第 `i` 个元素是一支给定的股票在第 `i` 天的价格。
+
+设计一个算法来计算你所能获取的最大利润。你最多可以完成 **两笔** 交易。
+
+**注意：**你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+**示例 1:**
+
+```
+输入：prices = [3,3,5,0,0,3,1,4]
+输出：6
+解释：在第 4 天（股票价格 = 0）的时候买入，在第 6 天（股票价格 = 3）的时候卖出，这笔交易所能获得利润 = 3-0 = 3 。
+     随后，在第 7 天（股票价格 = 1）的时候买入，在第 8 天 （股票价格 = 4）的时候卖出，这笔交易所能获得利润 = 4-1 = 3 。
+```
+
+$$
+
+\begin{cases} 
+\textit{buy}_1 = \max \{ \textit{buy}_1, -\textit{prices}[i] \} \\ 
+\textit{sell}_1 = \max \{ \textit{sell}_1, \textit{buy}_1 + \textit{prices}[i] \} \\ 
+\textit{buy}_2 = \max \{ \textit{buy}_2, \textit{sell}_1 - \textit{prices}[i] \} \\ 
+\textit{sell}_2 = \max \{ \textit{sell}_2, \textit{buy}_2 + \textit{prices}[i] \} 
+\end{cases}
+$$
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        int buy1 = -prices[0], sell1 = 0;
+        int buy2 = -prices[0], sell2 = 0;
+        for (int i = 1; i < n; ++i) {
+            buy1 = max(buy1, -prices[i]);
+            sell1 = max(sell1, buy1 + prices[i]);
+            buy2 = max(buy2, sell1 - prices[i]);
+            sell2 = max(sell2, buy2 + prices[i]);
+        }
+        return sell2;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int maxProfit(int[] prices) {
+        int n = prices.length;
+        int buy1 = -prices[0], sell1 = 0;
+        int buy2 = -prices[0], sell2 = 0;
+        for (int i = 1; i < n; ++i) {
+            buy1 = Math.max(buy1, -prices[i]);
+            sell1 = Math.max(sell1, buy1 + prices[i]);
+            buy2 = Math.max(buy2, sell1 - prices[i]);
+            sell2 = Math.max(sell2, buy2 + prices[i]);
+        }
+        return sell2;
+    }
+}
+```
+
+
+
+### [188. 买卖股票的最佳时机 IV](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iv/)
+
+困难
+
+给你一个整数数组 `prices` 和一个整数 `k` ，其中 `prices[i]` 是某支给定的股票在第 `i` 天的价格。
+
+设计一个算法来计算你所能获取的最大利润。你最多可以完成 `k` 笔交易。也就是说，你最多可以买 `k` 次，卖 `k` 次。
+
+**注意：**你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+**示例 1：**
+
+```
+输入：k = 2, prices = [2,4,1]
+输出：2
+解释：在第 1 天 (股票价格 = 2) 的时候买入，在第 2 天 (股票价格 = 4) 的时候卖出，这笔交易所能获得利润 = 4-2 = 2 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int maxProfit(int k, vector<int>& prices) {
+        if (prices.empty()) {
+            return 0;
+        }
+
+        int n = prices.size();
+        k = min(k, n / 2);
+        vector<vector<int>> buy(n, vector<int>(k + 1));
+        vector<vector<int>> sell(n, vector<int>(k + 1));
+
+        buy[0][0] = -prices[0];
+        sell[0][0] = 0;
+        for (int i = 1; i <= k; ++i) {
+            buy[0][i] = sell[0][i] = INT_MIN / 2;
+        }
+
+        for (int i = 1; i < n; ++i) {
+            buy[i][0] = max(buy[i - 1][0], sell[i - 1][0] - prices[i]);
+            for (int j = 1; j <= k; ++j) {
+                buy[i][j] = max(buy[i - 1][j], sell[i - 1][j] - prices[i]);
+                sell[i][j] = max(sell[i - 1][j], buy[i - 1][j - 1] + prices[i]);   
+            }
+        }
+
+        return *max_element(sell[n - 1].begin(), sell[n - 1].end());
+    }
+};
+
+// 或者
+class Solution {
+public:
+    int maxProfit(int k, vector<int>& prices) {
+        if (prices.empty()) {
+            return 0;
+        }
+
+        int n = prices.size();
+        k = min(k, n / 2);
+        vector<int> buy(k + 1);
+        vector<int> sell(k + 1);
+
+        buy[0] = -prices[0];
+        sell[0] = 0;
+        for (int i = 1; i <= k; ++i) {
+            buy[i] = sell[i] = INT_MIN / 2;
+        }
+
+        for (int i = 1; i < n; ++i) {
+            buy[0] = max(buy[0], sell[0] - prices[i]);
+            for (int j = 1; j <= k; ++j) {
+                buy[j] = max(buy[j], sell[j] - prices[i]);
+                sell[j] = max(sell[j], buy[j - 1] + prices[i]);   
+            }
+        }
+
+        return *max_element(sell.begin(), sell.end());
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int maxProfit(int k, int[] prices) {
+        if (prices.length == 0) {
+            return 0;
+        }
+
+        int n = prices.length;
+        k = Math.min(k, n / 2);
+        int[][] buy = new int[n][k + 1];
+        int[][] sell = new int[n][k + 1];
+
+        buy[0][0] = -prices[0];
+        sell[0][0] = 0;
+        for (int i = 1; i <= k; ++i) {
+            buy[0][i] = sell[0][i] = Integer.MIN_VALUE / 2;
+        }
+
+        for (int i = 1; i < n; ++i) {
+            buy[i][0] = Math.max(buy[i - 1][0], sell[i - 1][0] - prices[i]);
+            for (int j = 1; j <= k; ++j) {
+                buy[i][j] = Math.max(buy[i - 1][j], sell[i - 1][j] - prices[i]);
+                sell[i][j] = Math.max(sell[i - 1][j], buy[i - 1][j - 1] + prices[i]);   
+            }
+        }
+
+        return Arrays.stream(sell[n - 1]).max().getAsInt();
+    }
+}
+
+// 或者
+class Solution {
+    public int maxProfit(int k, int[] prices) {
+        if (prices.length == 0) {
+            return 0;
+        }
+
+        int n = prices.length;
+        k = Math.min(k, n / 2);
+        int[] buy = new int[k + 1];
+        int[] sell = new int[k + 1];
+
+        buy[0] = -prices[0];
+        sell[0] = 0;
+        for (int i = 1; i <= k; ++i) {
+            buy[i] = sell[i] = Integer.MIN_VALUE / 2;
+        }
+
+        for (int i = 1; i < n; ++i) {
+            buy[0] = Math.max(buy[0], sell[0] - prices[i]);
+            for (int j = 1; j <= k; ++j) {
+                buy[j] = Math.max(buy[j], sell[j] - prices[i]);
+                sell[j] = Math.max(sell[j], buy[j - 1] + prices[i]);   
+            }
+        }
+
+        return Arrays.stream(sell).max().getAsInt();
+    }
+}
+```
+
