@@ -557,3 +557,334 @@ class Solution {
 }
 ```
 
+
+
+### [72. 编辑距离](https://leetcode.cn/problems/edit-distance/)
+
+中等
+
+给你两个单词 `word1` 和 `word2`， *请返回将 `word1` 转换成 `word2` 所使用的最少操作数* 。
+
+你可以对一个单词进行如下三种操作：
+
+- 插入一个字符
+- 删除一个字符
+- 替换一个字符
+
+**示例 1：**
+
+```
+输入：word1 = "horse", word2 = "ros"
+输出：3
+解释：
+horse -> rorse (将 'h' 替换为 'r')
+rorse -> rose (删除 'r')
+rose -> ros (删除 'e')
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int minDistance(string word1, string word2) {
+        int n = word1.length();
+        int m = word2.length();
+
+        // 有一个字符串为空串
+        if (n * m == 0) return n + m;
+
+        // DP 数组
+        vector<vector<int>> D(n + 1, vector<int>(m + 1));
+
+        // 边界状态初始化
+        for (int i = 0; i < n + 1; i++) {
+            D[i][0] = i;
+        }
+        for (int j = 0; j < m + 1; j++) {
+            D[0][j] = j;
+        }
+
+        // 计算所有 DP 值
+        for (int i = 1; i < n + 1; i++) {
+            for (int j = 1; j < m + 1; j++) {
+                int left = D[i - 1][j] + 1;
+                int down = D[i][j - 1] + 1;
+                int left_down = D[i - 1][j - 1];
+                if (word1[i - 1] != word2[j - 1]) left_down += 1;
+                D[i][j] = min(left, min(down, left_down));
+
+            }
+        }
+        return D[n][m];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int minDistance(String word1, String word2) {
+        int n = word1.length();
+        int m = word2.length();
+
+        // 有一个字符串为空串
+        if (n * m == 0) {
+            return n + m;
+        }
+
+        // DP 数组
+        int[][] D = new int[n + 1][m + 1];
+
+        // 边界状态初始化
+        for (int i = 0; i < n + 1; i++) {
+            D[i][0] = i;
+        }
+        for (int j = 0; j < m + 1; j++) {
+            D[0][j] = j;
+        }
+
+        // 计算所有 DP 值
+        for (int i = 1; i < n + 1; i++) {
+            for (int j = 1; j < m + 1; j++) {
+                int left = D[i - 1][j] + 1;
+                int down = D[i][j - 1] + 1;
+                int left_down = D[i - 1][j - 1];
+                if (word1.charAt(i - 1) != word2.charAt(j - 1)) {
+                    left_down += 1;
+                }
+                D[i][j] = Math.min(left, Math.min(down, left_down));
+            }
+        }
+        return D[n][m];
+    }
+}
+
+// 或者
+class Solution {
+    public int minDistance(String word1, String word2) {
+        int m = word1.length(), n = word2.length();
+        int[] dp = new int[n + 1];
+        char[] c1 = word1.toCharArray(), c2 = word2.toCharArray();
+        for (int j = 0; j <= n; j++)
+            dp[j] = j;
+        for (int i = 0; i != m; i++) {
+            int prev = dp[0];
+            dp[0]++;
+            for (int j = 0; j != n; j++) {
+                int tmp = dp[j + 1];
+                if (c1[i] == c2[j])
+                    dp[j + 1] = prev;
+                else
+                    dp[j + 1] = Math.min(dp[j + 1], Math.min(dp[j], prev)) + 1;
+                prev = tmp;
+            }
+        }
+        return dp[n];
+    }
+}
+```
+
+
+
+### [44. 通配符匹配](https://leetcode.cn/problems/wildcard-matching/)
+
+困难
+
+给你一个输入字符串 (`s`) 和一个字符模式 (`p`) ，请你实现一个支持 `'?'` 和 `'*'` 匹配规则的通配符匹配：
+
+- `'?'` 可以匹配任何单个字符。
+- `'*'` 可以匹配任意字符序列（包括空字符序列）。
+
+判定匹配成功的充要条件是：字符模式必须能够 **完全匹配** 输入字符串（而不是部分匹配）。
+
+**示例 1：**
+
+```
+输入：s = "aa", p = "a"
+输出：false
+解释："a" 无法匹配 "aa" 整个字符串。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    bool isMatch(string s, string p) {
+        int m = s.size();
+        int n = p.size();
+        vector<vector<int>> dp(m + 1, vector<int>(n + 1));
+        dp[0][0] = true;
+        for (int i = 1; i <= n; ++i) {
+            if (p[i - 1] == '*') {
+                dp[0][i] = true;
+            }
+            else {
+                break;
+            }
+        }
+        for (int i = 1; i <= m; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                if (p[j - 1] == '*') {
+                    dp[i][j] = dp[i][j - 1] | dp[i - 1][j];
+                }
+                else if (p[j - 1] == '?' || s[i - 1] == p[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+            }
+        }
+        return dp[m][n];
+    }
+};
+
+// 方法二：贪心算法
+class Solution {
+public:
+    bool isMatch(string s, string p) {
+        auto allStars = [](const string& str, int left, int right) {
+            for (int i = left; i < right; ++i) {
+                if (str[i] != '*') {
+                    return false;
+                }
+            }
+            return true;
+        };
+        auto charMatch = [](char u, char v) {
+            return u == v || v == '?';
+        };
+
+        while (s.size() && p.size() && p.back() != '*') {
+            if (charMatch(s.back(), p.back())) {
+                s.pop_back();
+                p.pop_back();
+            }
+            else {
+                return false;
+            }
+        }
+        if (p.empty()) {
+            return s.empty();
+        }
+
+        int sIndex = 0, pIndex = 0;
+        int sRecord = -1, pRecord = -1;
+        while (sIndex < s.size() && pIndex < p.size()) {
+            if (p[pIndex] == '*') {
+                ++pIndex;
+                sRecord = sIndex;
+                pRecord = pIndex;
+            }
+            else if (charMatch(s[sIndex], p[pIndex])) {
+                ++sIndex;
+                ++pIndex;
+            }
+            else if (sRecord != -1 && sRecord + 1 < s.size()) {
+                ++sRecord;
+                sIndex = sRecord;
+                pIndex = pRecord;
+            }
+            else {
+                return false;
+            }
+        }
+        return allStars(p, pIndex, p.size());
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public boolean isMatch(String s, String p) {
+        int m = s.length();
+        int n = p.length();
+        boolean[][] dp = new boolean[m + 1][n + 1];
+        dp[0][0] = true;
+        for (int i = 1; i <= n; ++i) {
+            if (p.charAt(i - 1) == '*') {
+                dp[0][i] = true;
+            } else {
+                break;
+            }
+        }
+        for (int i = 1; i <= m; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                if (p.charAt(j - 1) == '*') {
+                    dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
+                } else if (p.charAt(j - 1) == '?' || s.charAt(i - 1) == p.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+            }
+        }
+        return dp[m][n];
+    }
+}
+
+// 方法二：贪心算法
+class Solution {
+    public boolean isMatch(String s, String p) {
+        int sRight = s.length(), pRight = p.length();
+        while (sRight > 0 && pRight > 0 && p.charAt(pRight - 1) != '*') {
+            if (charMatch(s.charAt(sRight - 1), p.charAt(pRight - 1))) {
+                --sRight;
+                --pRight;
+            } else {
+                return false;
+            }
+        }
+
+        if (pRight == 0) {
+            return sRight == 0;
+        }
+
+        int sIndex = 0, pIndex = 0;
+        int sRecord = -1, pRecord = -1;
+        
+        while (sIndex < sRight && pIndex < pRight) {
+            if (p.charAt(pIndex) == '*') {
+                ++pIndex;
+                sRecord = sIndex;
+                pRecord = pIndex;
+            } else if (charMatch(s.charAt(sIndex), p.charAt(pIndex))) {
+                ++sIndex;
+                ++pIndex;
+            } else if (sRecord != -1 && sRecord + 1 < sRight) {
+                ++sRecord;
+                sIndex = sRecord;
+                pIndex = pRecord;
+            } else {
+                return false;
+            }
+        }
+
+        return allStars(p, pIndex, pRight);
+    }
+
+    public boolean allStars(String str, int left, int right) {
+        for (int i = left; i < right; ++i) {
+            if (str.charAt(i) != '*') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean charMatch(char u, char v) {
+        return u == v || v == '?';
+    }
+}
+```
+
+
+
+
+
+
+
