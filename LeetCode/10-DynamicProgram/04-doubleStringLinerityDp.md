@@ -884,7 +884,256 @@ class Solution {
 
 
 
+### [10. 正则表达式匹配](https://leetcode.cn/problems/regular-expression-matching/)
 
+困难
+
+给你一个字符串 `s` 和一个字符规律 `p`，请你来实现一个支持 `'.'` 和 `'*'` 的正则表达式匹配。
+
+- `'.'` 匹配任意单个字符
+- `'*'` 匹配零个或多个前面的那一个元素
+
+所谓匹配，是要涵盖 **整个** 字符串 `s`的，而不是部分字符串。
+
+**示例 1：**
+
+```
+输入：s = "aa", p = "a"
+输出：false
+解释："a" 无法匹配 "aa" 整个字符串。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    bool isMatch(string s, string p) {
+        int m = s.size();
+        int n = p.size();
+
+        auto matches = [&](int i, int j) {
+            if (i == 0) {
+                return false;
+            }
+            if (p[j - 1] == '.') {
+                return true;
+            }
+            return s[i - 1] == p[j - 1];
+        };
+
+        vector<vector<int>> f(m + 1, vector<int>(n + 1));
+        f[0][0] = true;
+        for (int i = 0; i <= m; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                if (p[j - 1] == '*') {
+                    f[i][j] |= f[i][j - 2];
+                    if (matches(i, j - 1)) {
+                        f[i][j] |= f[i - 1][j];
+                    }
+                }
+                else {
+                    if (matches(i, j)) {
+                        f[i][j] |= f[i - 1][j - 1];
+                    }
+                }
+            }
+        }
+        return f[m][n];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public boolean isMatch(String s, String p) {
+        int m = s.length();
+        int n = p.length();
+
+        boolean[][] f = new boolean[m + 1][n + 1];
+        f[0][0] = true;
+        for (int i = 0; i <= m; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                if (p.charAt(j - 1) == '*') {
+                    f[i][j] = f[i][j - 2];
+                    if (matches(s, p, i, j - 1)) {
+                        f[i][j] = f[i][j] || f[i - 1][j];
+                    }
+                } else {
+                    if (matches(s, p, i, j)) {
+                        f[i][j] = f[i - 1][j - 1];
+                    }
+                }
+            }
+        }
+        return f[m][n];
+    }
+
+    public boolean matches(String s, String p, int i, int j) {
+        if (i == 0) {
+            return false;
+        }
+        if (p.charAt(j - 1) == '.') {
+            return true;
+        }
+        return s.charAt(i - 1) == p.charAt(j - 1);
+    }
+}
+```
+
+
+
+### [97. 交错字符串](https://leetcode.cn/problems/interleaving-string/)
+
+中等
+
+给定三个字符串 `s1`、`s2`、`s3`，请你帮忙验证 `s3` 是否是由 `s1` 和 `s2` **交错** 组成的。
+
+两个字符串 `s` 和 `t` **交错** 的定义与过程如下，其中每个字符串都会被分割成若干 **非空** 
+
+子字符串：
+
+- `s = s1 + s2 + ... + sn`
+- `t = t1 + t2 + ... + tm`
+- `|n - m| <= 1`
+- **交错** 是 `s1 + t1 + s2 + t2 + s3 + t3 + ...` 或者 `t1 + s1 + t2 + s2 + t3 + s3 + ...`
+
+**注意：**`a + b` 意味着字符串 `a` 和 `b` 连接。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/02/interleave.jpg)
+
+```
+输入：s1 = "aabcc", s2 = "dbbca", s3 = "aadbbcbcac"
+输出：true
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    bool isInterleave(string s1, string s2, string s3) {
+        auto f = vector < vector <int> > (s1.size() + 1, vector <int> (s2.size() + 1, false));
+
+        int n = s1.size(), m = s2.size(), t = s3.size();
+
+        if (n + m != t) {
+            return false;
+        }
+
+        f[0][0] = true;
+        for (int i = 0; i <= n; ++i) {
+            for (int j = 0; j <= m; ++j) {
+                int p = i + j - 1;
+                if (i > 0) {
+                    f[i][j] |= (f[i - 1][j] && s1[i - 1] == s3[p]);
+                }
+                if (j > 0) {
+                    f[i][j] |= (f[i][j - 1] && s2[j - 1] == s3[p]);
+                }
+            }
+        }
+
+        return f[n][m];
+    }
+};
+
+// 方法二：滚动数组
+class Solution {
+public:
+    bool isInterleave(string s1, string s2, string s3) {
+        auto f = vector <int> (s2.size() + 1, false);
+
+        int n = s1.size(), m = s2.size(), t = s3.size();
+
+        if (n + m != t) {
+            return false;
+        }
+
+        f[0] = true;
+        for (int i = 0; i <= n; ++i) {
+            for (int j = 0; j <= m; ++j) {
+                int p = i + j - 1;
+                if (i > 0) {
+                    f[j] &= (s1[i - 1] == s3[p]);
+                }
+                if (j > 0) {
+                    f[j] |= (f[j - 1] && s2[j - 1] == s3[p]);
+                }
+            }
+        }
+
+        return f[m];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public boolean isInterleave(String s1, String s2, String s3) {
+        int n = s1.length(), m = s2.length(), t = s3.length();
+
+        if (n + m != t) {
+            return false;
+        }
+
+        boolean[][] f = new boolean[n + 1][m + 1];
+
+        f[0][0] = true;
+        for (int i = 0; i <= n; ++i) {
+            for (int j = 0; j <= m; ++j) {
+                int p = i + j - 1;
+                if (i > 0) {
+                    f[i][j] = f[i][j] || (f[i - 1][j] && s1.charAt(i - 1) == s3.charAt(p));
+                }
+                if (j > 0) {
+                    f[i][j] = f[i][j] || (f[i][j - 1] && s2.charAt(j - 1) == s3.charAt(p));
+                }
+            }
+        }
+
+        return f[n][m];
+    }
+}
+
+// 方法二：滚动数组
+class Solution {
+    public boolean isInterleave(String s1, String s2, String s3) {
+        int n = s1.length(), m = s2.length(), t = s3.length();
+
+        if (n + m != t) {
+            return false;
+        }
+
+        boolean[] f = new boolean[m + 1];
+
+        f[0] = true;
+        for (int i = 0; i <= n; ++i) {
+            for (int j = 0; j <= m; ++j) {
+                int p = i + j - 1;
+                if (i > 0) {
+                    f[j] = f[j] && s1.charAt(i - 1) == s3.charAt(p);
+                }
+                if (j > 0) {
+                    f[j] = f[j] || (f[j - 1] && s2.charAt(j - 1) == s3.charAt(p));
+                }
+            }
+        }
+
+        return f[m];
+    }
+}
+```
 
 
 
