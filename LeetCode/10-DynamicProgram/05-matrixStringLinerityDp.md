@@ -695,3 +695,557 @@ class Solution {
 }
 ```
 
+
+
+### [576. 出界的路径数](https://leetcode.cn/problems/out-of-boundary-paths/)
+
+中等
+
+给你一个大小为 `m x n` 的网格和一个球。球的起始坐标为 `[startRow, startColumn]` 。你可以将球移到在四个方向上相邻的单元格内（可以穿过网格边界到达网格之外）。你 **最多** 可以移动 `maxMove` 次球。
+
+给你五个整数 `m`、`n`、`maxMove`、`startRow` 以及 `startColumn` ，找出并返回可以将球移出边界的路径数量。因为答案可能非常大，返回对 `109 + 7` **取余** 后的结果。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/04/28/out_of_boundary_paths_1.png)
+
+```
+输入：m = 2, n = 2, maxMove = 2, startRow = 0, startColumn = 0
+输出：6
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    static constexpr int MOD = 1'000'000'007;
+
+    int findPaths(int m, int n, int maxMove, int startRow, int startColumn) {
+        vector<vector<int>> directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        int outCounts = 0;
+        vector<vector<vector<int>>> dp(maxMove + 1, vector<vector<int>>(m, vector<int>(n)));
+        dp[0][startRow][startColumn] = 1;
+        for (int i = 0; i < maxMove; i++) {
+            for (int j = 0; j < m; j++) {
+                for (int k = 0; k < n; k++) {
+                    int count = dp[i][j][k];
+                    if (count > 0) {
+                        for (auto &direction : directions) {
+                            int j1 = j + direction[0], k1 = k + direction[1];
+                            if (j1 >= 0 && j1 < m && k1 >= 0 && k1 < n) {
+                                dp[i + 1][j1][k1] = (dp[i + 1][j1][k1] + count) % MOD;
+                            } else {
+                                outCounts = (outCounts + count) % MOD;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return outCounts;
+    }
+};
+
+// 优化
+class Solution {
+public:
+    static constexpr int MOD = 1'000'000'007;
+
+    int findPaths(int m, int n, int maxMove, int startRow, int startColumn) {
+        vector<vector<int>> directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        int outCounts = 0;
+        vector<vector<int>> dp(m, vector<int>(n));
+        dp[startRow][startColumn] = 1;
+        for (int i = 0; i < maxMove; i++) {
+            vector<vector<int>> dpNew(m, vector<int>(n));
+            for (int j = 0; j < m; j++) {
+                for (int k = 0; k < n; k++) {
+                    int count = dp[j][k];
+                    if (count > 0) {
+                        for (auto& direction : directions) {
+                            int j1 = j + direction[0], k1 = k + direction[1];
+                            if (j1 >= 0 && j1 < m && k1 >= 0 && k1 < n) {
+                                dpNew[j1][k1] = (dpNew[j1][k1] + count) % MOD;
+                            } else {
+                                outCounts = (outCounts + count) % MOD;
+                            }
+                        }
+                    }
+                }
+            }
+            dp = dpNew;
+        }
+        return outCounts;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int findPaths(int m, int n, int maxMove, int startRow, int startColumn) {
+        final int MOD = 1000000007;
+        int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        int outCounts = 0;
+        int[][][] dp = new int[maxMove + 1][m][n];
+        dp[0][startRow][startColumn] = 1;
+        for (int i = 0; i < maxMove; i++) {
+            for (int j = 0; j < m; j++) {
+                for (int k = 0; k < n; k++) {
+                    int count = dp[i][j][k];
+                    if (count > 0) {
+                        for (int[] direction : directions) {
+                            int j1 = j + direction[0], k1 = k + direction[1];
+                            if (j1 >= 0 && j1 < m && k1 >= 0 && k1 < n) {
+                                dp[i + 1][j1][k1] = (dp[i + 1][j1][k1] + count) % MOD;
+                            } else {
+                                outCounts = (outCounts + count) % MOD;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return outCounts;
+    }
+}
+
+// 优化
+class Solution {
+    public int findPaths(int m, int n, int maxMove, int startRow, int startColumn) {
+        final int MOD = 1000000007;
+        int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        int outCounts = 0;
+        int[][] dp = new int[m][n];
+        dp[startRow][startColumn] = 1;
+        for (int i = 0; i < maxMove; i++) {
+            int[][] dpNew = new int[m][n];
+            for (int j = 0; j < m; j++) {
+                for (int k = 0; k < n; k++) {
+                    int count = dp[j][k];
+                    if (count > 0) {
+                        for (int[] direction : directions) {
+                            int j1 = j + direction[0], k1 = k + direction[1];
+                            if (j1 >= 0 && j1 < m && k1 >= 0 && k1 < n) {
+                                dpNew[j1][k1] = (dpNew[j1][k1] + count) % MOD;
+                            } else {
+                                outCounts = (outCounts + count) % MOD;
+                            }
+                        }
+                    }
+                }
+            }
+            dp = dpNew;
+        }
+        return outCounts;
+    }
+}
+```
+
+
+
+### [85. 最大矩形](https://leetcode.cn/problems/maximal-rectangle/)
+
+困难
+
+给定一个仅包含 `0` 和 `1` 、大小为 `rows x cols` 的二维二进制矩阵，找出只包含 `1` 的最大矩形，并返回其面积。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/14/maximal.jpg)
+
+```
+输入：matrix = [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
+输出：6
+解释：最大矩形如上图所示。
+```
+
+C++版本
+
+```c++
+// 方法一: 使用柱状图的优化暴力方法
+class Solution {
+public:
+    int maximalRectangle(vector<vector<char>>& matrix) {
+        int m = matrix.size();
+        if (m == 0) {
+            return 0;
+        }
+        int n = matrix[0].size();
+        vector<vector<int>> left(m, vector<int>(n, 0));
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == '1') {
+                    left[i][j] = (j == 0 ? 0: left[i][j - 1]) + 1;
+                }
+            }
+        }
+
+        int ret = 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == '0') {
+                    continue;
+                }
+                int width = left[i][j];
+                int area = width;
+                for (int k = i - 1; k >= 0; k--) {
+                    width = min(width, left[k][j]);
+                    area = max(area, (i - k + 1) * width);
+                }
+                ret = max(ret, area);
+            }
+        }
+        return ret;
+    }
+};
+
+// 方法二：单调栈
+class Solution {
+public:
+    int maximalRectangle(vector<vector<char>>& matrix) {
+        int m = matrix.size();
+        if (m == 0) {
+            return 0;
+        }
+        int n = matrix[0].size();
+        vector<vector<int>> left(m, vector<int>(n, 0));
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == '1') {
+                    left[i][j] = (j == 0 ? 0: left[i][j - 1]) + 1;
+                }
+            }
+        }
+
+        int ret = 0;
+        for (int j = 0; j < n; j++) { // 对于每一列，使用基于柱状图的方法
+            vector<int> up(m, 0), down(m, 0);
+
+            stack<int> stk;
+            for (int i = 0; i < m; i++) {
+                while (!stk.empty() && left[stk.top()][j] >= left[i][j]) {
+                    stk.pop();
+                }
+                up[i] = stk.empty() ? -1 : stk.top();
+                stk.push(i);
+            }
+            stk = stack<int>();
+            for (int i = m - 1; i >= 0; i--) {
+                while (!stk.empty() && left[stk.top()][j] >= left[i][j]) {
+                    stk.pop();
+                }
+                down[i] = stk.empty() ? m : stk.top();
+                stk.push(i);
+            }
+
+            for (int i = 0; i < m; i++) {
+                int height = down[i] - up[i] - 1;
+                int area = height * left[i][j];
+                ret = max(ret, area);
+            }
+        }
+        return ret;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一: 使用柱状图的优化暴力方法
+class Solution {
+    public int maximalRectangle(char[][] matrix) {
+        int m = matrix.length;
+        if (m == 0) {
+            return 0;
+        }
+        int n = matrix[0].length;
+        int[][] left = new int[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == '1') {
+                    left[i][j] = (j == 0 ? 0 : left[i][j - 1]) + 1;
+                }
+            }
+        }
+
+        int ret = 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == '0') {
+                    continue;
+                }
+                int width = left[i][j];
+                int area = width;
+                for (int k = i - 1; k >= 0; k--) {
+                    width = Math.min(width, left[k][j]);
+                    area = Math.max(area, (i - k + 1) * width);
+                }
+                ret = Math.max(ret, area);
+            }
+        }
+        return ret;
+    }
+}
+
+// 方法二：单调栈
+class Solution {
+    public int maximalRectangle(char[][] matrix) {
+        int m = matrix.length;
+        if (m == 0) {
+            return 0;
+        }
+        int n = matrix[0].length;
+        int[][] left = new int[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == '1') {
+                    left[i][j] = (j == 0 ? 0 : left[i][j - 1]) + 1;
+                }
+            }
+        }
+
+        int ret = 0;
+        for (int j = 0; j < n; j++) { // 对于每一列，使用基于柱状图的方法
+            int[] up = new int[m];
+            int[] down = new int[m];
+
+            Deque<Integer> stack = new LinkedList<Integer>();
+            for (int i = 0; i < m; i++) {
+                while (!stack.isEmpty() && left[stack.peek()][j] >= left[i][j]) {
+                    stack.pop();
+                }
+                up[i] = stack.isEmpty() ? -1 : stack.peek();
+                stack.push(i);
+            }
+            stack.clear();
+            for (int i = m - 1; i >= 0; i--) {
+                while (!stack.isEmpty() && left[stack.peek()][j] >= left[i][j]) {
+                    stack.pop();
+                }
+                down[i] = stack.isEmpty() ? m : stack.peek();
+                stack.push(i);
+            }
+
+            for (int i = 0; i < m; i++) {
+                int height = down[i] - up[i] - 1;
+                int area = height * left[i][j];
+                ret = Math.max(ret, area);
+            }
+        }
+        return ret;
+    }
+}
+
+// 方法三
+class Solution {
+    public int maximalRectangle(char[][] matrix) {
+
+        int m = matrix.length, n = matrix[0].length;
+        int[] heights = new int[n];
+        int ans = 0;
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == '0') 
+                    heights[j] = 0;
+                else 
+                    heights[j]++;
+            }
+            ans = Math.max(ans, calc(heights));
+        }
+        return ans;
+    }
+
+    private int calc(int[] heights) {
+        int n = heights.length;
+        int[] stack = new int[n + 10];
+        int top = 0, result = 0;
+
+        for (int i = 0; i <= n; i++) {
+            int x = i == n ? 0 : heights[i];
+            while (top != -1 && heights[stack[top]] > x) {
+                int height = heights[stack[top--]];
+                int width = top == -1 ? i : i - stack[top] - 1;
+                result = Math.max(result, height * width);
+            }
+            stack[++top] = i;
+        }
+        return result;        
+    }
+}
+```
+
+
+
+### [363. 矩形区域不超过 K 的最大数值和](https://leetcode.cn/problems/max-sum-of-rectangle-no-larger-than-k/)
+
+困难
+
+给你一个 `m x n` 的矩阵 `matrix` 和一个整数 `k` ，找出并返回矩阵内部矩形区域的不超过 `k` 的最大数值和。
+
+题目数据保证总会存在一个数值和不超过 `k` 的矩形区域。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/03/18/sum-grid.jpg)
+
+```
+输入：matrix = [[1,0,1],[0,-2,3]], k = 2
+输出：2
+解释：蓝色边框圈出来的矩形区域 [[0, 1], [-2, 3]] 的数值和是 2，且 2 是不超过 k 的最大数字（k = 2）。
+```
+
+C++版本
+
+```c++
+// 方法一：有序集合
+class Solution {
+public:
+    int maxSumSubmatrix(vector<vector<int>> &matrix, int k) {
+        int ans = INT_MIN;
+        int m = matrix.size(), n = matrix[0].size();
+        for (int i = 0; i < m; ++i) { // 枚举上边界
+            vector<int> sum(n);
+            for (int j = i; j < m; ++j) { // 枚举下边界
+                for (int c = 0; c < n; ++c) {
+                    sum[c] += matrix[j][c]; // 更新每列的元素和
+                }
+                set<int> sumSet{0};
+                int s = 0;
+                for (int v : sum) {
+                    s += v;
+                    auto lb = sumSet.lower_bound(s - k);
+                    if (lb != sumSet.end()) {
+                        ans = max(ans, s - *lb);
+                    }
+                    sumSet.insert(s);
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：有序集合
+class Solution {
+    public int maxSumSubmatrix(int[][] matrix, int k) {
+        int ans = Integer.MIN_VALUE;
+        int m = matrix.length, n = matrix[0].length;
+        for (int i = 0; i < m; ++i) { // 枚举上边界
+            int[] sum = new int[n];
+            for (int j = i; j < m; ++j) { // 枚举下边界
+                for (int c = 0; c < n; ++c) {
+                    sum[c] += matrix[j][c]; // 更新每列的元素和
+                }
+                TreeSet<Integer> sumSet = new TreeSet<Integer>();
+                sumSet.add(0);
+                int s = 0;
+                for (int v : sum) {
+                    s += v;
+                    Integer ceil = sumSet.ceiling(s - k);
+                    if (ceil != null) {
+                        ans = Math.max(ans, s - ceil);
+                    }
+                    sumSet.add(s);
+                }
+            }
+        }
+        return ans;
+    }
+}
+
+// 动态规划
+class Solution {
+    public int maxSumSubmatrix(int[][] matrix, int k) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
+                if (i > 0) {
+                    matrix[i][j] += matrix[i - 1][j];
+                }
+                if (j > 0) {
+                    matrix[i][j] += matrix[i][j - 1];
+                }
+                if (i > 0 && j > 0) {
+                    matrix[i][j] -= matrix[i - 1][j - 1];
+                }
+            }
+        }
+        int result = Integer.MIN_VALUE;
+
+        int[][] dpHigh = new int[matrix.length][matrix.length + 1];
+        int[][] dpLow = new int[matrix.length][matrix.length + 1];
+
+        for (int i = matrix.length - 1; i >= 0; i--) {
+            for (int h = 1; h <= matrix.length - i; h++) {
+                int theValue = getSum(matrix, i, matrix[0].length - 1, h, 1);
+                dpLow[i][h] = theValue;
+                dpHigh[i][h] = theValue;
+                if (theValue == k) {
+                    return theValue;
+                }
+                if (theValue < k) {
+                    result = Math.max(result, theValue);
+                }
+            }
+        }
+
+        for (int i = matrix.length - 1; i >= 0; i--) {
+            for (int j = matrix[0].length - 2; j >= 0; j--) {
+                for (int h = 1; h <= matrix.length - i; h++) {
+                    int newSum = getSum(matrix, i, j, h, 1);
+                    if (dpLow[i][h] > 0) {
+                        dpHigh[i][h] += newSum;
+                        dpLow[i][h] = newSum;
+                    } else if (dpHigh[i][h] < 0) {
+                        dpLow[i][h] += newSum;
+                        dpHigh[i][h] = newSum;
+                    } else {
+                        dpHigh[i][h] += newSum;
+                        dpLow[i][h] += newSum;
+                    }
+                    if (dpHigh[i][h] >= result && dpLow[i][h] <= k) {
+                        for (int w = 1; w <= matrix[0].length - j; w++) {
+                            int sum = getSum(matrix, i, j, h, w);
+                            if (sum == k) {
+                                return sum;
+                            } else if (sum < k) {
+                                result = Math.max(result, sum);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private int getSum(int[][] matrix, int i, int j, int h, int w) {
+        int sum = matrix[i + h - 1][j + w - 1];
+        if (i > 0) {
+            sum -= matrix[i - 1][j + w - 1];
+        }
+        if (j > 0) {
+            sum -= matrix[i + h - 1][j - 1];
+        }
+        if (i > 0 && j > 0) {
+            sum += matrix[i - 1][j - 1];
+        }
+        return sum;
+    }
+}
+```
+
