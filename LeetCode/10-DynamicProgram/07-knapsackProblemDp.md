@@ -472,3 +472,379 @@ class Solution {
 }
 ```
 
+
+
+## 完全背包问题
+
+### [279. 完全平方数](https://leetcode.cn/problems/perfect-squares/)
+
+中等
+
+给你一个整数 `n` ，返回 *和为 `n` 的完全平方数的最少数量* 。
+
+**完全平方数** 是一个整数，其值等于另一个整数的平方；换句话说，其值等于一个整数自乘的积。例如，`1`、`4`、`9` 和 `16` 都是完全平方数，而 `3` 和 `11` 不是。
+
+**示例 1：**
+
+```
+输入：n = 12
+输出：3 
+解释：12 = 4 + 4 + 4
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int numSquares(int n) {
+        vector<int> f(n + 1);
+        for (int i = 1; i <= n; i++) {
+            int minn = INT_MAX;
+            for (int j = 1; j * j <= i; j++) {
+                minn = min(minn, f[i - j * j]);
+            }
+            f[i] = minn + 1;
+        }
+        return f[n];
+    }
+};
+
+// 方法二：数学
+class Solution {
+public:
+    // 判断是否为完全平方数
+    bool isPerfectSquare(int x) {
+        int y = sqrt(x);
+        return y * y == x;
+    }
+
+    // 判断是否能表示为 4^k*(8m+7)
+    bool checkAnswer4(int x) {
+        while (x % 4 == 0) {
+            x /= 4;
+        }
+        return x % 8 == 7;
+    }
+
+    int numSquares(int n) {
+        if (isPerfectSquare(n)) {
+            return 1;
+        }
+        if (checkAnswer4(n)) {
+            return 4;
+        }
+        for (int i = 1; i * i <= n; i++) {
+            int j = n - i * i;
+            if (isPerfectSquare(j)) {
+                return 2;
+            }
+        }
+        return 3;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int numSquares(int n) {
+        int[] f = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            int minn = Integer.MAX_VALUE;
+            for (int j = 1; j * j <= i; j++) {
+                minn = Math.min(minn, f[i - j * j]);
+            }
+            f[i] = minn + 1;
+        }
+        return f[n];
+    }
+}
+
+// 方法二：数学
+class Solution {
+    public int numSquares(int n) {
+        if (isPerfectSquare(n)) {
+            return 1;
+        }
+        if (checkAnswer4(n)) {
+            return 4;
+        }
+        for (int i = 1; i * i <= n; i++) {
+            int j = n - i * i;
+            if (isPerfectSquare(j)) {
+                return 2;
+            }
+        }
+        return 3;
+    }
+
+    // 判断是否为完全平方数
+    public boolean isPerfectSquare(int x) {
+        int y = (int) Math.sqrt(x);
+        return y * y == x;
+    }
+
+    // 判断是否能表示为 4^k*(8m+7)
+    public boolean checkAnswer4(int x) {
+        while (x % 4 == 0) {
+            x /= 4;
+        }
+        return x % 8 == 7;
+    }
+}
+```
+
+
+
+### [322. 零钱兑换](https://leetcode.cn/problems/coin-change/)
+
+中等
+
+给你一个整数数组 `coins` ，表示不同面额的硬币；以及一个整数 `amount` ，表示总金额。
+
+计算并返回可以凑成总金额所需的 **最少的硬币个数** 。如果没有任何一种硬币组合能组成总金额，返回 `-1` 。
+
+你可以认为每种硬币的数量是无限的。
+
+**示例 1：**
+
+```
+输入：coins = [1, 2, 5], amount = 11
+输出：3 
+解释：11 = 5 + 5 + 1
+```
+
+C++版本
+
+```c++
+// 方法一：记忆化搜索
+class Solution {
+    vector<int>count;
+    int dp(vector<int>& coins, int rem) {
+        if (rem < 0) return -1;
+        if (rem == 0) return 0;
+        if (count[rem - 1] != 0) return count[rem - 1];
+        int Min = INT_MAX;
+        for (int coin:coins) {
+            int res = dp(coins, rem - coin);
+            if (res >= 0 && res < Min) {
+                Min = res + 1;
+            }
+        }
+        count[rem - 1] = Min == INT_MAX ? -1 : Min;
+        return count[rem - 1];
+    }
+public:
+    int coinChange(vector<int>& coins, int amount) {
+        if (amount < 1) return 0;
+        count.resize(amount);
+        return dp(coins, amount);
+    }
+};
+
+// 方法二：动态规划
+class Solution {
+public:
+    int coinChange(vector<int>& coins, int amount) {
+        int Max = amount + 1;
+        vector<int> dp(amount + 1, Max);
+        dp[0] = 0;
+        for (int i = 1; i <= amount; ++i) {
+            for (int j = 0; j < (int)coins.size(); ++j) {
+                if (coins[j] <= i) {
+                    dp[i] = min(dp[i], dp[i - coins[j]] + 1);
+                }
+            }
+        }
+        return dp[amount] > amount ? -1 : dp[amount];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：记忆化搜索
+public class Solution {
+    public int coinChange(int[] coins, int amount) {
+        if (amount < 1) {
+            return 0;
+        }
+        return coinChange(coins, amount, new int[amount]);
+    }
+
+    private int coinChange(int[] coins, int rem, int[] count) {
+        if (rem < 0) {
+            return -1;
+        }
+        if (rem == 0) {
+            return 0;
+        }
+        if (count[rem - 1] != 0) {
+            return count[rem - 1];
+        }
+        int min = Integer.MAX_VALUE;
+        for (int coin : coins) {
+            int res = coinChange(coins, rem - coin, count);
+            if (res >= 0 && res < min) {
+                min = 1 + res;
+            }
+        }
+        count[rem - 1] = (min == Integer.MAX_VALUE) ? -1 : min;
+        return count[rem - 1];
+    }
+}
+
+// 方法二：动态规划
+public class Solution {
+    public int coinChange(int[] coins, int amount) {
+        int max = amount + 1;
+        int[] dp = new int[amount + 1];
+        Arrays.fill(dp, max);
+        dp[0] = 0;
+        for (int i = 1; i <= amount; i++) {
+            for (int j = 0; j < coins.length; j++) {
+                if (coins[j] <= i) {
+                    dp[i] = Math.min(dp[i], dp[i - coins[j]] + 1);
+                }
+            }
+        }
+        return dp[amount] > amount ? -1 : dp[amount];
+    }
+}
+```
+
+
+
+### [518. 零钱兑换 II](https://leetcode.cn/problems/coin-change-ii/)
+
+中等
+
+给你一个整数数组 `coins` 表示不同面额的硬币，另给一个整数 `amount` 表示总金额。
+
+请你计算并返回可以凑成总金额的硬币组合数。如果任何硬币组合都无法凑出总金额，返回 `0` 。
+
+假设每一种面额的硬币有无限个。 
+
+题目数据保证结果符合 32 位带符号整数。
+
+**示例 1：**
+
+```
+输入：amount = 5, coins = [1, 2, 5]
+输出：4
+解释：有四种方式可以凑成总金额：
+5=5
+5=2+2+1
+5=2+1+1+1
+5=1+1+1+1+1
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int change(int amount, vector<int>& coins) {
+        vector<int> dp(amount + 1);
+        dp[0] = 1;
+        for (int& coin : coins) {
+            for (int i = coin; i <= amount; i++) {
+                dp[i] += dp[i - coin];
+            }
+        }
+        return dp[amount];
+    }
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int change(int amount, int[] coins) {
+        int[] dp = new int[amount + 1];
+        dp[0] = 1;
+        for (int coin : coins) {
+            for (int i = coin; i <= amount; i++) {
+                dp[i] += dp[i - coin];
+            }
+        }
+        return dp[amount];
+    }
+}
+```
+
+
+
+### [139. 单词拆分](https://leetcode.cn/problems/word-break/)
+
+中等
+
+给你一个字符串 `s` 和一个字符串列表 `wordDict` 作为字典。如果可以利用字典中出现的一个或多个单词拼接出 `s` 则返回 `true`。
+
+**注意：**不要求字典中出现的单词全部都使用，并且字典中的单词可以重复使用。
+
+**示例 1：**
+
+```
+输入: s = "leetcode", wordDict = ["leet", "code"]
+输出: true
+解释: 返回 true 因为 "leetcode" 可以由 "leet" 和 "code" 拼接成。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    bool wordBreak(string s, vector<string>& wordDict) {
+        auto wordDictSet = unordered_set <string> ();
+        for (auto word: wordDict) {
+            wordDictSet.insert(word);
+        }
+
+        auto dp = vector <bool> (s.size() + 1);
+        dp[0] = true;
+        for (int i = 1; i <= s.size(); ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (dp[j] && wordDictSet.find(s.substr(j, i - j)) != wordDictSet.end()) {
+                    dp[i] = true;
+                    break;
+                }
+            }
+        }
+
+        return dp[s.size()];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+public class Solution {
+    public boolean wordBreak(String s, List<String> wordDict) {
+        Set<String> wordDictSet = new HashSet(wordDict);
+        boolean[] dp = new boolean[s.length() + 1];
+        dp[0] = true;
+        for (int i = 1; i <= s.length(); i++) {
+            for (int j = 0; j < i; j++) {
+                if (dp[j] && wordDictSet.contains(s.substring(j, i))) {
+                    dp[i] = true;
+                    break;
+                }
+            }
+        }
+        return dp[s.length()];
+    }
+}
+```
+
