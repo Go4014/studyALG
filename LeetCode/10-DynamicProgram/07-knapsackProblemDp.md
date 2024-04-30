@@ -760,6 +760,7 @@ public:
         }
         return dp[amount];
     }
+}
 ```
 
 Java版本
@@ -844,6 +845,390 @@ public class Solution {
             }
         }
         return dp[s.length()];
+    }
+}
+```
+
+
+
+### [377. 组合总和 Ⅳ](https://leetcode.cn/problems/combination-sum-iv/)
+
+中等
+
+给你一个由 **不同** 整数组成的数组 `nums` ，和一个目标整数 `target` 。请你从 `nums` 中找出并返回总和为 `target` 的元素组合的个数。
+
+题目数据保证答案符合 32 位整数范围。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3], target = 4
+输出：7
+解释：
+所有可能的组合为：
+(1, 1, 1, 1)
+(1, 1, 2)
+(1, 2, 1)
+(1, 3)
+(2, 1, 1)
+(2, 2)
+(3, 1)
+请注意，顺序不同的序列被视作不同的组合。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int combinationSum4(vector<int>& nums, int target) {
+        vector<int> dp(target + 1);
+        dp[0] = 1;
+        for (int i = 1; i <= target; i++) {
+            for (int& num : nums) {
+                if (num <= i && dp[i - num] < INT_MAX - dp[i]) {
+                    dp[i] += dp[i - num];
+                }
+            }
+        }
+        return dp[target];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int combinationSum4(int[] nums, int target) {
+        int[] dp = new int[target + 1];
+        dp[0] = 1;
+        for (int i = 1; i <= target; i++) {
+            for (int num : nums) {
+                if (num <= i) {
+                    dp[i] += dp[i - num];
+                }
+            }
+        }
+        return dp[target];
+    }
+}
+```
+
+
+
+### [638. 大礼包](https://leetcode.cn/problems/shopping-offers/)
+
+中等
+
+在 LeetCode 商店中， 有 `n` 件在售的物品。每件物品都有对应的价格。然而，也有一些大礼包，每个大礼包以优惠的价格捆绑销售一组物品。
+
+给你一个整数数组 `price` 表示物品价格，其中 `price[i]` 是第 `i` 件物品的价格。另有一个整数数组 `needs` 表示购物清单，其中 `needs[i]` 是需要购买第 `i` 件物品的数量。
+
+还有一个数组 `special` 表示大礼包，`special[i]` 的长度为 `n + 1` ，其中 `special[i][j]` 表示第 `i` 个大礼包中内含第 `j` 件物品的数量，且 `special[i][n]` （也就是数组中的最后一个整数）为第 `i` 个大礼包的价格。
+
+返回 **确切** 满足购物清单所需花费的最低价格，你可以充分利用大礼包的优惠活动。你不能购买超出购物清单指定数量的物品，即使那样会降低整体价格。任意大礼包可无限次购买。
+
+**示例 1：**
+
+```
+输入：price = [2,5], special = [[3,0,5],[1,2,10]], needs = [3,2]
+输出：14
+解释：有 A 和 B 两种物品，价格分别为 ¥2 和 ¥5 。 
+大礼包 1 ，你可以以 ¥5 的价格购买 3A 和 0B 。 
+大礼包 2 ，你可以以 ¥10 的价格购买 1A 和 2B 。 
+需要购买 3 个 A 和 2 个 B ， 所以付 ¥10 购买 1A 和 2B（大礼包 2），以及 ¥4 购买 2A 。
+```
+
+C++版本
+
+```c++
+// 方法一：记忆化搜索
+class Solution {
+public:
+    map<vector<int>, int> memo;
+
+    int shoppingOffers(vector<int>& price, vector<vector<int>>& special, vector<int>& needs) {
+        int n = price.size();
+
+        // 过滤不需要计算的大礼包，只保留需要计算的大礼包
+        vector<vector<int>> filterSpecial;
+        for (auto & sp : special) {
+            int totalCount = 0, totalPrice = 0;
+            for (int i = 0; i < n; ++i) {
+                totalCount += sp[i];
+                totalPrice += sp[i] * price[i];
+            }
+            if (totalCount > 0 && totalPrice > sp[n]) {
+                filterSpecial.emplace_back(sp);
+            }
+        }
+
+        return dfs(price, special, needs, filterSpecial, n);
+    }
+
+    // 记忆化搜索计算满足购物清单所需花费的最低价格
+    int dfs(vector<int> price,const vector<vector<int>> & special, vector<int> curNeeds, vector<vector<int>> & filterSpecial, int n) {
+        if (!memo.count(curNeeds)) {
+            int minPrice = 0;
+            for (int i = 0; i < n; ++i) {
+                minPrice += curNeeds[i] * price[i]; // 不购买任何大礼包，原价购买购物清单中的所有物品
+            }
+            for (auto & curSpecial : filterSpecial) {
+                int specialPrice = curSpecial[n];
+                vector<int> nxtNeeds;
+                for (int i = 0; i < n; ++i) {
+                    if (curSpecial[i] > curNeeds[i]) { // 不能购买超出购物清单指定数量的物品
+                        break;
+                    }
+                    nxtNeeds.emplace_back(curNeeds[i] - curSpecial[i]);
+                }
+                if (nxtNeeds.size() == n) { // 大礼包可以购买
+                    minPrice = min(minPrice, dfs(price, special, nxtNeeds, filterSpecial, n) + specialPrice);
+                }
+            }
+            memo[curNeeds] = minPrice;
+        }
+        return memo[curNeeds];
+    }
+};
+
+作者：力扣官方题解
+链接：https://leetcode.cn/problems/shopping-offers/solutions/1062534/da-li-bao-by-leetcode-solution-p1ww/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+```
+
+Java版本
+
+```java
+// 方法一：记忆化搜索
+class Solution {
+    Map<List<Integer>, Integer> memo = new HashMap<List<Integer>, Integer>();
+
+    public int shoppingOffers(List<Integer> price, List<List<Integer>> special, List<Integer> needs) {
+        int n = price.size();
+
+        // 过滤不需要计算的大礼包，只保留需要计算的大礼包
+        List<List<Integer>> filterSpecial = new ArrayList<List<Integer>>();
+        for (List<Integer> sp : special) {
+            int totalCount = 0, totalPrice = 0;
+            for (int i = 0; i < n; ++i) {
+                totalCount += sp.get(i);
+                totalPrice += sp.get(i) * price.get(i);
+            }
+            if (totalCount > 0 && totalPrice > sp.get(n)) {
+                filterSpecial.add(sp);
+            }
+        }
+
+        return dfs(price, special, needs, filterSpecial, n);
+    }
+
+    // 记忆化搜索计算满足购物清单所需花费的最低价格
+    public int dfs(List<Integer> price, List<List<Integer>> special, List<Integer> curNeeds, List<List<Integer>> filterSpecial, int n) {
+        if (!memo.containsKey(curNeeds)) {
+            int minPrice = 0;
+            for (int i = 0; i < n; ++i) {
+                minPrice += curNeeds.get(i) * price.get(i); // 不购买任何大礼包，原价购买购物清单中的所有物品
+            }
+            for (List<Integer> curSpecial : filterSpecial) {
+                int specialPrice = curSpecial.get(n);
+                List<Integer> nxtNeeds = new ArrayList<Integer>();
+                for (int i = 0; i < n; ++i) {
+                    if (curSpecial.get(i) > curNeeds.get(i)) { // 不能购买超出购物清单指定数量的物品
+                        break;
+                    }
+                    nxtNeeds.add(curNeeds.get(i) - curSpecial.get(i));
+                }
+                if (nxtNeeds.size() == n) { // 大礼包可以购买
+                    minPrice = Math.min(minPrice, dfs(price, special, nxtNeeds, filterSpecial, n) + specialPrice);
+                }
+            }
+            memo.put(curNeeds, minPrice);
+        }
+        return memo.get(curNeeds);
+    }
+}
+
+作者：力扣官方题解
+链接：https://leetcode.cn/problems/shopping-offers/solutions/1062534/da-li-bao-by-leetcode-solution-p1ww/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+```
+
+
+
+### [1449. 数位成本和为目标值的最大数字](https://leetcode.cn/problems/form-largest-integer-with-digits-that-add-up-to-target/)
+
+困难
+
+给你一个整数数组 `cost` 和一个整数 `target` 。请你返回满足如下规则可以得到的 **最大** 整数：
+
+- 给当前结果添加一个数位（`i + 1`）的成本为 `cost[i]` （`cost` 数组下标从 0 开始）。
+- 总成本必须恰好等于 `target` 。
+- 添加的数位中没有数字 0 。
+
+由于答案可能会很大，请你以字符串形式返回。
+
+如果按照上述要求无法得到任何整数，请你返回 "0" 。
+
+**示例 1：**
+
+```
+输入：cost = [4,3,2,5,6,7,2,5,5], target = 9
+输出："7772"
+解释：添加数位 '7' 的成本为 2 ，添加数位 '2' 的成本为 3 。所以 "7772" 的代价为 2*3+ 3*1 = 9 。 "977" 也是满足要求的数字，但 "7772" 是较大的数字。
+ 数字     成本
+  1  ->   4
+  2  ->   3
+  3  ->   2
+  4  ->   5
+  5  ->   6
+  6  ->   7
+  7  ->   2
+  8  ->   5
+  9  ->   5
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    string largestNumber(vector<int> &cost, int target) {
+        vector<vector<int>> dp(10, vector<int>(target + 1, INT_MIN));
+        vector<vector<int>> from(10, vector<int>(target + 1));
+        dp[0][0] = 0;
+        for (int i = 0; i < 9; ++i) {
+            int c = cost[i];
+            for (int j = 0; j <= target; ++j) {
+                if (j < c) {
+                    dp[i + 1][j] = dp[i][j];
+                    from[i + 1][j] = j;
+                } else {
+                    if (dp[i][j] > dp[i + 1][j - c] + 1) {
+                        dp[i + 1][j] = dp[i][j];
+                        from[i + 1][j] = j;
+                    } else {
+                        dp[i + 1][j] = dp[i + 1][j - c] + 1;
+                        from[i + 1][j] = j - c;
+                    }
+                }
+            }
+        }
+        if (dp[9][target] < 0) {
+            return "0";
+        }
+        string ans;
+        int i = 9, j = target;
+        while (i > 0) {
+            if (j == from[i][j]) {
+                --i;
+            } else {
+                ans += '0' + i;
+                j = from[i][j];
+            }
+        }
+        return ans;
+    }
+};
+
+// 优化
+class Solution {
+public:
+    string largestNumber(vector<int> &cost, int target) {
+        vector<int> dp(target + 1, INT_MIN);
+        dp[0] = 0;
+        for (int c : cost) {
+            for (int j = c; j <= target; ++j) {
+                dp[j] = max(dp[j], dp[j - c] + 1);
+            }
+        }
+        if (dp[target] < 0) {
+            return "0";
+        }
+        string ans;
+        for (int i = 8, j = target; i >= 0; i--) {
+            for (int c = cost[i]; j >= c && dp[j] == dp[j - c] + 1; j -= c) {
+                ans += '1' + i;
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public String largestNumber(int[] cost, int target) {
+        int[][] dp = new int[10][target + 1];
+        for (int i = 0; i < 10; ++i) {
+            Arrays.fill(dp[i], Integer.MIN_VALUE);
+        }
+        int[][] from = new int[10][target + 1];
+        dp[0][0] = 0;
+        for (int i = 0; i < 9; ++i) {
+            int c = cost[i];
+            for (int j = 0; j <= target; ++j) {
+                if (j < c) {
+                    dp[i + 1][j] = dp[i][j];
+                    from[i + 1][j] = j;
+                } else {
+                    if (dp[i][j] > dp[i + 1][j - c] + 1) {
+                        dp[i + 1][j] = dp[i][j];
+                        from[i + 1][j] = j;
+                    } else {
+                        dp[i + 1][j] = dp[i + 1][j - c] + 1;
+                        from[i + 1][j] = j - c;
+                    }
+                }
+            }
+        }
+        if (dp[9][target] < 0) {
+            return "0";
+        }
+        StringBuffer sb = new StringBuffer();
+        int i = 9, j = target;
+        while (i > 0) {
+            if (j == from[i][j]) {
+                --i;
+            } else {
+                sb.append(i);
+                j = from[i][j];
+            }
+        }
+        return sb.toString();
+    }
+}
+
+// 优化
+class Solution {
+    public String largestNumber(int[] cost, int target) {
+        int[] dp = new int[target + 1];
+        Arrays.fill(dp, Integer.MIN_VALUE);
+        dp[0] = 0;
+        for (int c : cost) {
+            for (int j = c; j <= target; ++j) {
+                dp[j] = Math.max(dp[j], dp[j - c] + 1);
+            }
+        }
+        if (dp[target] < 0) {
+            return "0";
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 8, j = target; i >= 0; i--) {
+            for (int c = cost[i]; j >= c && dp[j] == dp[j - c] + 1; j -= c) {
+                sb.append(i + 1);
+            }
+        }
+        return sb.toString();
     }
 }
 ```
