@@ -994,11 +994,6 @@ public:
         return memo[curNeeds];
     }
 };
-
-作者：力扣官方题解
-链接：https://leetcode.cn/problems/shopping-offers/solutions/1062534/da-li-bao-by-leetcode-solution-p1ww/
-来源：力扣（LeetCode）
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
 ```
 
 Java版本
@@ -1052,11 +1047,6 @@ class Solution {
         return memo.get(curNeeds);
     }
 }
-
-作者：力扣官方题解
-链接：https://leetcode.cn/problems/shopping-offers/solutions/1062534/da-li-bao-by-leetcode-solution-p1ww/
-来源：力扣（LeetCode）
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
 ```
 
 
@@ -1229,6 +1219,252 @@ class Solution {
             }
         }
         return sb.toString();
+    }
+}
+```
+
+
+
+## 分组背包问题
+
+### [1155. 掷骰子等于目标和的方法数](https://leetcode.cn/problems/number-of-dice-rolls-with-target-sum/)
+
+中等
+
+这里有 `n` 个一样的骰子，每个骰子上都有 `k` 个面，分别标号为 `1` 到 `k` 。
+
+给定三个整数 `n`、`k` 和 `target`，请返回投掷骰子的所有可能得到的结果（共有 `kn` 种方式），使得骰子面朝上的数字总和等于 `target`。
+
+由于答案可能很大，你需要对 `109 + 7` **取模**。
+
+**示例 1：**
+
+```
+输入：n = 1, k = 6, target = 3
+输出：1
+解释：你掷了一个有 6 个面的骰子。
+得到总和为 3 的结果的方式只有一种。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int numRollsToTarget(int n, int k, int target) {
+        vector<vector<int>> f(n + 1, vector<int>(target + 1));
+        f[0][0] = 1;
+        for (int i = 1; i <= n; ++i) {
+            for (int j = 0; j <= target; ++j) {
+                for (int x = 1; x <= k; ++x) {
+                    if (j - x >= 0) {
+                        f[i][j] = (f[i][j] + f[i - 1][j - x]) % mod;
+                    }
+                }
+            }
+        }
+        return f[n][target];
+    }
+
+private:
+    static constexpr int mod = 1000000007;
+};
+
+// 优化
+class Solution {
+public:
+    int numRollsToTarget(int n, int k, int target) {
+        vector<int> f(target + 1);
+        f[0] = 1;
+        for (int i = 1; i <= n; ++i) {
+            vector<int> g(target + 1);
+            for (int j = 0; j <= target; ++j) {
+                for (int x = 1; x <= k; ++x) {
+                    if (j - x >= 0) {
+                        g[j] = (g[j] + f[j - x]) % mod;
+                    }
+                }
+            }
+            f = move(g);
+        }
+        return f[target];
+    }
+
+private:
+    static constexpr int mod = 1000000007;
+};
+
+// 再优化
+class Solution {
+public:
+    int numRollsToTarget(int n, int k, int target) {
+        vector<int> f(target + 1);
+        f[0] = 1;
+        for (int i = 1; i <= n; ++i) {
+            for (int j = target; j >= 0; --j) {
+                f[j] = 0;
+                for (int x = 1; x <= k; ++x) {
+                    if (j - x >= 0) {
+                        f[j] = (f[j] + f[j - x]) % mod;
+                    }
+                }
+            }
+        }
+        return f[target];
+    }
+
+private:
+    static constexpr int mod = 1000000007;
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    static final int MOD = 1000000007;
+
+    public int numRollsToTarget(int n, int k, int target) {
+        int[][] f = new int[n + 1][target + 1];
+        f[0][0] = 1;
+        for (int i = 1; i <= n; ++i) {
+            for (int j = 0; j <= target; ++j) {
+                for (int x = 1; x <= k; ++x) {
+                    if (j - x >= 0) {
+                        f[i][j] = (f[i][j] + f[i - 1][j - x]) % MOD;
+                    }
+                }
+            }
+        }
+        return f[n][target];
+    }
+}
+
+// 优化
+class Solution {
+    static final int MOD = 1000000007;
+
+    public int numRollsToTarget(int n, int k, int target) {
+        int[] f = new int[target + 1];
+        f[0] = 1;
+        for (int i = 1; i <= n; ++i) {
+            int[] g = new int[target + 1];
+            for (int j = 0; j <= target; ++j) {
+                for (int x = 1; x <= k; ++x) {
+                    if (j - x >= 0) {
+                        g[j] = (g[j] + f[j - x]) % MOD;
+                    }
+                }
+            }
+            f = g;
+        }
+        return f[target];
+    }
+}
+
+// 再优化
+class Solution {
+    static final int MOD = 1000000007;
+
+    public int numRollsToTarget(int n, int k, int target) {
+        int[] f = new int[target + 1];
+        f[0] = 1;
+        for (int i = 1; i <= n; ++i) {
+            for (int j = target; j >= 0; --j) {
+                f[j] = 0;
+                for (int x = 1; x <= k; ++x) {
+                    if (j - x >= 0) {
+                        f[j] = (f[j] + f[j - x]) % MOD;
+                    }
+                }
+            }
+        }
+        return f[target];
+    }
+}
+```
+
+
+
+### [2585. 获得分数的方法数](https://leetcode.cn/problems/number-of-ways-to-earn-points/)
+
+困难
+
+考试中有 `n` 种类型的题目。给你一个整数 `target` 和一个下标从 **0** 开始的二维整数数组 `types` ，其中 `types[i] = [counti, marksi] `表示第 `i` 种类型的题目有 `counti` 道，每道题目对应 `marksi` 分。
+
+返回你在考试中恰好得到 `target` 分的方法数。由于答案可能很大，结果需要对 `109 +7` 取余。
+
+**注意**，同类型题目无法区分。
+
+- 比如说，如果有 `3` 道同类型题目，那么解答第 `1` 和第 `2` 道题目与解答第 `1` 和第 `3` 道题目或者第 `2` 和第 `3` 道题目是相同的。
+
+**示例 1：**
+
+```
+输入：target = 6, types = [[6,1],[3,2],[2,3]]
+输出：7
+解释：要获得 6 分，你可以选择以下七种方法之一：
+- 解决 6 道第 0 种类型的题目：1 + 1 + 1 + 1 + 1 + 1 = 6
+- 解决 4 道第 0 种类型的题目和 1 道第 1 种类型的题目：1 + 1 + 1 + 1 + 2 = 6
+- 解决 2 道第 0 种类型的题目和 2 道第 1 种类型的题目：1 + 1 + 2 + 2 = 6
+- 解决 3 道第 0 种类型的题目和 1 道第 2 种类型的题目：1 + 1 + 1 + 3 = 6
+- 解决 1 道第 0 种类型的题目、1 道第 1 种类型的题目和 1 道第 2 种类型的题目：1 + 2 + 3 = 6
+- 解决 3 道第 1 种类型的题目：2 + 2 + 2 = 6
+- 解决 2 道第 2 种类型的题目：3 + 3 = 6
+```
+
+C++版本
+
+```c++
+// 动态规划
+class Solution {
+private:
+    static const int mod = 1e9 + 7;
+public:
+    int waysToReachTarget(int target, vector<vector<int>>& types) {
+        vector<int> dp(target + 1);
+        dp[0] = 1;
+
+        for (vector<int>& type : types) {
+            int mark = type[1], points = (type[0] + 1) * type[1];
+
+            for (int v = mark; v <= target; ++v)
+                dp[v] = (dp[v] + dp[v - mark]) % mod;
+
+            for (int v = target; v >= points; --v)
+                dp[v] = (dp[v] - dp[v - points] + mod) % mod;
+        }
+
+        return (dp[target] + mod) % mod;
+    }
+};
+```
+
+Java版本
+
+```java
+// 动态规划
+class Solution {
+    private static final int mod = (int)1e9 + 7;
+    
+    public int waysToReachTarget(int target, int[][] types) {
+        int[] dp = new int[target + 1];        
+        dp[0] = 1;
+        
+        for(int[] type : types){
+            int mark = type[1], points = (type[0] + 1) * type[1];
+            
+            for(int v = mark; v <= target; v++)
+                dp[v] = (dp[v]+ dp[v-mark]) % mod;
+            
+            for(int v = target; v >= points; --v)
+                dp[v] = (dp[v]- dp[v - points] + mod)%mod;
+
+        }
+        
+        return (dp[target] + mod) % mod;
     }
 }
 ```
