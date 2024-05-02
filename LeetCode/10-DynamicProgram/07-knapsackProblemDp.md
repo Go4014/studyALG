@@ -1469,3 +1469,492 @@ class Solution {
 }
 ```
 
+
+
+## 多维背包问题
+
+### [474. 一和零](https://leetcode.cn/problems/ones-and-zeroes/)
+
+中等
+
+给你一个二进制字符串数组 `strs` 和两个整数 `m` 和 `n` 。
+
+请你找出并返回 `strs` 的最大子集的长度，该子集中 **最多** 有 `m` 个 `0` 和 `n` 个 `1` 。
+
+如果 `x` 的所有元素也是 `y` 的元素，集合 `x` 是集合 `y` 的 **子集** 。
+
+**示例 1：**
+
+```
+输入：strs = ["10", "0001", "111001", "1", "0"], m = 5, n = 3
+输出：4
+解释：最多有 5 个 0 和 3 个 1 的最大子集是 {"10","0001","1","0"} ，因此答案是 4 。
+其他满足题意但较小的子集包括 {"0001","1"} 和 {"10","1","0"} 。{"111001"} 不满足题意，因为它含 4 个 1 ，大于 n 的值 3 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    vector<int> getZerosOnes(string& str) {
+        vector<int> zerosOnes(2);
+        int length = str.length();
+        for (int i = 0; i < length; i++) {
+            zerosOnes[str[i] - '0']++;
+        }
+        return zerosOnes;
+    }
+
+    int findMaxForm(vector<string>& strs, int m, int n) {
+        int length = strs.size();
+        vector<vector<vector<int>>> dp(length + 1, vector<vector<int>>(m + 1, vector<int>(n + 1)));
+        for (int i = 1; i <= length; i++) {
+            vector<int>&& zerosOnes = getZerosOnes(strs[i - 1]);
+            int zeros = zerosOnes[0], ones = zerosOnes[1];
+            for (int j = 0; j <= m; j++) {
+                for (int k = 0; k <= n; k++) {
+                    dp[i][j][k] = dp[i - 1][j][k];
+                    if (j >= zeros && k >= ones) {
+                        dp[i][j][k] = max(dp[i][j][k], dp[i - 1][j - zeros][k - ones] + 1);
+                    }
+                }
+            }
+        }
+        return dp[length][m][n];
+    }
+};
+
+// 优化
+class Solution {
+public:
+    vector<int> getZerosOnes(string& str) {
+        vector<int> zerosOnes(2);
+        int length = str.length();
+        for (int i = 0; i < length; i++) {
+            zerosOnes[str[i] - '0']++;
+        }
+        return zerosOnes;
+    }
+
+    int findMaxForm(vector<string>& strs, int m, int n) {
+        int length = strs.size();
+        vector<vector<int>> dp(m + 1, vector<int>(n + 1));
+        for (int i = 0; i < length; i++) {
+            vector<int>&& zerosOnes = getZerosOnes(strs[i]);
+            int zeros = zerosOnes[0], ones = zerosOnes[1];
+            for (int j = m; j >= zeros; j--) {
+                for (int k = n; k >= ones; k--) {
+                    dp[j][k] = max(dp[j][k], dp[j - zeros][k - ones] + 1);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int findMaxForm(String[] strs, int m, int n) {
+        int length = strs.length;
+        int[][][] dp = new int[length + 1][m + 1][n + 1];
+        for (int i = 1; i <= length; i++) {
+            int[] zerosOnes = getZerosOnes(strs[i - 1]);
+            int zeros = zerosOnes[0], ones = zerosOnes[1];
+            for (int j = 0; j <= m; j++) {
+                for (int k = 0; k <= n; k++) {
+                    dp[i][j][k] = dp[i - 1][j][k];
+                    if (j >= zeros && k >= ones) {
+                        dp[i][j][k] = Math.max(dp[i][j][k], dp[i - 1][j - zeros][k - ones] + 1);
+                    }
+                }
+            }
+        }
+        return dp[length][m][n];
+    }
+
+    public int[] getZerosOnes(String str) {
+        int[] zerosOnes = new int[2];
+        int length = str.length();
+        for (int i = 0; i < length; i++) {
+            zerosOnes[str.charAt(i) - '0']++;
+        }
+        return zerosOnes;
+    }
+}
+
+// 优化
+class Solution {
+    public int findMaxForm(String[] strs, int m, int n) {
+        int[][] dp = new int[m + 1][n + 1];
+        int length = strs.length;
+        for (int i = 0; i < length; i++) {
+            int[] zerosOnes = getZerosOnes(strs[i]);
+            int zeros = zerosOnes[0], ones = zerosOnes[1];
+            for (int j = m; j >= zeros; j--) {
+                for (int k = n; k >= ones; k--) {
+                    dp[j][k] = Math.max(dp[j][k], dp[j - zeros][k - ones] + 1);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
+    public int[] getZerosOnes(String str) {
+        int[] zerosOnes = new int[2];
+        int length = str.length();
+        for (int i = 0; i < length; i++) {
+            zerosOnes[str.charAt(i) - '0']++;
+        }
+        return zerosOnes;
+    }
+}
+
+// 其他动态规划
+class Solution {
+    public int findMaxForm(String[] strs, int m, int n) {
+        //dp[i][j]表示i个0和j个1时的最大子集
+        int[][] dp = new int[m + 1][n + 1];
+        int oneNum, zeroNum;
+        for (String str : strs) {
+            oneNum = 0;
+            zeroNum = 0;
+            for (char ch : str.toCharArray()) {
+                if (ch == '0') {
+                    zeroNum++;
+                } else {
+                    oneNum++;
+                }
+            }
+            //倒序遍历
+            for (int i = m; i >= zeroNum; i--) {
+                for (int j = n; j >= oneNum; j--) {
+                    dp[i][j] = Math.max(dp[i][j], dp[i - zeroNum][j - oneNum] + 1);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+}
+```
+
+
+
+### [879. 盈利计划](https://leetcode.cn/problems/profitable-schemes/)
+
+困难
+
+集团里有 `n` 名员工，他们可以完成各种各样的工作创造利润。
+
+第 `i` 种工作会产生 `profit[i]` 的利润，它要求 `group[i]` 名成员共同参与。如果成员参与了其中一项工作，就不能参与另一项工作。
+
+工作的任何至少产生 `minProfit` 利润的子集称为 **盈利计划** 。并且工作的成员总数最多为 `n` 。
+
+有多少种计划可以选择？因为答案很大，所以 **返回结果模** `10^9 + 7` **的值**。
+
+**示例 1：**
+
+```
+输入：n = 5, minProfit = 3, group = [2,2], profit = [2,3]
+输出：2
+解释：至少产生 3 的利润，该集团可以完成工作 0 和工作 1 ，或仅完成工作 1 。
+总的来说，有两种计划。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int profitableSchemes(int n, int minProfit, vector<int>& group, vector<int>& profit) {
+        int len = group.size(), MOD = (int)1e9 + 7;
+        vector<vector<vector<int>>> dp(len + 1, vector<vector<int>>(n + 1, vector<int>(minProfit + 1)));
+        dp[0][0][0] = 1;
+        for (int i = 1; i <= len; i++) {
+            int members = group[i - 1], earn = profit[i - 1];
+            for (int j = 0; j <= n; j++) {
+                for (int k = 0; k <= minProfit; k++) {
+                    if (j < members) {
+                        dp[i][j][k] = dp[i - 1][j][k];
+                    } else {
+                        dp[i][j][k] = (dp[i - 1][j][k] + dp[i - 1][j - members][max(0, k - earn)]) % MOD;
+                    }
+                }
+            }
+        }
+        int sum = 0;
+        for (int j = 0; j <= n; j++) {
+            sum = (sum + dp[len][j][minProfit]) % MOD;
+        }
+        return sum;
+    }
+};
+
+// 优化
+class Solution {
+public:
+    int profitableSchemes(int n, int minProfit, vector<int>& group, vector<int>& profit) {
+        vector<vector<int>> dp(n + 1, vector<int>(minProfit + 1));
+        for (int i = 0; i <= n; i++) {
+            dp[i][0] = 1;
+        }
+        int len = group.size(), MOD = (int)1e9 + 7;
+        for (int i = 1; i <= len; i++) {
+            int members = group[i - 1], earn = profit[i - 1];
+            for (int j = n; j >= members; j--) {
+                for (int k = minProfit; k >= 0; k--) {
+                    dp[j][k] = (dp[j][k] + dp[j - members][max(0, k - earn)]) % MOD;
+                }
+            }
+        }
+        return dp[n][minProfit];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int profitableSchemes(int n, int minProfit, int[] group, int[] profit) {
+        int len = group.length, MOD = (int)1e9 + 7;
+        int[][][] dp = new int[len + 1][n + 1][minProfit + 1];
+        dp[0][0][0] = 1;
+        for (int i = 1; i <= len; i++) {
+            int members = group[i - 1], earn = profit[i - 1];
+            for (int j = 0; j <= n; j++) {
+                for (int k = 0; k <= minProfit; k++) {
+                    if (j < members) {
+                        dp[i][j][k] = dp[i - 1][j][k];
+                    } else {
+                        dp[i][j][k] = (dp[i - 1][j][k] + dp[i - 1][j - members][Math.max(0, k - earn)]) % MOD;
+                    }
+                }
+            }
+        }
+        int sum = 0;
+        for (int j = 0; j <= n; j++) {
+            sum = (sum + dp[len][j][minProfit]) % MOD;
+        }
+        return sum;
+    }
+}
+
+// 优化
+class Solution {
+    public int profitableSchemes(int n, int minProfit, int[] group, int[] profit) {
+        int[][] dp = new int[n + 1][minProfit + 1];
+        for (int i = 0; i <= n; i++) {
+            dp[i][0] = 1;
+        }
+        int len = group.length, MOD = (int)1e9 + 7;
+        for (int i = 1; i <= len; i++) {
+            int members = group[i - 1], earn = profit[i - 1];
+            for (int j = n; j >= members; j--) {
+                for (int k = minProfit; k >= 0; k--) {
+                    dp[j][k] = (dp[j][k] + dp[j - members][Math.max(0, k - earn)]) % MOD;
+                }
+            }
+        }
+        return dp[n][minProfit];
+    }
+}
+
+// 其他动态规划
+class Solution {
+    int MOD = (int) 1e9 + 7;
+
+    public int profitableSchemes(int n, int minProfit, int[] group, int[] profit) {
+        int m = group.length;
+        int[][] f = new int[n + 1][minProfit + 1];
+        for (int i = 0; i <= n; i++) {
+            f[i][0] = 1;
+        }
+        for (int i = 1; i <= m; i++) {
+            int men = group[i - 1], pf = profit[i - 1];
+            for (int j = n; j >= men; j--) {
+                for (int k = minProfit; k >= 0; k--) {
+                    f[j][k] = (f[j][k] + f[j - men][Math.max(0, k - pf)]) % MOD;
+                }
+            }
+
+        }
+        return f[n][minProfit];
+    }
+}
+```
+
+
+
+### [1995. 统计特殊四元组](https://leetcode.cn/problems/count-special-quadruplets/)
+
+简单
+
+给你一个 **下标从 0 开始** 的整数数组 `nums` ，返回满足下述条件的 **不同** 四元组 `(a, b, c, d)` 的 **数目** ：
+
+- `nums[a] + nums[b] + nums[c] == nums[d]` ，且
+- `a < b < c < d`
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,6]
+输出：1
+解释：满足要求的唯一一个四元组是 (0, 1, 2, 3) 因为 1 + 2 + 3 == 6 。
+```
+
+C++版本
+
+```c++
+// 方法一：直接枚举
+class Solution {
+public:
+    int countQuadruplets(vector<int>& nums) {
+        int n = nums.size();
+        int ans = 0;
+        for (int a = 0; a < n; ++a) {
+            for (int b = a + 1; b < n; ++b) {
+                for (int c = b + 1; c < n; ++c) {
+                    for (int d = c + 1; d < n; ++d) {
+                        if (nums[a] + nums[b] + nums[c] == nums[d]) {
+                            ++ans;
+                        }
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：使用哈希表存储 nums[d]
+class Solution {
+public:
+    int countQuadruplets(vector<int>& nums) {
+        int n = nums.size();
+        int ans = 0;
+        unordered_map<int, int> cnt;
+        for (int c = n - 2; c >= 2; --c) {
+            ++cnt[nums[c + 1]];
+            for (int a = 0; a < c; ++a) {
+                for (int b = a + 1; b < c; ++b) {
+                    if (int sum = nums[a] + nums[b] + nums[c]; cnt.count(sum)) {
+                        ans += cnt[sum];
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法三：使用哈希表存储 nums[d]−nums[c]
+class Solution {
+public:
+    int countQuadruplets(vector<int>& nums) {
+        int n = nums.size();
+        int ans = 0;
+        unordered_map<int, int> cnt;
+        for (int b = n - 3; b >= 1; --b) {
+            for (int d = b + 2; d < n; ++d) {
+                ++cnt[nums[d] - nums[b + 1]];
+            }
+            for (int a = 0; a < b; ++a) {
+                if (int sum = nums[a] + nums[b]; cnt.count(sum)) {
+                    ans += cnt[sum];
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：直接枚举
+class Solution {
+    public int countQuadruplets(int[] nums) {
+        int n = nums.length;
+        int ans = 0;
+        for (int a = 0; a < n; ++a) {
+            for (int b = a + 1; b < n; ++b) {
+                for (int c = b + 1; c < n; ++c) {
+                    for (int d = c + 1; d < n; ++d) {
+                        if (nums[a] + nums[b] + nums[c] == nums[d]) {
+                            ++ans;
+                        }
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：使用哈希表存储 nums[d]
+class Solution {
+    public int countQuadruplets(int[] nums) {
+        int n = nums.length;
+        int ans = 0;
+        Map<Integer, Integer> cnt = new HashMap<Integer, Integer>();
+        for (int c = n - 2; c >= 2; --c) {
+            cnt.put(nums[c + 1], cnt.getOrDefault(nums[c + 1], 0) + 1);
+            for (int a = 0; a < c; ++a) {
+                for (int b = a + 1; b < c; ++b) {
+                    ans += cnt.getOrDefault(nums[a] + nums[b] + nums[c], 0);
+                }
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法三：使用哈希表存储 nums[d]−nums[c]
+class Solution {
+    public int countQuadruplets(int[] nums) {
+        int n = nums.length;
+        int ans = 0;
+        Map<Integer, Integer> cnt = new HashMap<Integer, Integer>();
+        for (int b = n - 3; b >= 1; --b) {
+            for (int d = b + 2; d < n; ++d) {
+                cnt.put(nums[d] - nums[b + 1], cnt.getOrDefault(nums[d] - nums[b + 1], 0) + 1);
+            }
+            for (int a = 0; a < b; ++a) {
+                ans += cnt.getOrDefault(nums[a] + nums[b], 0);
+            }
+        }
+        return ans;
+    }
+}
+
+// other
+class Solution {
+    public int countQuadruplets(int[] nums) {
+        int[] counts = new int[201];
+        int res = 0;
+        for (int c = nums.length - 2; c >= 2; c--) {
+            for (int d = c + 1; d < nums.length; d++) {
+                int diff = nums[d] - nums[c];
+                if (diff >= 0)
+                    counts[diff]++;
+            }
+            int b = c - 1;
+            for (int a = 0; a < b; a++) {
+                res += counts[nums[a] + nums[b]];
+            }
+
+        }
+        return res;
+    }
+}
+```
+
