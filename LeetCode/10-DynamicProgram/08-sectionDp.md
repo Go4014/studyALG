@@ -2,6 +2,94 @@
 
 ## 区间Dp问题
 
+常见的区间 DP 问题可以分为两种：
+
+1. 单个区间从中间向两侧更大区间转移的区间 DP 问题。比如从区间 [i+1，j−1] 转移到更大区间 [i，j]
+2. 多个小区间转移到大区间的区间 DP 问题。比如从区间 [i，k] 和区间 [k，j] 转移到区间 [i，j]。
+
+C++版本
+
+```c++
+// 单个区间从中间向两侧更大区间转移的区间 DP 问题
+class Solution {
+public:
+    int sectionDpvector<vector<int>>& dp, vector<vector<int>>& cost) {
+		int size = dp.size();
+    	for (int i = size - 1; i >= 0; --i) {    // 枚举区间起点
+        	for (int j = i + 1; j < size; ++j) { // 枚举区间终点
+            	// 状态转移方程，计算转移到更大区间后的最优值
+            	dp[i][j] = max({dp[i + 1][j - 1], dp[i + 1][j], dp[i][j - 1]}) + cost[i][j];
+        	}
+    	}
+    }
+};
+
+// 多个小区间转移到大区间的区间 DP 问题
+class Solution {
+public:
+    int sectionDp(vector<vector<int>>& dp, vector<vector<int>>& cost) {
+		int n = dp.size();
+    
+    	for (int l = 1; l < n; ++l) {          // 枚举区间长度
+        	for (int i = 0; i < n; ++i) {      // 枚举区间起点
+            	int j = i + l - 1;             // 根据起点和长度得到终点
+            	if (j >= n) {
+                	break;
+            	}
+            	dp[i][j] = INT_MIN;            // 初始化 dp[i][j]
+            	for (int k = i; k <= j; ++k) { // 枚举区间分割点
+                	// 状态转移方程，计算合并区间后的最优值
+                	dp[i][j] = max(dp[i][j], dp[i][k] + dp[k + 1][j] + cost[i][j]);
+            	}
+        	}
+    	}
+    }
+};
+
+```
+
+Java版本
+
+```java
+// 单个区间从中间向两侧更大区间转移的区间 DP 问题
+class Solution {
+    public int sectionDp(int[][] dp, int[][] cost) {
+        // 假设 dp 和 cost 是已经定义好的二维数组
+        int size = dp.length;
+        
+        for (int i = size - 1; i >= 0; --i) {     // 枚举区间起点
+            for (int j = i + 1; j < size; ++j) {  // 枚举区间终点
+                // 状态转移方程，计算转移到更大区间后的最优值
+                dp[i][j] = Math.max(Math.max(dp[i + 1][j - 1], dp[i + 1][j]), dp[i][j - 1]) + cost[i][j];
+            }
+        }
+    }
+}
+
+// 多个小区间转移到大区间的区间 DP 问题
+class Solution {
+    public int sectionDp(int[][] dp, int[][] cost) {
+        int n = dp.length;
+        
+        for (int l = 1; l < n; ++l) {          // 枚举区间长度
+            for (int i = 0; i < n; ++i) {      // 枚举区间起点
+                int j = i + l - 1;             // 根据起点和长度得到终点
+                if (j >= n) {
+                    break;
+                }
+                dp[i][j] = Integer.MIN_VALUE;  // 初始化 dp[i][j]
+                for (int k = i; k <= j; ++k) { // 枚举区间分割点
+                    // 状态转移方程，计算合并区间后的最优值
+                    dp[i][j] = Math.max(dp[i][j], dp[i][k] + dp[k + 1][j] + cost[i][j]);
+                }
+            }
+        }
+    }
+}
+```
+
+
+
 ### [486. 预测赢家](https://leetcode.cn/problems/predict-the-winner/)
 
 中等
@@ -737,4 +825,192 @@ class Solution {
 ```
 
 
+
+### [1547. 切棍子的最小成本](https://leetcode.cn/problems/minimum-cost-to-cut-a-stick/)
+
+困难
+
+有一根长度为 `n` 个单位的木棍，棍上从 `0` 到 `n` 标记了若干位置。例如，长度为 **6** 的棍子可以标记如下：
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/08/09/statement.jpg)
+
+给你一个整数数组 `cuts` ，其中 `cuts[i]` 表示你需要将棍子切开的位置。
+
+你可以按顺序完成切割，也可以根据需要更改切割的顺序。
+
+每次切割的成本都是当前要切割的棍子的长度，切棍子的总成本是历次切割成本的总和。对棍子进行切割将会把一根木棍分成两根较小的木棍（这两根木棍的长度和就是切割前木棍的长度）。请参阅第一个示例以获得更直观的解释。
+
+返回切棍子的 **最小总成本** 。
+
+**示例 1：**
+
+<img src="https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/08/09/e1.jpg" alt="img" style="zoom: 80%;" />
+
+```
+输入：n = 7, cuts = [1,3,4,5]
+输出：16
+解释：按 [1, 3, 4, 5] 的顺序切割的情况如下所示：
+
+第一次切割长度为 7 的棍子，成本为 7 。第二次切割长度为 6 的棍子（即第一次切割得到的第二根棍子），第三次切割为长度 4 的棍子，最后切割长度为 3 的棍子。总成本为 7 + 6 + 4 + 3 = 20 。
+而将切割顺序重新排列为 [3, 5, 1, 4] 后，总成本 = 16（如示例图中 7 + 4 + 3 + 2 = 16）。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int minCost(int n, vector<int>& cuts) {
+        int m = cuts.size();
+        sort(cuts.begin(), cuts.end());
+        cuts.insert(cuts.begin(), 0);
+        cuts.push_back(n);
+        vector<vector<int>> f(m + 2, vector<int>(m + 2));
+        for (int i = m; i >= 1; --i) {
+            for (int j = i; j <= m; ++j) {
+                f[i][j] = (i == j ? 0 : INT_MAX);
+                for (int k = i; k <= j; ++k) {
+                    f[i][j] = min(f[i][j], f[i][k - 1] + f[k + 1][j]);
+                }
+                f[i][j] += cuts[j + 1] - cuts[i - 1];
+            }
+        }
+        return f[1][m];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int minCost(int n, int[] cuts) {
+        int m = cuts.length;
+        Arrays.sort(cuts);
+        int[] newCuts = new int[m + 2];
+        newCuts[0] = 0;
+        for (int i = 1; i <= m; ++i) {
+            newCuts[i] = cuts[i - 1];
+        }
+        newCuts[m + 1] = n;
+        int[][] f = new int[m + 2][m + 2];
+        for (int i = m; i >= 1; --i) {
+            for (int j = i; j <= m; ++j) {
+                f[i][j] = i == j ? 0 : Integer.MAX_VALUE;
+                for (int k = i; k <= j; ++k) {
+                    f[i][j] = Math.min(f[i][j], f[i][k - 1] + f[k + 1][j]);
+                }
+                f[i][j] += newCuts[j + 1] - newCuts[i - 1];
+            }
+        }
+        return f[1][m];
+    }
+}
+```
+
+
+
+### [664. 奇怪的打印机](https://leetcode.cn/problems/strange-printer/)
+
+困难
+
+有台奇怪的打印机有以下两个特殊要求：
+
+- 打印机每次只能打印由 **同一个字符** 组成的序列。
+- 每次可以在从起始到结束的任意位置打印新字符，并且会覆盖掉原来已有的字符。
+
+给你一个字符串 `s` ，你的任务是计算这个打印机打印它需要的最少打印次数。
+
+**示例 1：**
+
+```
+输入：s = "aaabbb"
+输出：2
+解释：首先打印 "aaa" 然后打印 "bbb"。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int strangePrinter(string s) {
+        int n = s.length();
+        vector<vector<int>> f(n, vector<int>(n));
+        for (int i = n - 1; i >= 0; i--) {
+            f[i][i] = 1;
+            for (int j = i + 1; j < n; j++) {
+                if (s[i] == s[j]) {
+                    f[i][j] = f[i][j - 1];
+                } else {
+                    int minn = INT_MAX;
+                    for (int k = i; k < j; k++) {
+                        minn = min(minn, f[i][k] + f[k + 1][j]);
+                    }
+                    f[i][j] = minn;
+                }
+            }
+        }
+        return f[0][n - 1];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int strangePrinter(String s) {
+        int n = s.length();
+        int[][] f = new int[n][n];
+        for (int i = n - 1; i >= 0; i--) {
+            f[i][i] = 1;
+            for (int j = i + 1; j < n; j++) {
+                if (s.charAt(i) == s.charAt(j)) {
+                    f[i][j] = f[i][j - 1];
+                } else {
+                    int minn = Integer.MAX_VALUE;
+                    for (int k = i; k < j; k++) {
+                        minn = Math.min(minn, f[i][k] + f[k + 1][j]);
+                    }
+                    f[i][j] = minn;
+                }
+            }
+        }
+        return f[0][n - 1];
+    }
+}
+
+// 或者
+class Solution {
+    public int strangePrinter(String s) {
+        char[] ch = s.toCharArray();
+        int n = ch.length;
+        int[][] dp = new int[n][n];
+        dp[n - 1][n - 1] = 1;
+        for(int i = 0 ; i < n - 1 ; i++) {
+            dp[i][i] = 1;
+            dp[i][i + 1] = ch[i] == ch[i + 1] ? 1 : 2; 
+        }
+        for(int l = n - 3 ; l >= 0 ; l--) {
+            for(int r = l + 2 ; r < n ; r++) {
+                if(ch[l] == ch[r]) {
+                    dp[l][r] = dp[l + 1][r];
+                }else {
+                    int ans = Integer.MAX_VALUE;
+                    for(int i = l ; i < r ; i++) {
+                        ans = Math.min(ans, dp[l][i] + dp[i + 1][r]);
+                    }
+                    dp[l][r] = ans;
+                }
+            }
+        }
+        return dp[0][n - 1];
+    }
+}
+```
 
