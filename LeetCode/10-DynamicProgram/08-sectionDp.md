@@ -908,6 +908,33 @@ class Solution {
         return f[1][m];
     }
 }
+
+// 或者
+class Solution {
+    public int minCost(int n, int[] cuts) {
+        int m = cuts.length;
+        int[] arr = new int[m + 2];
+        Arrays.sort(cuts);
+        for(int i = 0 ; i < m ; i++) {
+            arr[i + 1] = cuts[i];
+        }
+        arr[m + 1] = n;
+        int[][] dp = new int[m + 2][m + 2];
+        for(int i = 1 ; i <= m ; i++) {
+            dp[i][i] = arr[i + 1] - arr[i - 1];
+        }
+        for(int l = m - 1, next ; l >= 1 ; l--) {
+            for(int r = l + 1 ; r <= m ; r++) {
+                next = Integer.MAX_VALUE;
+                for(int k = l ; k <= r ; k++) {
+                    next = Math.min(next, dp[l][k - 1] + dp[k + 1][r]);
+                }
+                dp[l][r] = next + arr[r + 1] - arr[l - 1];
+            }
+        }
+        return dp[1][m];
+    }
+}
 ```
 
 
