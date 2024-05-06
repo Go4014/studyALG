@@ -1041,3 +1041,242 @@ class Solution {
 }
 ```
 
+
+
+### [1039. 多边形三角剖分的最低得分](https://leetcode.cn/problems/minimum-score-triangulation-of-polygon/)
+
+中等
+
+你有一个凸的`n`边形，其每个顶点都有一个整数值。给定一个整数数组`values`，其中`values[i]`是第`i`个顶点的值（即 **顺时针顺序** ）。
+
+假设将多边形 **剖分** 为 `n - 2` 个三角形。对于每个三角形，该三角形的值是顶点标记的**乘积**，三角剖分的分数是进行三角剖分后所有 `n - 2` 个三角形的值之和。
+
+返回 *多边形进行三角剖分后可以得到的最低分* 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/25/shape1.jpg)
+
+```
+输入：values = [1,2,3]
+输出：6
+解释：多边形已经三角化，唯一三角形的分数为 6。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int minScoreTriangulation(vector<int>& values) {
+        unordered_map<int, int> memo;
+        int n = values.size();
+        function<int(int, int)> dp = [&](int i, int j) -> int {
+             if (i + 2 > j) {
+                return 0;
+            }
+            if (i + 2 == j) {
+                return values[i] * values[i + 1] * values[j];
+            }
+            int key = i * n + j;
+            if (!memo.count(key)) {
+                int minScore = INT_MAX;
+                for (int k = i + 1; k < j; k++) {
+                    minScore = min(minScore, values[i] * values[k] * values[j] + dp(i, k) + dp(k, j));
+                }
+                memo[key] = minScore;
+            }
+            return memo[key];
+        };
+        return dp(0, n - 1);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    int n;
+    int[] values;
+    Map<Integer, Integer> memo = new HashMap<Integer, Integer>();
+
+    public int minScoreTriangulation(int[] values) {
+        this.n = values.length;
+        this.values = values;
+        return dp(0, n - 1);
+    }
+
+    public int dp(int i, int j) {
+        if (i + 2 > j) {
+            return 0;
+        }
+        if (i + 2 == j) {
+            return values[i] * values[i + 1] * values[j];
+        }
+        int key = i * n + j;
+        if (!memo.containsKey(key)) {
+            int minScore = Integer.MAX_VALUE;
+            for (int k = i + 1; k < j; k++) {
+                minScore = Math.min(minScore, values[i] * values[k] * values[j] + dp(i, k) + dp(k, j));
+            }
+            memo.put(key, minScore);
+        }
+        return memo.get(key);
+    }
+}
+```
+
+
+
+### [546. 移除盒子](https://leetcode.cn/problems/remove-boxes/)
+
+困难
+
+给出一些不同颜色的盒子 `boxes` ，盒子的颜色由不同的正数表示。
+
+你将经过若干轮操作去去掉盒子，直到所有的盒子都去掉为止。每一轮你可以移除具有相同颜色的连续 `k` 个盒子（`k >= 1`），这样一轮之后你将得到 `k * k` 个积分。
+
+返回 *你能获得的最大积分和* 。
+
+**示例 1：**
+
+```
+输入：boxes = [1,3,2,2,2,3,4,3,1]
+输出：23
+解释：
+[1, 3, 2, 2, 2, 3, 4, 3, 1] 
+----> [1, 3, 3, 4, 3, 1] (3*3=9 分) 
+----> [1, 3, 3, 3, 1] (1*1=1 分) 
+----> [1, 1] (3*3=9 分) 
+----> [] (2*2=4 分)
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int dp[100][100][100];
+
+    int removeBoxes(vector<int>& boxes) {
+        memset(dp, 0, sizeof dp);
+        return calculatePoints(boxes, 0, boxes.size() - 1, 0);
+    }
+
+    int calculatePoints(vector<int>& boxes, int l, int r, int k) {
+        if (l > r) {
+            return 0;
+        }
+        if (dp[l][r][k] == 0) {
+            dp[l][r][k] = calculatePoints(boxes, l, r - 1, 0) + (k + 1) * (k + 1);
+            for (int i = l; i < r; i++) {
+                if (boxes[i] == boxes[r]) {
+                    dp[l][r][k] = max(dp[l][r][k], calculatePoints(boxes, l, i, k + 1) + calculatePoints(boxes, i + 1, r - 1, 0));
+                }
+            }
+        }
+        return dp[l][r][k];
+    }
+};
+
+// 优化
+class Solution {
+public:
+    int dp[100][100][100];
+
+    int removeBoxes(vector<int>& boxes) {
+        memset(dp, 0, sizeof dp);
+        return calculatePoints(boxes, 0, boxes.size() - 1, 0);
+    }
+
+    int calculatePoints(vector<int>& boxes, int l, int r, int k) {
+        if (l > r) {
+            return 0;
+        }
+        if (dp[l][r][k] == 0) {
+            int r1 = r, k1 = k;
+            while (r1 > l && boxes[r1] == boxes[r1 - 1]) {
+                r1--;
+                k1++;
+            }
+            dp[l][r][k] = calculatePoints(boxes, l, r1 - 1, 0) + (k1 + 1) * (k1 + 1);
+            for (int i = l; i < r1; i++) {
+                if (boxes[i] == boxes[r1]) {
+                    dp[l][r][k] = max(dp[l][r][k], calculatePoints(boxes, l, i, k1 + 1) + calculatePoints(boxes, i + 1, r1 - 1, 0));
+                }
+            }
+        }
+        return dp[l][r][k];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    int[][][] dp;
+
+    public int removeBoxes(int[] boxes) {
+        int length = boxes.length;
+        dp = new int[length][length][length];
+        return calculatePoints(boxes, 0, length - 1, 0);
+    }
+
+    public int calculatePoints(int[] boxes, int l, int r, int k) {
+        if (l > r) {
+            return 0;
+        }
+        if (dp[l][r][k] == 0) {
+            dp[l][r][k] = calculatePoints(boxes, l, r - 1, 0) + (k + 1) * (k + 1);
+            for (int i = l; i < r; i++) {
+                if (boxes[i] == boxes[r]) {
+                    dp[l][r][k] = Math.max(dp[l][r][k], calculatePoints(boxes, l, i, k + 1) + calculatePoints(boxes, i + 1, r - 1, 0));
+                }
+            }
+        }
+        return dp[l][r][k];
+    }
+}
+
+// 优化
+class Solution {
+    int[][][] dp;
+
+    public int removeBoxes(int[] boxes) {
+        int length = boxes.length;
+        dp = new int[length][length][length];
+        return calculatePoints(boxes, 0, length - 1, 0);
+    }
+
+    public int calculatePoints(int[] boxes, int l, int r, int k) {
+        if (l > r) {
+            return 0;
+        }
+        if (dp[l][r][k] == 0) {
+            int r1 = r, k1 = k;
+            while (r1 > l && boxes[r1] == boxes[r1 - 1]) {
+                r1--;
+                k1++;
+            }
+            dp[l][r][k] = calculatePoints(boxes, l, r1 - 1, 0) + (k1 + 1) * (k1 + 1);
+            for (int i = l; i < r1; i++) {
+                if (boxes[i] == boxes[r1]) {
+                    dp[l][r][k] = Math.max(dp[l][r][k], calculatePoints(boxes, l, i, k1 + 1) + calculatePoints(boxes, i + 1, r1 - 1, 0));
+                }
+            }
+        }
+        return dp[l][r][k];
+    }
+}
+```
+
+
+
+
+
