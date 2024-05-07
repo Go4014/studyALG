@@ -1278,5 +1278,599 @@ class Solution {
 
 
 
+### [375. 猜数字大小 II](https://leetcode.cn/problems/guess-number-higher-or-lower-ii/)
+
+中等
+
+我们正在玩一个猜数游戏，游戏规则如下：
+
+1. 我从 `1` 到 `n` 之间选择一个数字。
+2. 你来猜我选了哪个数字。
+3. 如果你猜到正确的数字，就会 **赢得游戏** 。
+4. 如果你猜错了，那么我会告诉你，我选的数字比你的 **更大或者更小** ，并且你需要继续猜数。
+5. 每当你猜了数字 `x` 并且猜错了的时候，你需要支付金额为 `x` 的现金。如果你花光了钱，就会 **输掉游戏** 。
+
+给你一个特定的数字 `n` ，返回能够 **确保你获胜** 的最小现金数，**不管我选择那个数字** 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/10/graph.png)
+
+```
+输入：n = 10
+输出：16
+解释：制胜策略如下：
+- 数字范围是 [1,10] 。你先猜测数字为 7 。
+    - 如果这是我选中的数字，你的总费用为 $0 。否则，你需要支付 $7 。
+    - 如果我的数字更大，则下一步需要猜测的数字范围是 [8,10] 。你可以猜测数字为 9 。
+        - 如果这是我选中的数字，你的总费用为 $7 。否则，你需要支付 $9 。
+        - 如果我的数字更大，那么这个数字一定是 10 。你猜测数字为 10 并赢得游戏，总费用为 $7 + $9 = $16 。
+        - 如果我的数字更小，那么这个数字一定是 8 。你猜测数字为 8 并赢得游戏，总费用为 $7 + $9 = $16 。
+    - 如果我的数字更小，则下一步需要猜测的数字范围是 [1,6] 。你可以猜测数字为 3 。
+        - 如果这是我选中的数字，你的总费用为 $7 。否则，你需要支付 $3 。
+        - 如果我的数字更大，则下一步需要猜测的数字范围是 [4,6] 。你可以猜测数字为 5 。
+            - 如果这是我选中的数字，你的总费用为 $7 + $3 = $10 。否则，你需要支付 $5 。
+            - 如果我的数字更大，那么这个数字一定是 6 。你猜测数字为 6 并赢得游戏，总费用为 $7 + $3 + $5 = $15 。
+            - 如果我的数字更小，那么这个数字一定是 4 。你猜测数字为 4 并赢得游戏，总费用为 $7 + $3 + $5 = $15 。
+        - 如果我的数字更小，则下一步需要猜测的数字范围是 [1,2] 。你可以猜测数字为 1 。
+            - 如果这是我选中的数字，你的总费用为 $7 + $3 = $10 。否则，你需要支付 $1 。
+            - 如果我的数字更大，那么这个数字一定是 2 。你猜测数字为 2 并赢得游戏，总费用为 $7 + $3 + $1 = $11 。
+在最糟糕的情况下，你需要支付 $16 。因此，你只需要 $16 就可以确保自己赢得游戏。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int getMoneyAmount(int n) {
+        vector<vector<int>> f(n+1,vector<int>(n+1));
+        for (int i = n - 1; i >= 1; i--) {
+            for (int j = i + 1; j <= n; j++) {
+                f[i][j] = j + f[i][j - 1];
+                for (int k = i; k < j; k++) {
+                    f[i][j] = min(f[i][j], k + max(f[i][k - 1], f[k + 1][j]));
+                }
+            }
+        }
+        return f[1][n];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int getMoneyAmount(int n) {
+        int[][] f = new int[n + 1][n + 1];
+        for (int i = n - 1; i >= 1; i--) {
+            for (int j = i + 1; j <= n; j++) {
+                f[i][j] = j + f[i][j - 1];
+                for (int k = i; k < j; k++) {
+                    f[i][j] = Math.min(f[i][j], k + Math.max(f[i][k - 1], f[k + 1][j]));
+                }
+            }
+        }
+        return f[1][n];
+    }
+}
+```
+
+
+
+### [678. 有效的括号字符串](https://leetcode.cn/problems/valid-parenthesis-string/)
+
+中等
+
+给你一个只包含三种字符的字符串，支持的字符类型分别是 `'('`、`')'` 和 `'*'`。请你检验这个字符串是否为有效字符串，如果是有效字符串返回 `true` 。
+
+有效字符串符合如下规则：
+
+- 任何左括号 `'('` 必须有相应的右括号 `')'`。
+- 任何右括号 `')'` 必须有相应的左括号 `'('` 。
+- 左括号 `'('` 必须在对应的右括号之前 `')'`。
+- `'*'` 可以被视为单个右括号 `')'` ，或单个左括号 `'('` ，或一个空字符串。
+- 一个空字符串也被视为有效字符串。
+
+**示例 1：**
+
+```
+输入：s = "()"
+输出：true
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    bool checkValidString(string s) {
+        int n = s.size();
+        vector<vector<bool>> dp = vector<vector<bool>>(n,vector<bool>(n,false));
+
+        for (int i = 0; i < n; i++) {
+            if (s[i] == '*') {
+                dp[i][i] = true;
+            }
+        }
+
+        for (int i = 1; i < n; i++) {
+            char c1 = s[i - 1]; 
+            char c2 = s[i];
+            dp[i - 1][i] = (c1 == '(' || c1 == '*') && (c2 == ')' || c2 == '*');
+        }
+
+        for (int i = n - 3; i >= 0; i--) {
+            char c1 = s[i];
+            for (int j = i + 2; j < n; j++) {
+                char c2 = s[j];
+                if ((c1 == '(' || c1 == '*') && (c2 == ')' || c2 == '*')) {
+                    dp[i][j] = dp[i + 1][j - 1];
+                }
+                for (int k = i; k < j && !dp[i][j]; k++) {
+                    dp[i][j] = dp[i][k] && dp[k + 1][j];
+                }
+            }
+        }
+        return dp[0][n - 1];
+    }
+};
+
+// 方法二：栈
+class Solution {
+public:
+    bool checkValidString(string s) {
+        stack<int> leftStack;
+        stack<int> asteriskStack;
+        int n = s.size();
+
+        for (int i = 0; i < n; i++) {
+            char c = s[i];
+            if (c == '(') {
+                leftStack.push(i);
+            } else if (c == '*') {
+                asteriskStack.push(i);
+            } else {
+                if (!leftStack.empty()) {
+                    leftStack.pop();
+                } else if (!asteriskStack.empty()) {
+                    asteriskStack.pop();
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        while (!leftStack.empty() && !asteriskStack.empty()) {
+            int leftIndex = leftStack.top();
+            leftStack.pop();
+            int asteriskIndex = asteriskStack.top();
+            asteriskStack.pop();
+            if (leftIndex > asteriskIndex) {
+                return false;
+            }
+        }
+        
+        return leftStack.empty();
+    }
+};
+
+// 方法三：贪心
+class Solution {
+public:
+    bool checkValidString(string s) {
+        int minCount = 0, maxCount = 0;
+        int n = s.size();
+        for (int i = 0; i < n; i++) {
+            char c = s[i];
+            if (c == '(') {
+                minCount++;
+                maxCount++;
+            } else if (c == ')') {
+                minCount = max(minCount - 1, 0);
+                maxCount--;
+                if (maxCount < 0) {
+                    return false;
+                }
+            } else {
+                minCount = max(minCount - 1, 0);
+                maxCount++;
+            }
+        }
+        return minCount == 0;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public boolean checkValidString(String s) {
+        int n = s.length();
+        boolean[][] dp = new boolean[n][n];
+        for (int i = 0; i < n; i++) {
+            if (s.charAt(i) == '*') {
+                dp[i][i] = true;
+            }
+        }
+        for (int i = 1; i < n; i++) {
+            char c1 = s.charAt(i - 1), c2 = s.charAt(i);
+            dp[i - 1][i] = (c1 == '(' || c1 == '*') && (c2 == ')' || c2 == '*');
+        }
+        for (int i = n - 3; i >= 0; i--) {
+            char c1 = s.charAt(i);
+            for (int j = i + 2; j < n; j++) {
+                char c2 = s.charAt(j);
+                if ((c1 == '(' || c1 == '*') && (c2 == ')' || c2 == '*')) {
+                    dp[i][j] = dp[i + 1][j - 1];
+                }
+                for (int k = i; k < j && !dp[i][j]; k++) {
+                    dp[i][j] = dp[i][k] && dp[k + 1][j];
+                }
+            }
+        }
+        return dp[0][n - 1]; 
+    }
+}
+
+// 方法二：栈
+class Solution {
+    public boolean checkValidString(String s) {
+        Deque<Integer> leftStack = new LinkedList<Integer>();
+        Deque<Integer> asteriskStack = new LinkedList<Integer>();
+        int n = s.length();
+        
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                leftStack.push(i);
+            } else if (c == '*') {
+                asteriskStack.push(i);
+            } else {
+                if (!leftStack.isEmpty()) {
+                    leftStack.pop();
+                } else if (!asteriskStack.isEmpty()) {
+                    asteriskStack.pop();
+                } else {
+                    return false;
+                }
+            }
+        }
+        
+        while (!leftStack.isEmpty() && !asteriskStack.isEmpty()) {
+            int leftIndex = leftStack.pop();
+            int asteriskIndex = asteriskStack.pop();
+            if (leftIndex > asteriskIndex) {
+                return false;
+            }
+        }
+        return leftStack.isEmpty();
+    }
+}
+
+// 方法三：贪心
+class Solution {
+    public boolean checkValidString(String s) {
+        int minCount = 0, maxCount = 0;
+        int n = s.length();
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                minCount++;
+                maxCount++;
+            } else if (c == ')') {
+                minCount = Math.max(minCount - 1, 0);
+                maxCount--;
+                if (maxCount < 0) {
+                    return false;
+                }
+            } else {
+                minCount = Math.max(minCount - 1, 0);
+                maxCount++;
+            }
+        }
+        return minCount == 0;
+    }
+}
+```
+
+
+
+### [5. 最长回文子串](https://leetcode.cn/problems/longest-palindromic-substring/)
+
+中等
+
+给你一个字符串 `s`，找到 `s` 中最长的回文子串。
+
+如果字符串的反序与原始字符串相同，则该字符串称为回文字符串。
+
+**示例 1：**
+
+```
+输入：s = "babad"
+输出："bab"
+解释："aba" 同样是符合题意的答案。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    string longestPalindrome(string s) {
+        int n = s.size();
+        if (n < 2) {
+            return s;
+        }
+
+        int maxLen = 1;
+        int begin = 0;
+        // dp[i][j] 表示 s[i..j] 是否是回文串
+        vector<vector<int>> dp(n, vector<int>(n));
+        // 初始化：所有长度为 1 的子串都是回文串
+        for (int i = 0; i < n; i++) {
+            dp[i][i] = true;
+        }
+        // 递推开始
+        // 先枚举子串长度
+        for (int L = 2; L <= n; L++) {
+            // 枚举左边界，左边界的上限设置可以宽松一些
+            for (int i = 0; i < n; i++) {
+                // 由 L 和 i 可以确定右边界，即 j - i + 1 = L 得
+                int j = L + i - 1;
+                // 如果右边界越界，就可以退出当前循环
+                if (j >= n) {
+                    break;
+                }
+
+                if (s[i] != s[j]) {
+                    dp[i][j] = false;
+                } else {
+                    if (j - i < 3) {
+                        dp[i][j] = true;
+                    } else {
+                        dp[i][j] = dp[i + 1][j - 1];
+                    }
+                }
+
+                // 只要 dp[i][L] == true 成立，就表示子串 s[i..L] 是回文，此时记录回文长度和起始位置
+                if (dp[i][j] && j - i + 1 > maxLen) {
+                    maxLen = j - i + 1;
+                    begin = i;
+                }
+            }
+        }
+        return s.substr(begin, maxLen);
+    }
+};
+
+// 方法二：中心扩展算法
+class Solution {
+public:
+    pair<int, int> expandAroundCenter(const string& s, int left, int right) {
+        while (left >= 0 && right < s.size() && s[left] == s[right]) {
+            --left;
+            ++right;
+        }
+        return {left + 1, right - 1};
+    }
+
+    string longestPalindrome(string s) {
+        int start = 0, end = 0;
+        for (int i = 0; i < s.size(); ++i) {
+            auto [left1, right1] = expandAroundCenter(s, i, i);
+            auto [left2, right2] = expandAroundCenter(s, i, i + 1);
+            if (right1 - left1 > end - start) {
+                start = left1;
+                end = right1;
+            }
+            if (right2 - left2 > end - start) {
+                start = left2;
+                end = right2;
+            }
+        }
+        return s.substr(start, end - start + 1);
+    }
+};
+
+// 方法三：Manacher 算法
+class Solution {
+public:
+    int expand(const string& s, int left, int right) {
+        while (left >= 0 && right < s.size() && s[left] == s[right]) {
+            --left;
+            ++right;
+        }
+        return (right - left - 2) / 2;
+    }
+
+    string longestPalindrome(string s) {
+        int start = 0, end = -1;
+        string t = "#";
+        for (char c: s) {
+            t += c;
+            t += '#';
+        }
+        t += '#';
+        s = t;
+
+        vector<int> arm_len;
+        int right = -1, j = -1;
+        for (int i = 0; i < s.size(); ++i) {
+            int cur_arm_len;
+            if (right >= i) {
+                int i_sym = j * 2 - i;
+                int min_arm_len = min(arm_len[i_sym], right - i);
+                cur_arm_len = expand(s, i - min_arm_len, i + min_arm_len);
+            } else {
+                cur_arm_len = expand(s, i, i);
+            }
+            arm_len.push_back(cur_arm_len);
+            if (i + cur_arm_len > right) {
+                j = i;
+                right = i + cur_arm_len;
+            }
+            if (cur_arm_len * 2 + 1 > end - start) {
+                start = i - cur_arm_len;
+                end = i + cur_arm_len;
+            }
+        }
+
+        string ans;
+        for (int i = start; i <= end; ++i) {
+            if (s[i] != '#') {
+                ans += s[i];
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+public class Solution {
+
+    public String longestPalindrome(String s) {
+        int len = s.length();
+        if (len < 2) {
+            return s;
+        }
+
+        int maxLen = 1;
+        int begin = 0;
+        // dp[i][j] 表示 s[i..j] 是否是回文串
+        boolean[][] dp = new boolean[len][len];
+        // 初始化：所有长度为 1 的子串都是回文串
+        for (int i = 0; i < len; i++) {
+            dp[i][i] = true;
+        }
+
+        char[] charArray = s.toCharArray();
+        // 递推开始
+        // 先枚举子串长度
+        for (int L = 2; L <= len; L++) {
+            // 枚举左边界，左边界的上限设置可以宽松一些
+            for (int i = 0; i < len; i++) {
+                // 由 L 和 i 可以确定右边界，即 j - i + 1 = L 得
+                int j = L + i - 1;
+                // 如果右边界越界，就可以退出当前循环
+                if (j >= len) {
+                    break;
+                }
+
+                if (charArray[i] != charArray[j]) {
+                    dp[i][j] = false;
+                } else {
+                    if (j - i < 3) {
+                        dp[i][j] = true;
+                    } else {
+                        dp[i][j] = dp[i + 1][j - 1];
+                    }
+                }
+
+                // 只要 dp[i][L] == true 成立，就表示子串 s[i..L] 是回文，此时记录回文长度和起始位置
+                if (dp[i][j] && j - i + 1 > maxLen) {
+                    maxLen = j - i + 1;
+                    begin = i;
+                }
+            }
+        }
+        return s.substring(begin, begin + maxLen);
+    }
+}
+
+// 方法二：中心扩展算法
+class Solution {
+    public String longestPalindrome(String s) {
+        if (s == null || s.length() < 1) {
+            return "";
+        }
+        int start = 0, end = 0;
+        for (int i = 0; i < s.length(); i++) {
+            int len1 = expandAroundCenter(s, i, i);
+            int len2 = expandAroundCenter(s, i, i + 1);
+            int len = Math.max(len1, len2);
+            if (len > end - start) {
+                start = i - (len - 1) / 2;
+                end = i + len / 2;
+            }
+        }
+        return s.substring(start, end + 1);
+    }
+
+    public int expandAroundCenter(String s, int left, int right) {
+        while (left >= 0 && right < s.length() && s.charAt(left) == s.charAt(right)) {
+            --left;
+            ++right;
+        }
+        return right - left - 1;
+    }
+}
+
+// 方法三：Manacher 算法
+class Solution {
+    public String longestPalindrome(String s) {
+        int start = 0, end = -1;
+        StringBuffer t = new StringBuffer("#");
+        for (int i = 0; i < s.length(); ++i) {
+            t.append(s.charAt(i));
+            t.append('#');
+        }
+        t.append('#');
+        s = t.toString();
+
+        List<Integer> arm_len = new ArrayList<Integer>();
+        int right = -1, j = -1;
+        for (int i = 0; i < s.length(); ++i) {
+            int cur_arm_len;
+            if (right >= i) {
+                int i_sym = j * 2 - i;
+                int min_arm_len = Math.min(arm_len.get(i_sym), right - i);
+                cur_arm_len = expand(s, i - min_arm_len, i + min_arm_len);
+            } else {
+                cur_arm_len = expand(s, i, i);
+            }
+            arm_len.add(cur_arm_len);
+            if (i + cur_arm_len > right) {
+                j = i;
+                right = i + cur_arm_len;
+            }
+            if (cur_arm_len * 2 + 1 > end - start) {
+                start = i - cur_arm_len;
+                end = i + cur_arm_len;
+            }
+        }
+
+        StringBuffer ans = new StringBuffer();
+        for (int i = start; i <= end; ++i) {
+            if (s.charAt(i) != '#') {
+                ans.append(s.charAt(i));
+            }
+        }
+        return ans.toString();
+    }
+
+    public int expand(String s, int left, int right) {
+        while (left >= 0 && right < s.length() && s.charAt(left) == s.charAt(right)) {
+            --left;
+            ++right;
+        }
+        return (right - left - 2) / 2;
+    }
+}
+```
+
+
+
 
 
