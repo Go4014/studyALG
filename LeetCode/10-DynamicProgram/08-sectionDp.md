@@ -1872,5 +1872,574 @@ class Solution {
 
 
 
+### [516. 最长回文子序列](https://leetcode.cn/problems/longest-palindromic-subsequence/)
 
+中等
+
+给你一个字符串 `s` ，找出其中最长的回文子序列，并返回该序列的长度。
+
+子序列定义为：不改变剩余字符顺序的情况下，删除某些字符或者不删除任何字符形成的一个序列。
+
+**示例 1：**
+
+```
+输入：s = "bbbab"
+输出：4
+解释：一个可能的最长回文子序列为 "bbbb" 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int longestPalindromeSubseq(string s) {
+        int n = s.length();
+        vector<vector<int>> dp(n, vector<int>(n));
+        for (int i = n - 1; i >= 0; i--) {
+            dp[i][i] = 1;
+            char c1 = s[i];
+            for (int j = i + 1; j < n; j++) {
+                char c2 = s[j];
+                if (c1 == c2) {
+                    dp[i][j] = dp[i + 1][j - 1] + 2;
+                } else {
+                    dp[i][j] = max(dp[i + 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[0][n - 1];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int longestPalindromeSubseq(String s) {
+        int n = s.length();
+        int[][] dp = new int[n][n];
+        for (int i = n - 1; i >= 0; i--) {
+            dp[i][i] = 1;
+            char c1 = s.charAt(i);
+            for (int j = i + 1; j < n; j++) {
+                char c2 = s.charAt(j);
+                if (c1 == c2) {
+                    dp[i][j] = dp[i + 1][j - 1] + 2;
+                } else {
+                    dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[0][n - 1];
+    }
+}
+
+// 或者
+class Solution {
+    public int longestPalindromeSubseq(String s) {
+        char[] c = s.toCharArray();
+        int[] dp = new int[c.length];
+        int max = 0;
+        for (int i = 0; i < dp.length; i++) {
+            dp[i] = 1;
+            int curMax = 0;
+            for (int j = i - 1; j >= 0; j--) {
+                // prev=dp[i-1][j];curmax理论上记录的是dp[i-1][j-1]
+                int prev = dp[j];
+                if (c[i] == c[j]) {
+                    dp[j] = curMax + 2;
+                }
+                // 之所以可以这样是因为dp[i-1][j]一定>=dp[i-1][j+1]
+                curMax = Math.max(prev, curMax);
+            }
+        }
+        for (int n : dp) {
+            max = Math.max(max, n);
+        }
+        return max;
+    }
+}
+```
+
+
+
+### [730. 统计不同回文子序列](https://leetcode.cn/problems/count-different-palindromic-subsequences/)
+
+困难
+
+给你一个字符串 `s` ，返回 `s` 中不同的非空回文子序列个数 。由于答案可能很大，请返回对 `109 + 7` **取余** 的结果。
+
+字符串的子序列可以经由字符串删除 0 个或多个字符获得。
+
+如果一个序列与它反转后的序列一致，那么它是回文序列。
+
+如果存在某个 `i` , 满足 `ai != bi` ，则两个序列 `a1, a2, ...` 和 `b1, b2, ...` 不同。
+
+**示例 1：**
+
+```
+输入：s = 'bccb'
+输出：6
+解释：6 个不同的非空回文子字符序列分别为：'b', 'c', 'bb', 'cc', 'bcb', 'bccb'。
+注意：'bcb' 虽然出现两次但仅计数一次。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划（使用三维数组）
+class Solution {
+public:
+    const int MOD = 1e9 + 7;
+
+    int countPalindromicSubsequences(string &s) {
+        int n = s.size();
+        vector<vector<vector<int>>> dp(4, vector<vector<int>>(n, vector<int>(n, 0)));
+        for (int i = 0; i < n; i++) {
+            dp[s[i] - 'a'][i][i] = 1;
+        }
+
+        for (int len = 2; len <= n; len++) {
+            for (int i = 0, j = len - 1; j < n; i++, j++) {
+                for (char c = 'a', k = 0; c <= 'd'; c++, k++) {
+                    if (s[i] == c && s[j] == c) {
+                        dp[k][i][j] = (2LL + dp[0][i + 1][j - 1] + dp[1][i + 1][j - 1] + dp[2][i + 1][j - 1] + dp[3][i + 1][j - 1]) % MOD;
+                    } else if (s[i] == c) {
+                        dp[k][i][j] = dp[k][i][j - 1];
+                    } else if (s[j] == c) {
+                        dp[k][i][j] = dp[k][i + 1][j];
+                    } else {
+                        dp[k][i][j] = dp[k][i + 1][j - 1];
+                    }
+                }
+            }
+        }
+
+        int res = 0;
+        for (int i = 0; i < 4; i++) {
+            res = (res + dp[i][0][n - 1]) % MOD;
+        }
+        return res;
+    }
+};
+
+// 方法二：动态规划（使用二维数组）
+class Solution {
+public:
+    const int MOD = 1e9 + 7;
+
+    int countPalindromicSubsequences(string s) {
+        int n = s.size();
+        vector<vector<int>> dp(n, vector<int>(n));
+        vector<vector<int>> next(n, vector<int>(4));
+        vector<vector<int>> pre(n, vector<int>(4));
+
+        for (int i = 0; i < n; i++) {
+            dp[i][i] = 1;
+        }
+
+        vector<int> pos(4, -1);
+
+        for (int i = 0; i < n; i++) {
+            for (int c = 0; c < 4; c++) {
+                pre[i][c] = pos[c];
+            }
+            pos[s[i] - 'a'] = i;
+        }
+
+        pos[0] = pos[1] = pos[2] = pos[3] = n;
+
+        for (int i = n - 1; i >= 0; i--) {
+            for (int c = 0; c < 4; c++) {
+                next[i][c] = pos[c];
+            }
+            pos[s[i] - 'a'] = i;
+        }
+
+        for (int len = 2; len <= n; len++) {
+            for (int i = 0; i + len <= n; i++) {
+                int j = i + len - 1;
+                if (s[i] == s[j]) {
+                    int low = next[i][s[i] - 'a'];
+                    int high = pre[j][s[i] - 'a'];
+                    if (low > high) {
+                        dp[i][j] = (2 + dp[i + 1][j - 1] * 2) % MOD;
+                    } else if (low == high) {
+                        dp[i][j] = (1 + dp[i + 1][j - 1] * 2) % MOD;
+                    } else {
+                        dp[i][j] = (0LL + dp[i + 1][j - 1] * 2 - dp[low + 1][high - 1] + MOD) % MOD;
+                    }
+                } else {
+                    dp[i][j] = (0LL + dp[i + 1][j] + dp[i][j - 1] - dp[i + 1][j - 1] + MOD) % MOD;
+                }
+            }
+        }
+
+        return dp[0][n - 1];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划（使用三维数组）
+class Solution {
+    public int countPalindromicSubsequences(String s) {
+        final int MOD = 1000000007;
+        int n = s.length();
+        int[][][] dp = new int[4][n][n];
+        for (int i = 0; i < n; i++) {
+            dp[s.charAt(i) - 'a'][i][i] = 1;
+        }
+
+        for (int len = 2; len <= n; len++) {
+            for (int i = 0; i + len <= n; i++) {
+                int j = i + len - 1;
+                for (char c = 'a'; c <= 'd'; c++) {
+                    int k = c - 'a';
+                    if (s.charAt(i) == c && s.charAt(j) == c) {
+                        dp[k][i][j] = (2 + (dp[0][i + 1][j - 1] + dp[1][i + 1][j - 1]) % MOD + (dp[2][i + 1][j - 1] + dp[3][i + 1][j - 1]) % MOD) % MOD;
+                    } else if (s.charAt(i) == c) {
+                        dp[k][i][j] = dp[k][i][j - 1];
+                    } else if (s.charAt(j) == c) {
+                        dp[k][i][j] = dp[k][i + 1][j];
+                    } else {
+                        dp[k][i][j] = dp[k][i + 1][j - 1];
+                    }
+                }
+            }
+        }
+
+        int res = 0;
+        for (int i = 0; i < 4; i++) {
+            res = (res + dp[i][0][n - 1]) % MOD;
+        }
+        return res;
+    }
+}
+
+// 方法二：动态规划（使用二维数组）
+class Solution {
+    public int countPalindromicSubsequences(String s) {
+        final int MOD = 1000000007;
+        int n = s.length();
+        int[][] dp = new int[n][n];
+        int[][] next = new int[n][4];
+        int[][] pre = new int[n][4];
+
+        for (int i = 0; i < n; i++) {
+            dp[i][i] = 1;
+        }
+
+        int[] pos = new int[4];
+        Arrays.fill(pos, -1);
+
+        for (int i = 0; i < n; i++) {
+            for (int c = 0; c < 4; c++) {
+                pre[i][c] = pos[c];
+            }
+            pos[s.charAt(i) - 'a'] = i;
+        }
+
+        pos[0] = pos[1] = pos[2] = pos[3] = n;
+
+        for (int i = n - 1; i >= 0; i--) {
+            for (int c = 0; c < 4; c++) {
+                next[i][c] = pos[c];
+            }
+            pos[s.charAt(i) - 'a'] = i;
+        }
+
+        for (int len = 2; len <= n; len++) {
+            for (int i = 0; i + len <= n; i++) {
+                int j = i + len - 1;
+                if (s.charAt(i) == s.charAt(j)) {
+                    int low = next[i][s.charAt(i) - 'a'];
+                    int high = pre[j][s.charAt(i) - 'a'];
+                    if (low > high) {
+                        dp[i][j] = (2 + dp[i + 1][j - 1] * 2) % MOD;
+                    } else if (low == high) {
+                        dp[i][j] = (1 + dp[i + 1][j - 1] * 2) % MOD;
+                    } else {
+                        dp[i][j] = (dp[i + 1][j - 1] * 2 % MOD - dp[low + 1][high - 1] + MOD) % MOD;
+                    }
+                } else {
+                    dp[i][j] = ((dp[i + 1][j] + dp[i][j - 1]) % MOD - dp[i + 1][j - 1] + MOD) % MOD;
+                }
+            }
+        }
+
+        return dp[0][n - 1];
+    }
+}
+
+// 或者
+//dp[i][j] 表示从i到j的palinrome subsequence个数
+class Solution {
+    public int countPalindromicSubsequences(String str) {
+        int n = str.length();
+        int[][] dp = new int[n][n];
+        for(int i = 0 ; i < n ; i++) {
+            dp[i][i] = 1;
+        }
+        char[] arr = str.toCharArray();
+        //leftIdx[i] 表示跟str[i] 相同的字母在其左边的第一个index，rightIdx同理
+        int[] rightIdx = new int[n];
+        int[] leftIdx = new int[n];
+        Arrays.fill(leftIdx , -1);
+        //hashmap只是辅助计算leftidx和rightindx的
+        HashMap<Character, Integer> leftMap = new HashMap<>();
+        HashMap<Character, Integer> rightMap = new HashMap<>();
+        for(int i = 0 ; i < n ; i++) {
+            leftIdx[i] = leftMap.getOrDefault(arr[i] , i);
+            leftMap.put(arr[i] , i);
+        }
+        for(int i = n - 1 ; i >= 0 ; i--) {
+            rightIdx[i] = rightMap.getOrDefault(arr[i] , i);
+            rightMap.put(arr[i] , i);
+        }
+        int j = 1;
+        int mod = (int) Math.pow(10 , 9) + 7;
+        //这里的j是间隔距离
+        while(j < n) {
+            int left = 0;
+            int right = j;
+            while(left < n && right < n) {
+                if(arr[left] == arr[right]) {
+                    int l = rightIdx[left];
+                    int r = leftIdx[right];
+                    //[left+1][right-1] 记一次，然后 带i j 一起再记一次，所以*2
+                    //r < l 表示left和right之间没有和当前字母相同的字母了
+                    //+2就是左右边界单读一个字母拼起来可以算一个，然后就是只单独一个字母又一个
+                    if(r < l) {
+                        dp[left][right] = (2 * dp[left + 1][right - 1] % mod + 2) % mod;
+                    }
+                    //+1是因为单独一个字母的这种情况已经被中间那个重复的包括了，所以不算
+                    else if(l == r) {
+                        dp[left][right] = (2 * dp[left + 1][right - 1] % mod + 1) % mod;
+                    }
+                    else
+                    {
+                        //dp[left + 1][right - 1]*2的时候会cover dp[l + 1][r - 1]的情况，所以得减掉
+                        dp[left][right] = (2 * dp[left + 1][right - 1] % mod - dp[l + 1][r - 1] + mod) % mod;
+                    }
+                }
+                else {
+                    //不相等的情况，比较简单就是减掉重复的区域
+                    dp[left][right] = ((dp[left][right - 1] + dp[left + 1][right] ) % mod - dp[left + 1][right - 1] + mod) % mod;
+                }
+                left++;
+                right++;
+            }
+            j++;
+        }
+        return dp[0][n - 1];
+    }
+}
+```
+
+
+
+### [2104. 子数组范围和](https://leetcode.cn/problems/sum-of-subarray-ranges/)
+
+中等
+
+给你一个整数数组 `nums` 。`nums` 中，子数组的 **范围** 是子数组中最大元素和最小元素的差值。
+
+返回 `nums` 中 **所有** 子数组范围的 **和** *。*
+
+子数组是数组中一个连续 **非空** 的元素序列。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3]
+输出：4
+解释：nums 的 6 个子数组如下所示：
+[1]，范围 = 最大 - 最小 = 1 - 1 = 0 
+[2]，范围 = 2 - 2 = 0
+[3]，范围 = 3 - 3 = 0
+[1,2]，范围 = 2 - 1 = 1
+[2,3]，范围 = 3 - 2 = 1
+[1,2,3]，范围 = 3 - 1 = 2
+所有范围的和是 0 + 0 + 0 + 1 + 1 + 2 = 4
+```
+
+C++版本
+
+```c++
+// 方法一：遍历子数组
+class Solution {
+public:
+    long long subArrayRanges(vector<int>& nums) {
+        int n = nums.size();
+        long long ret = 0;
+        for (int i = 0; i < n; i++) {
+            int minVal = INT_MAX, maxVal = INT_MIN;
+            for (int j = i; j < n; j++) {
+                minVal = min(minVal, nums[j]);
+                maxVal = max(maxVal, nums[j]);
+                ret += maxVal - minVal;
+            }
+        }
+        return ret;
+    }
+};
+
+// 方法二：单调栈
+class Solution {
+public:
+    long long subArrayRanges(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> minLeft(n), minRight(n), maxLeft(n), maxRight(n);
+        stack<int> minStack, maxStack;
+        for (int i = 0; i < n; i++) {
+            while (!minStack.empty() && nums[minStack.top()] > nums[i]) {
+                minStack.pop();
+            }
+            minLeft[i] = minStack.empty() ? -1 : minStack.top();
+            minStack.push(i);
+            
+            // 如果 nums[maxStack.top()] == nums[i], 那么根据定义，
+            // nums[maxStack.top()] 逻辑上小于 nums[i]，因为 maxStack.top() < i
+            while (!maxStack.empty() && nums[maxStack.top()] <= nums[i]) { 
+                maxStack.pop();
+            }
+            maxLeft[i] = maxStack.empty() ? -1 : maxStack.top();
+            maxStack.push(i);
+        }
+        minStack = stack<int>();
+        maxStack = stack<int>();
+        for (int i = n - 1; i >= 0; i--) {
+            // 如果 nums[minStack.top()] == nums[i], 那么根据定义，
+            // nums[minStack.top()] 逻辑上大于 nums[i]，因为 minStack.top() > i
+            while (!minStack.empty() && nums[minStack.top()] >= nums[i]) { 
+                minStack.pop();
+            }
+            minRight[i] = minStack.empty() ? n : minStack.top();
+            minStack.push(i);
+
+            while (!maxStack.empty() && nums[maxStack.top()] < nums[i]) {
+                maxStack.pop();
+            }
+            maxRight[i] = maxStack.empty() ? n : maxStack.top();
+            maxStack.push(i);
+        }
+
+        long long sumMax = 0, sumMin = 0;
+        for (int i = 0; i < n; i++) {
+            sumMax += static_cast<long long>(maxRight[i] - i) * (i - maxLeft[i]) * nums[i];
+            sumMin += static_cast<long long>(minRight[i] - i) * (i - minLeft[i]) * nums[i];
+        }
+        return sumMax - sumMin;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：遍历子数组
+class Solution {
+    public long subArrayRanges(int[] nums) {
+        int n = nums.length;
+        long ret = 0;
+        for (int i = 0; i < n; i++) {
+            int minVal = Integer.MAX_VALUE, maxVal = Integer.MIN_VALUE;
+            for (int j = i; j < n; j++) {
+                minVal = Math.min(minVal, nums[j]);
+                maxVal = Math.max(maxVal, nums[j]);
+                ret += maxVal - minVal;
+            }
+        }
+        return ret;
+    }
+}
+
+// 方法二：单调栈
+class Solution {
+    public long subArrayRanges(int[] nums) {
+        int n = nums.length;
+        int[] minLeft = new int[n];
+        int[] minRight = new int[n];
+        int[] maxLeft = new int[n];
+        int[] maxRight = new int[n];
+        Deque<Integer> minStack = new ArrayDeque<Integer>();
+        Deque<Integer> maxStack = new ArrayDeque<Integer>();
+        for (int i = 0; i < n; i++) {
+            while (!minStack.isEmpty() && nums[minStack.peek()] > nums[i]) {
+                minStack.pop();
+            }
+            minLeft[i] = minStack.isEmpty() ? -1 : minStack.peek();
+            minStack.push(i);
+            
+            // 如果 nums[maxStack.peek()] == nums[i], 那么根据定义，
+            // nums[maxStack.peek()] 逻辑上小于 nums[i]，因为 maxStack.peek() < i
+            while (!maxStack.isEmpty() && nums[maxStack.peek()] <= nums[i]) { 
+                maxStack.pop();
+            }
+            maxLeft[i] = maxStack.isEmpty() ? -1 : maxStack.peek();
+            maxStack.push(i);
+        }
+        minStack.clear();
+        maxStack.clear();
+        for (int i = n - 1; i >= 0; i--) {
+            // 如果 nums[minStack.peek()] == nums[i], 那么根据定义，
+            // nums[minStack.peek()] 逻辑上大于 nums[i]，因为 minStack.peek() > i
+            while (!minStack.isEmpty() && nums[minStack.peek()] >= nums[i]) { 
+                minStack.pop();
+            }
+            minRight[i] = minStack.isEmpty() ? n : minStack.peek();
+            minStack.push(i);
+
+            while (!maxStack.isEmpty() && nums[maxStack.peek()] < nums[i]) {
+                maxStack.pop();
+            }
+            maxRight[i] = maxStack.isEmpty() ? n : maxStack.peek();
+            maxStack.push(i);
+        }
+
+        long sumMax = 0, sumMin = 0;
+        for (int i = 0; i < n; i++) {
+            sumMax += (long) (maxRight[i] - i) * (i - maxLeft[i]) * nums[i];
+            sumMin += (long) (minRight[i] - i) * (i - minLeft[i]) * nums[i];
+        }
+        return sumMax - sumMin;
+    }
+}
+
+// 或者
+class Solution {
+    public long subArrayRanges(int[] nums) {
+        int n = nums.length;
+        long res = 0;
+        for (int i = 0; i < n; i++) {
+            int left = i - 1, right = i + 1;
+            while (left >= 0 && nums[left] < nums[i]) {
+                left--;
+            }
+            while (right < n && nums[right] <= nums[i]) {
+                right++;
+            }
+            res += (long) nums[i] * (i - left) * (right - i);
+            left = i - 1;
+            right = i + 1;
+
+            while (left >= 0 && nums[left] > nums[i]) {
+                left--;
+            }
+            while (right < n && nums[right] >= nums[i]) {
+                right++;
+            }
+            res -= (long) nums[i] * (i - left) * (right - i);
+        }
+        return res;
+    }
+}
+```
 
