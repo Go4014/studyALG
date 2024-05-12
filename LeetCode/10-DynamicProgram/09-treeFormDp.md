@@ -487,7 +487,450 @@ class Solution {
 
 
 
+### [1617. 统计子树中城市之间最大距离](https://leetcode.cn/problems/count-subtrees-with-max-distance-between-cities/)
 
+困难
+
+给你 `n` 个城市，编号为从 `1` 到 `n` 。同时给你一个大小为 `n-1` 的数组 `edges` ，其中 `edges[i] = [ui, vi]` 表示城市 `ui` 和 `vi` 之间有一条双向边。题目保证任意城市之间只有唯一的一条路径。换句话说，所有城市形成了一棵 **树** 。
+
+一棵 **子树** 是城市的一个子集，且子集中任意城市之间可以通过子集中的其他城市和边到达。两个子树被认为不一样的条件是至少有一个城市在其中一棵子树中存在，但在另一棵子树中不存在。
+
+对于 `d` 从 `1` 到 `n-1` ，请你找到城市间 **最大距离** 恰好为 `d` 的所有子树数目。
+
+请你返回一个大小为 `n-1` 的数组，其中第 `d` 个元素（**下标从 1 开始**）是城市间 **最大距离** 恰好等于 `d` 的子树数目。
+
+**请注意**，两个城市间距离定义为它们之间需要经过的边的数目。
+
+**示例 1：**
+
+**![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/10/11/p1.png)**
+
+```
+输入：n = 4, edges = [[1,2],[2,3],[2,4]]
+输出：[3,4,0]
+解释：
+子树 {1,2}, {2,3} 和 {2,4} 最大距离都是 1 。
+子树 {1,2,3}, {1,2,4}, {2,3,4} 和 {1,2,3,4} 最大距离都为 2 。
+不存在城市间最大距离为 3 的子树。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:      
+    vector<int> countSubgraphsForEachDiameter(int n, vector<vector<int>>& edges) {
+        vector<vector<int>> adj(n);        
+        for (auto &edge : edges) {
+            int x = edge[0] - 1;
+            int y = edge[1] - 1;
+            adj[x].emplace_back(y);
+            adj[y].emplace_back(x);
+        }
+        function<int(int, int&, int&)> dfs = [&](int root, int& mask, int& diameter)->int {
+            int first = 0, second = 0;
+            mask &= ~(1 << root);
+            for (int vertex : adj[root]) {
+                if (mask & (1 << vertex)) {
+                    mask &= ~(1 << vertex);
+                    int distance = 1 + dfs(vertex, mask, diameter);
+                    if (distance > first) {
+                        second = first;
+                        first = distance;
+                    } else if (distance > second) {
+                        second = distance;
+                    }
+                }
+            }
+            diameter = max(diameter, first + second);
+            return first;
+        };
+
+        vector<int> ans(n - 1);
+        for (int i = 1; i < (1 << n); i++) {
+            int root = 32 - __builtin_clz(i) - 1;
+            int mask = i;
+            int diameter = 0;
+            dfs(root, mask, diameter);
+            if (mask == 0 && diameter > 0) {
+                ans[diameter - 1]++;
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：深度优先搜索
+class Solution {
+public:      
+    vector<int> countSubgraphsForEachDiameter(int n, vector<vector<int>>& edges) {
+        vector<vector<int>> adj(n);        
+        for (auto &edge : edges) {
+            int x = edge[0] - 1;
+            int y = edge[1] - 1;
+            adj[x].emplace_back(y);
+            adj[y].emplace_back(x);
+        }
+
+        function<int(int, int, int)> dfs = [&](int parent, int u, int mask)->int {
+            int depth = 0;
+            for (int v : adj[u]) {
+                if (v != parent && mask & (1 << v)) {
+                    depth = max(depth, 1 + dfs(u, v, mask));
+                }
+            }
+            return depth;
+        };
+
+        vector<int> ans(n - 1);
+        for (int i = 1; i < (1 << n); i++) {
+            int x = 32 - __builtin_clz(i) - 1;
+            int mask = i;
+            int y = -1;
+            queue<int> qu;
+            qu.emplace(x);
+            mask &= ~(1 << x);
+            while (!qu.empty()) {
+                y = qu.front();
+                qu.pop();
+                for (int vertex : adj[y]) {
+                    if (mask & (1 << vertex)) {
+                        mask &= ~(1 << vertex);
+                        qu.emplace(vertex);
+                    }
+                }
+            }
+            if (mask == 0) {
+                int diameter = dfs(-1, y, i);
+                if (diameter > 0) {
+                    ans[diameter - 1]++;
+                }
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法三：枚举任意两点直径
+class Solution {
+public:      
+    vector<int> countSubgraphsForEachDiameter(int n, vector<vector<int>>& edges) {
+        vector<vector<int>> adj(n);        
+        vector<vector<int>> dist(n, vector<int>(n, INT_MAX));
+        for (auto &edge : edges) {
+            int x = edge[0] - 1;
+            int y = edge[1] - 1;
+            adj[x].emplace_back(y);
+            adj[y].emplace_back(x);
+            dist[x][y] = dist[y][x] = 1;
+        }
+        for (int i = 0; i < n; i++) {
+            dist[i][i] = 0;
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int k = 0; k < n; k++) {
+                    if (dist[j][i] != INT_MAX && dist[i][k] != INT_MAX) {
+                        dist[j][k] = min(dist[j][k], dist[j][i] + dist[i][k]);
+                    }
+                }
+            }
+        }
+        function<int(int, int, int, int)> dfs = [&](int u, int parent, int x, int y) -> int {
+            if (dist[u][x] > dist[x][y] || dist[u][y] > dist[x][y]) {
+                return 1;
+            }
+            if ((dist[u][y] == dist[x][y] && u < x) || (dist[u][x] == dist[x][y] && u < y)) {
+                return 1;
+            }
+            int ret = 1;
+            for (int v : adj[u]) {
+                if (v != parent) {
+                    ret *= dfs(v, u, x, y);
+                }
+            }
+            if (dist[u][x] + dist[u][y] > dist[x][y]) {
+                ret++;
+            }
+            return ret;
+        };
+        vector<int> ans(n - 1);
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                ans[dist[i][j] - 1] += dfs(i, -1, i, j);
+            }
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    int mask;
+    int diameter;
+
+    public int[] countSubgraphsForEachDiameter(int n, int[][] edges) {
+        List<Integer>[] adj = new List[n];
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<Integer>();
+        }
+        for (int[] edge : edges) {
+            int x = edge[0] - 1;
+            int y = edge[1] - 1;
+            adj[x].add(y);
+            adj[y].add(x);
+        }
+
+        int[] ans = new int[n - 1];
+        for (int i = 1; i < (1 << n); i++) {
+            int root = 32 - Integer.numberOfLeadingZeros(i) - 1;
+            mask = i;
+            diameter = 0;
+            dfs(root, adj);
+            if (mask == 0 && diameter > 0) {
+                ans[diameter - 1]++;
+            }
+        }
+        return ans;
+    }
+
+    public int dfs(int root, List<Integer>[] adj) {
+        int first = 0, second = 0;
+        mask &= ~(1 << root);
+        for (int vertex : adj[root]) {
+            if ((mask & (1 << vertex)) != 0) {
+                mask &= ~(1 << vertex);
+                int distance = 1 + dfs(vertex, adj);
+                if (distance > first) {
+                    second = first;
+                    first = distance;
+                } else if (distance > second) {
+                    second = distance;
+                }
+            }
+        }
+        diameter = Math.max(diameter, first + second);
+        return first;
+    }
+}
+
+// 方法二：深度优先搜索
+class Solution {
+    int mask;
+    int diameter;
+
+    public int[] countSubgraphsForEachDiameter(int n, int[][] edges) {
+        List<Integer>[] adj = new List[n];
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<Integer>();
+        }
+        for (int[] edge : edges) {
+            int x = edge[0] - 1;
+            int y = edge[1] - 1;
+            adj[x].add(y);
+            adj[y].add(x);
+        }
+
+        int[] ans = new int[n - 1];
+        for (int i = 1; i < (1 << n); i++) {
+            int x = 32 - Integer.numberOfLeadingZeros(i) - 1;
+            int mask = i;
+            int y = -1;
+            Queue<Integer> queue = new ArrayDeque<Integer>();
+            queue.offer(x);
+            mask &= ~(1 << x);
+            while (!queue.isEmpty()) {
+                y = queue.poll();
+                for (int vertex : adj[y]) {
+                    if ((mask & (1 << vertex)) != 0) {
+                        mask &= ~(1 << vertex);
+                        queue.offer(vertex);
+                    }
+                }
+            }
+            if (mask == 0) {
+                int diameter = dfs(adj, -1, y, i);
+                if (diameter > 0) {
+                    ans[diameter - 1]++;
+                }
+            }
+        }
+        return ans;
+    }
+
+    public int dfs(List<Integer>[] adj, int parent, int u, int mask) {
+        int depth = 0;
+        for (int v : adj[u]) {
+            if (v != parent && (mask & (1 << v)) != 0) {
+                depth = Math.max(depth, 1 + dfs(adj, u, v, mask));
+            }
+        }
+        return depth;
+    }
+}
+
+// 方法三：枚举任意两点直径
+class Solution {
+    public int[] countSubgraphsForEachDiameter(int n, int[][] edges) {
+        List<Integer>[] adj = new List[n];
+        int[][] dist = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(dist[i], Integer.MAX_VALUE);
+            dist[i][i] = 0;
+        }
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<Integer>();
+        }
+        for (int[] edge : edges) {
+            int x = edge[0] - 1;
+            int y = edge[1] - 1;
+            adj[x].add(y);
+            adj[y].add(x);
+            dist[x][y] = dist[y][x] = 1;
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int k = 0; k < n; k++) {
+                    if (dist[j][i] != Integer.MAX_VALUE && dist[i][k] != Integer.MAX_VALUE) {
+                        dist[j][k] = Math.min(dist[j][k], dist[j][i] + dist[i][k]);
+                    }
+                }
+            }
+        }
+        int[] ans = new int[n - 1];
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                ans[dist[i][j] - 1] += dfs(adj, dist, i, -1, i, j);
+            }
+        }
+        return ans;
+    }
+
+    public int dfs(List<Integer>[] adj, int[][] dist, int u, int parent, int x, int y) {
+        if (dist[u][x] > dist[x][y] || dist[u][y] > dist[x][y]) {
+            return 1;
+        }
+        if ((dist[u][y] == dist[x][y] && u < x) || (dist[u][x] == dist[x][y] && u < y)) {
+            return 1;
+        }
+        int ret = 1;
+        for (int v : adj[u]) {
+            if (v != parent) {
+                ret *= dfs(adj, dist, v, u, x, y);
+            }
+        }
+        if (dist[u][x] + dist[u][y] > dist[x][y]) {
+            ret++;
+        }
+        return ret;
+    }
+}
+```
+
+
+
+### [2538. 最大价值和与最小价值和的差值](https://leetcode.cn/problems/difference-between-maximum-and-minimum-price-sum/)
+
+困难
+
+给你一个 `n` 个节点的无向无根图，节点编号为 `0` 到 `n - 1` 。给你一个整数 `n` 和一个长度为 `n - 1` 的二维整数数组 `edges` ，其中 `edges[i] = [ai, bi]` 表示树中节点 `ai` 和 `bi` 之间有一条边。
+
+每个节点都有一个价值。给你一个整数数组 `price` ，其中 `price[i]` 是第 `i` 个节点的价值。
+
+一条路径的 **价值和** 是这条路径上所有节点的价值之和。
+
+你可以选择树中任意一个节点作为根节点 `root` 。选择 `root` 为根的 **开销** 是以 `root` 为起点的所有路径中，**价值和** 最大的一条路径与最小的一条路径的差值。
+
+请你返回所有节点作为根节点的选择中，**最大** 的 **开销** 为多少。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2022/12/01/example14.png)
+
+```
+输入：n = 6, edges = [[0,1],[1,2],[1,3],[3,4],[3,5]], price = [9,8,7,6,10,5]
+输出：24
+解释：上图展示了以节点 2 为根的树。左图（红色的节点）是最大价值和路径，右图（蓝色的节点）是最小价值和路径。
+- 第一条路径节点为 [2,1,3,4]：价值为 [7,8,6,10] ，价值和为 31 。
+- 第二条路径节点为 [2] ，价值为 [7] 。
+最大路径和与最小路径和的差值为 24 。24 是所有方案中的最大开销。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    long long maxOutput(int n, vector<vector<int>> &edges, vector<int> &price) {
+        vector<vector<int>> g(n);
+        for (auto &e : edges) {
+            int x = e[0], y = e[1];
+            g[x].push_back(y);
+            g[y].push_back(x); // 建树
+        }
+
+        long ans = 0;
+        function<pair<long, long>(int, int)> dfs = [&](int x, int fa) -> pair<long, long> {
+            long p = price[x], max_s1 = p, max_s2 = 0;
+            for (int y : g[x])
+                if (y != fa) {
+                    auto[s1, s2] = dfs(y, x);
+                    // 前面最大带叶子的路径和 + 当前不带叶子的路径和
+                    // 前面最大不带叶子的路径和 + 当前带叶子的路径和
+                    ans = max(ans, max(max_s1 + s2, max_s2 + s1));
+                    max_s1 = max(max_s1, s1 + p);
+                    max_s2 = max(max_s2, s2 + p); // 这里加上 p 是因为 x 必然不是叶子
+                }
+            return {max_s1, max_s2};
+        };
+        dfs(0, -1);
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+class Solution {
+    private List<Integer>[] g;
+    private int[] price;
+    private long ans;
+
+    public long maxOutput(int n, int[][] edges, int[] price) {
+        this.price = price;
+        g = new ArrayList[n];
+        Arrays.setAll(g, e -> new ArrayList<>());
+        for (var e : edges) {
+            int x = e[0], y = e[1];
+            g[x].add(y);
+            g[y].add(x); // 建树
+        }
+        dfs(0, -1);
+        return ans;
+    }
+
+    private long[] dfs(int x, int fa) {
+        long p = price[x], maxS1 = p, maxS2 = 0;
+        for (var y : g[x])
+            if (y != fa) {
+                var res = dfs(y, x);
+                long s1 = res[0], s2 = res[1];
+                // 前面最大带叶子的路径和 + 当前不带叶子的路径和
+                // 前面最大不带叶子的路径和 + 当前带叶子的路径和
+                ans = Math.max(ans, Math.max(maxS1 + s2, maxS2 + s1));
+                maxS1 = Math.max(maxS1, s1 + p);
+                maxS2 = Math.max(maxS2, s2 + p); // 这里加上 p 是因为 x 必然不是叶子
+            }
+        return new long[]{maxS1, maxS2};
+    }
+}
+```
 
 
 
