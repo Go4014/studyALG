@@ -934,5 +934,640 @@ class Solution {
 
 
 
+### [1569. 将子数组重新排序得到同一个二叉搜索树的方案数](https://leetcode.cn/problems/number-of-ways-to-reorder-array-to-get-same-bst/)
 
+困难
+
+给你一个数组 `nums` 表示 `1` 到 `n` 的一个排列。我们按照元素在 `nums` 中的顺序依次插入一个初始为空的二叉搜索树（BST）。请你统计将 `nums` 重新排序后，统计满足如下条件的方案数：重排后得到的二叉搜索树与 `nums` 原本数字顺序得到的二叉搜索树相同。
+
+比方说，给你 `nums = [2,1,3]`，我们得到一棵 2 为根，1 为左孩子，3 为右孩子的树。数组 `[2,3,1]` 也能得到相同的 BST，但 `[3,2,1]` 会得到一棵不同的 BST 。
+
+请你返回重排 `nums` 后，与原数组 `nums` 得到相同二叉搜索树的方案数。
+
+由于答案可能会很大，请将结果对 `10^9 + 7` 取余数。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/08/30/bb.png)
+
+```
+输入：nums = [2,1,3]
+输出：1
+解释：我们将 nums 重排， [2,3,1] 能得到相同的 BST 。没有其他得到相同 BST 的方案了。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划 + 组合计数
+struct TNode {
+    TNode* left;
+    TNode* right;
+    int value;
+    int size;
+    int ans;
+    
+    TNode(int val): left(nullptr), right(nullptr), value(val), size(1), ans(0) {}
+};
+
+class Solution {
+private:
+    static constexpr int mod = 1000000007;
+    vector<vector<int>> c;
+
+public:
+    void insert(TNode* root, int val) {
+        TNode* cur = root;
+        while (true) {
+            ++cur->size;
+            if (val < cur->value) {
+                if (!cur->left) {
+                    cur->left = new TNode(val);
+                    return;
+                }
+                cur = cur->left;
+            }
+            else {
+                if (!cur->right) {
+                    cur->right = new TNode(val);
+                    return;
+                }
+                cur = cur->right;
+            }
+        }
+    }
+
+    void dfs(TNode* node) {
+        if (!node) {
+            return;
+        }
+        dfs(node->left);
+        dfs(node->right);
+        int lsize = node->left ? node->left->size : 0;
+        int rsize = node->right ? node->right->size : 0;
+        int lans = node->left ? node->left->ans : 1;
+        int rans = node->right ? node->right->ans : 1;
+        node->ans = (long long)c[lsize + rsize][lsize] % mod * lans % mod * rans % mod;
+    }
+
+    int numOfWays(vector<int>& nums) {
+        int n = nums.size();
+        if (n == 1) {
+            return 0;
+        }
+
+        c.assign(n, vector<int>(n));
+        c[0][0] = 1;
+        for (int i = 1; i < n; ++i) {
+            c[i][0] = 1;
+            for (int j = 1; j < n; ++j) {
+                c[i][j] = (c[i - 1][j - 1] + c[i - 1][j]) % mod;
+            }
+        }
+
+        TNode* root = new TNode(nums[0]);
+        for (int i = 1; i < n; ++i) {
+            int val = nums[i];
+            insert(root, val);
+        }
+
+        dfs(root);
+        return (root->ans - 1 + mod) % mod;
+    }
+};
+
+// 方法二：并查集 + 乘法逆元优化
+struct TNode {
+    TNode* left;
+    TNode* right;
+    int size;
+    int ans;
+    
+    TNode(): left(nullptr), right(nullptr), size(1), ans(0) {}
+};
+
+class UnionFind {
+public:
+    vector<int> parent, size, root;
+    int n;
+    
+public:
+    UnionFind(int _n): n(_n), parent(_n), size(_n, 1), root(_n) {
+        iota(parent.begin(), parent.end(), 0);
+        iota(root.begin(), root.end(), 0);
+    }
+    
+    int findset(int x) {
+        return parent[x] == x ? x : parent[x] = findset(parent[x]);
+    }
+
+    int getroot(int x) {
+        return root[findset(x)];
+    }
+    
+    void unite(int x, int y) {
+        root[y] = root[x];
+        if (size[x] < size[y]) {
+            swap(x, y);
+        }
+        parent[y] = x;
+        size[x] += size[y];
+    }
+    
+    bool findAndUnite(int x, int y) {
+        int x0 = findset(x);
+        int y0 = findset(y);
+        if (x0 != y0) {
+            unite(x0, y0);
+            return true;
+        }
+        return false;
+    }
+};
+
+class Solution {
+private:
+    static constexpr int mod = 1000000007;
+    vector<int> fac, inv, facInv;
+
+public:
+    int numOfWays(vector<int>& nums) {
+        int n = nums.size();
+        if (n == 1) {
+            return 0;
+        }
+
+        fac.resize(n);
+        inv.resize(n);
+        facInv.resize(n);
+        fac[0] = inv[0] = facInv[0] = 1;
+        fac[1] = inv[1] = facInv[1] = 1;
+        for (int i = 2; i < n; ++i) {
+            fac[i] = (long long)fac[i - 1] * i % mod;
+            inv[i] = (long long)(mod - mod / i) * inv[mod % i] % mod;
+            facInv[i] = (long long)facInv[i - 1] * inv[i] % mod;
+        }
+
+        unordered_map<int, TNode*> found;
+        UnionFind uf(n);
+        for (int i = n - 1; i >= 0; --i) {
+            int val = nums[i] - 1;
+            TNode* node = new TNode();
+            if (val > 0 && found.count(val - 1)) {
+                int lchild = uf.getroot(val - 1);
+                node->left = found[lchild];
+                node->size += node->left->size;
+                uf.findAndUnite(val, lchild);
+            }
+            if (val < n - 1 && found.count(val + 1)) {
+                int rchild = uf.getroot(val + 1);
+                node->right = found[rchild];
+                node->size += node->right->size;
+                uf.findAndUnite(val, rchild);
+            }
+            
+            int lsize = node->left ? node->left->size : 0;
+            int rsize = node->right ? node->right->size : 0;
+            int lans = node->left ? node->left->ans : 1;
+            int rans = node->right ? node->right->ans : 1;
+            node->ans = (long long)fac[lsize + rsize] * facInv[lsize] % mod * facInv[rsize] % mod * lans % mod * rans % mod;
+            found[val] = node;
+        }
+
+        return (found[nums[0] - 1]->ans - 1 + mod) % mod;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划 + 组合计数
+class Solution {
+    static final int MOD = 1000000007;
+    long[][] c;
+
+    public int numOfWays(int[] nums) {
+        int n = nums.length;
+        if (n == 1) {
+            return 0;
+        }
+
+        c = new long[n][n];
+        c[0][0] = 1;
+        for (int i = 1; i < n; ++i) {
+            c[i][0] = 1;
+            for (int j = 1; j < n; ++j) {
+                c[i][j] = (c[i - 1][j - 1] + c[i - 1][j]) % MOD;
+            }
+        }
+
+        TreeNode root = new TreeNode(nums[0]);
+        for (int i = 1; i < n; ++i) {
+            int val = nums[i];
+            insert(root, val);
+        }
+
+        dfs(root);
+        return (root.ans - 1 + MOD) % MOD;
+    }
+
+    public void insert(TreeNode root, int value) {
+        TreeNode cur = root;
+        while (true) {
+            ++cur.size;
+            if (value < cur.value) {
+                if (cur.left == null) {
+                    cur.left = new TreeNode(value);
+                    return;
+                }
+                cur = cur.left;
+            } else {
+                if (cur.right == null) {
+                    cur.right = new TreeNode(value);
+                    return;
+                }
+                cur = cur.right;
+            }
+        }
+    }
+
+    public void dfs(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        dfs(node.left);
+        dfs(node.right);
+        int lsize = node.left != null ? node.left.size : 0;
+        int rsize = node.right != null ? node.right.size : 0;
+        int lans = node.left != null ? node.left.ans : 1;
+        int rans = node.right != null ? node.right.ans : 1;
+        node.ans = (int) (c[lsize + rsize][lsize] % MOD * lans % MOD * rans % MOD);
+    }
+}
+
+class TreeNode {
+    TreeNode left;
+    TreeNode right;
+    int value;
+    int size;
+    int ans;
+
+    TreeNode(int value) {
+        this.value = value;
+        this.size = 1;
+        this.ans = 0;
+    }
+}
+
+// 方法二：并查集 + 乘法逆元优化
+class Solution {
+    static final int MOD = 1000000007;
+    long[] fac;
+    long[] inv;
+    long[] facInv;
+
+    public int numOfWays(int[] nums) {
+        int n = nums.length;
+        if (n == 1) {
+            return 0;
+        }
+
+        fac = new long[n];
+        inv = new long[n];
+        facInv = new long[n];
+        fac[0] = inv[0] = facInv[0] = 1;
+        fac[1] = inv[1] = facInv[1] = 1;
+        for (int i = 2; i < n; ++i) {
+            fac[i] = fac[i - 1] * i % MOD;
+            inv[i] = (MOD - MOD / i) * inv[MOD % i] % MOD;
+            facInv[i] = facInv[i - 1] * inv[i] % MOD;
+        }
+
+        Map<Integer, TreeNode> found = new HashMap<Integer, TreeNode>();
+        UnionFind uf = new UnionFind(n);
+        for (int i = n - 1; i >= 0; --i) {
+            int val = nums[i] - 1;
+            TreeNode node = new TreeNode();
+            if (val > 0 && found.containsKey(val - 1)) {
+                int lchild = uf.getroot(val - 1);
+                node.left = found.get(lchild);
+                node.size += node.left.size;
+                uf.findAndUnite(val, lchild);
+            }
+            if (val < n - 1 && found.containsKey(val + 1)) {
+                int rchild = uf.getroot(val + 1);
+                node.right = found.get(rchild);
+                node.size += node.right.size;
+                uf.findAndUnite(val, rchild);
+            }
+            
+            int lsize = node.left != null ? node.left.size : 0;
+            int rsize = node.right != null ? node.right.size : 0;
+            int lans = node.left != null ? node.left.ans : 1;
+            int rans = node.right != null ? node.right.ans : 1;
+            node.ans = (int) (fac[lsize + rsize] * facInv[lsize] % MOD * facInv[rsize] % MOD * lans % MOD * rans % MOD);
+            found.put(val, node);
+        }
+
+        return (found.get(nums[0] - 1).ans - 1 + MOD) % MOD;
+    }
+}
+
+class TreeNode {
+    TreeNode left;
+    TreeNode right;
+    int size;
+    int ans;
+
+    TreeNode() {
+        size = 1;
+        ans = 0;
+    }
+}
+
+class UnionFind {
+    public int[] parent;
+    public int[] size;
+    public int[] root;
+    public int n;
+
+    public UnionFind(int n) {
+        this.n = n;
+        parent = new int[n];
+        size = new int[n];
+        root = new int[n];
+        Arrays.fill(size, 1);
+        for (int i = 0; i < n; i++) {
+            parent[i] = i;
+            root[i] = i;
+        }
+    }
+
+    public int findset(int x) {
+        return parent[x] == x ? x : (parent[x] = findset(parent[x]));
+    }
+
+    public int getroot(int x) {
+        return root[findset(x)];
+    }
+    
+    public void unite(int x, int y) {
+        root[y] = root[x];
+        if (size[x] < size[y]) {
+            int temp = x;
+            x = y;
+            y = temp;
+        }
+        parent[y] = x;
+        size[x] += size[y];
+    }
+    
+    public boolean findAndUnite(int x, int y) {
+        int x0 = findset(x);
+        int y0 = findset(y);
+        if (x0 != y0) {
+            unite(x0, y0);
+            return true;
+        }
+        return false;
+    }
+}
+
+// 方法三：
+class Solution {
+    private final static int MOD = 1000000007;
+
+    public int numOfWays(int[] nums) {
+        List<Integer> numList = new ArrayList<>();
+        for (int num : nums) {
+            numList.add(num);
+        }
+
+        return (int) getCombs(numList, getTriangle(numList.size() + 1)) - 1;
+    }
+
+    private long getCombs(List<Integer> nums, long[][] combs) {
+        if (nums.size() <= 2)
+            return 1;
+        int root = nums.get(0);
+        List<Integer> left = new ArrayList<>();
+        List<Integer> right = new ArrayList<>();
+        for (int i = 1; i < nums.size(); i++) {
+            int num = nums.get(i);
+            if (num < root) {
+                left.add(num);
+            } else if (num > root) {
+                right.add(num);
+            }
+        }
+        return (combs[left.size() + right.size()][left.size()] * (getCombs(left, combs) % MOD) % MOD)
+                * getCombs(right, combs) % MOD;
+    }
+
+    private long[][] getTriangle(int len) {
+        long[][] combs = new long[len][len];
+        for (int i = 0; i < len; i++) {
+            combs[i][i] = combs[i][0] = 1;
+        }
+
+        for (int i = 2; i < len; i++) {
+            for (int j = 1; j < i; j++) {
+                combs[i][j] = (combs[i - 1][j] + combs[i - 1][j - 1]) % MOD;
+            }
+        }
+        return combs;
+    }
+}
+```
+
+
+
+### [1372. 二叉树中的最长交错路径](https://leetcode.cn/problems/longest-zigzag-path-in-a-binary-tree/)
+
+中等
+
+给你一棵以 `root` 为根的二叉树，二叉树中的交错路径定义如下：
+
+- 选择二叉树中 **任意** 节点和一个方向（左或者右）。
+- 如果前进方向为右，那么移动到当前节点的的右子节点，否则移动到它的左子节点。
+- 改变前进方向：左变右或者右变左。
+- 重复第二步和第三步，直到你在树中无法继续移动。
+
+交错路径的长度定义为：**访问过的节点数目 - 1**（单个节点的路径长度为 0 ）。
+
+请你返回给定树中最长 **交错路径** 的长度。
+
+**示例 1：**
+
+**![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/03/07/sample_1_1702.png)**
+
+```
+输入：root = [1,null,1,1,1,null,null,1,1,null,1,null,null,null,1,null,1]
+输出：3
+解释：蓝色节点为树中最长交错路径（右 -> 左 -> 右）。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    unordered_map <TreeNode*, int> f, g;
+    
+    queue <pair <TreeNode *, TreeNode *>> q;
+    
+    void dp(TreeNode *o) {
+        f[o] = g[o] = 0;
+        q.push({o, nullptr});
+        while (!q.empty()) {
+            auto y = q.front(); q.pop();
+            auto x = y.second, u = y.first;
+            f[u] = g[u] = 0;
+            if (x) {
+                if (x->left == u) f[u] = g[x] + 1;
+                if (x->right == u) g[u] = f[x] + 1;
+            }
+            if (u->left) q.push({u->left, u});
+            if (u->right) q.push({u->right, u});
+        }
+    }
+    
+    int longestZigZag(TreeNode* root) {
+        dp(root);
+        int maxAns = 0;
+        for (const auto &u: f) maxAns = max(maxAns, max(u.second, g[u.first]));
+        return maxAns;
+    }
+};
+
+// 方法二：深度优先搜索
+class Solution {
+public:
+    int maxAns;
+
+    /* 0 => left, 1 => right */
+    void dfs(TreeNode* o, bool dir, int len) {
+        maxAns = max(maxAns, len);
+        if (!dir) {
+            if (o->left) dfs(o->left, 1, len + 1);
+            if (o->right) dfs(o->right, 0, 1);
+        } else {
+            if (o->right) dfs(o->right, 0, len + 1);
+            if (o->left) dfs(o->left, 1, 1);
+        }
+    } 
+
+    int longestZigZag(TreeNode* root) {
+        if (!root) return 0;
+        maxAns = 0;
+        dfs(root, 0, 0);
+        dfs(root, 1, 0);
+        return maxAns;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    Map<TreeNode, Integer> f = new HashMap<TreeNode, Integer>();
+    Map<TreeNode, Integer> g = new HashMap<TreeNode, Integer>();
+    Queue<TreeNode[]> q = new LinkedList<TreeNode[]>();
+
+    public int longestZigZag(TreeNode root) {
+        dp(root);
+        int maxAns = 0;
+        for (TreeNode u : f.keySet()) {
+            maxAns = Math.max(maxAns, Math.max(f.get(u), g.get(u)));
+        }
+        return maxAns;
+    }
+    
+    public void dp(TreeNode o) {
+        f.put(o, 0);
+        g.put(o, 0);
+        q.offer(new TreeNode[]{o, null});
+        while (!q.isEmpty()) {
+            TreeNode[] y = q.poll();
+            TreeNode u = y[0], x = y[1];
+            f.put(u, 0);
+            g.put(u, 0);
+            if (x != null) {
+                if (x.left == u) {
+                    f.put(u, g.get(x) + 1);
+                }
+                if (x.right == u) {
+                    g.put(u, f.get(x) + 1);
+                }
+            }
+            if (u.left != null) {
+                q.offer(new TreeNode[]{u.left, u});
+            }
+            if (u.right != null) {
+                q.offer(new TreeNode[]{u.right, u});
+            }
+        }
+    }
+}
+
+// 方法二：深度优先搜索
+class Solution {
+    int maxAns;
+
+    public int longestZigZag(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        maxAns = 0;
+        dfs(root, false, 0);
+        dfs(root, true, 0);
+        return maxAns;
+    }
+
+    public void dfs(TreeNode o, boolean dir, int len) {
+        maxAns = Math.max(maxAns, len);
+        if (!dir) {
+            if (o.left != null) {
+                dfs(o.left, true, len + 1);
+            }
+            if (o.right != null) {
+                dfs(o.right, false, 1);
+            }
+        } else {
+            if (o.right != null) {
+                dfs(o.right, false, len + 1);
+            }
+            if (o.left != null) {
+                dfs(o.left, true, 1);
+            }
+        }
+    }
+}
+
+// 方法三：
+class Solution {
+    int maxPath = 0;
+
+    public int longestZigZag(TreeNode root) {
+        findPath(root);
+        return maxPath;
+    }
+
+    public int[] findPath(TreeNode root) {
+        if (root == null) {
+            return new int[] { -1, -1 };
+        }
+        int[] leftChildPath = findPath(root.left);
+        int[] rightChildPath = findPath(root.right);
+        int leftSum = leftChildPath[1] + 1;
+        int rightSum = rightChildPath[0] + 1;
+        maxPath = Math.max(Math.max(maxPath, leftSum), rightSum);
+        return new int[] { leftSum, rightSum };
+    }
+}
+```
 
