@@ -1571,3 +1571,192 @@ class Solution {
 }
 ```
 
+
+
+### [1373. 二叉搜索子树的最大键值和](https://leetcode.cn/problems/maximum-sum-bst-in-binary-tree/)
+
+困难
+
+给你一棵以 `root` 为根的 **二叉树** ，请你返回 **任意** 二叉搜索子树的最大键值和。
+
+二叉搜索树的定义如下：
+
+- 任意节点的左子树中的键值都 **小于** 此节点的键值。
+- 任意节点的右子树中的键值都 **大于** 此节点的键值。
+- 任意节点的左子树和右子树都是二叉搜索树。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/03/07/sample_1_1709.png)
+
+```
+输入：root = [1,4,3,2,4,2,5,null,null,null,null,null,null,4,6]
+输出：20
+解释：键值为 3 的子树是和最大的二叉搜索树。
+```
+
+C++版本
+
+```c++
+// 方法一：递归
+class Solution {
+public:
+    static constexpr int inf = 0x3f3f3f3f;
+    int res;
+    struct SubTree {
+        bool isBST;
+        int minValue;
+        int maxValue;
+        int sumValue;
+        SubTree(bool isBST, int minValue, int maxValue, int sumValue) : isBST(isBST), minValue(minValue), maxValue(maxValue), sumValue(sumValue) {}
+    };
+
+    SubTree dfs(TreeNode* root) {
+        if (root == nullptr) {
+            return SubTree(true, inf, -inf, 0);
+        }
+        auto left = dfs(root->left);
+        auto right = dfs(root->right);
+
+        if (left.isBST && right.isBST &&
+                root->val > left.maxValue && 
+                root->val < right.minValue) {
+            int sum = root->val + left.sumValue + right.sumValue;
+            res = max(res, sum);
+            return SubTree(true, min(left.minValue, root->val), 
+                           max(root->val, right.maxValue), sum);
+        } else {
+            return SubTree(false, 0, 0, 0);
+        }
+    }
+
+    int maxSumBST(TreeNode* root) {
+        res = 0;
+        dfs(root);
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：递归
+class Solution {
+    static final int INF = 0x3f3f3f3f;
+    int res;
+
+    class SubTree {
+        boolean isBST;
+        int minValue;
+        int maxValue;
+        int sumValue;
+
+        SubTree(boolean isBST, int minValue, int maxValue, int sumValue) {
+            this.isBST = isBST;
+            this.minValue = minValue;
+            this.maxValue = maxValue;
+            this.sumValue = sumValue;
+        }
+    }
+
+    public int maxSumBST(TreeNode root) {
+        res = 0;
+        dfs(root);
+        return res;
+    }
+
+    public SubTree dfs(TreeNode root) {
+        if (root == null) {
+            return new SubTree(true, INF, -INF, 0);
+        }
+        SubTree left = dfs(root.left);
+        SubTree right = dfs(root.right);
+
+        if (left.isBST && right.isBST && root.val > left.maxValue && root.val < right.minValue) {
+            int sum = root.val + left.sumValue + right.sumValue;
+            res = Math.max(res, sum);
+            return new SubTree(true, Math.min(left.minValue, root.val), Math.max(root.val, right.maxValue), sum);
+        } else {
+            return new SubTree(false, 0, 0, 0);
+        }
+    }
+}
+```
+
+
+
+### [968. 监控二叉树](https://leetcode.cn/problems/binary-tree-cameras/)
+
+困难
+
+给定一个二叉树，我们在树的节点上安装摄像头。
+
+节点上的每个摄影头都可以监视**其父对象、自身及其直接子对象。**
+
+计算监控树的所有节点所需的最小摄像头数量。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/29/bst_cameras_01.png)
+
+```
+输入：[0,0,null,0,0]
+输出：1
+解释：如图所示，一台摄像头足以监控所有节点。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+struct Status {
+    int a, b, c;
+};
+
+class Solution {
+public:
+    Status dfs(TreeNode* root) {
+        if (!root) {
+            return {INT_MAX / 2, 0, 0};
+        }
+        auto [la, lb, lc] = dfs(root->left);
+        auto [ra, rb, rc] = dfs(root->right);
+        int a = lc + rc + 1;
+        int b = min(a, min(la + rb, ra + lb));
+        int c = min(a, lb + rb);
+        return {a, b, c};
+    }
+
+    int minCameraCover(TreeNode* root) {
+        auto [a, b, c] = dfs(root);
+        return b;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int minCameraCover(TreeNode root) {
+        int[] array = dfs(root);
+        return array[1];
+    }
+
+    public int[] dfs(TreeNode root) {
+        if (root == null) {
+            return new int[]{Integer.MAX_VALUE / 2, 0, 0};
+        }
+        int[] leftArray = dfs(root.left);
+        int[] rightArray = dfs(root.right);
+        int[] array = new int[3];
+        array[0] = leftArray[2] + rightArray[2] + 1;
+        array[1] = Math.min(array[0], Math.min(leftArray[0] + rightArray[1], rightArray[0] + leftArray[1]));
+        array[2] = Math.min(array[0], leftArray[1] + rightArray[1]);
+        return array;
+    }
+}
+```
+
