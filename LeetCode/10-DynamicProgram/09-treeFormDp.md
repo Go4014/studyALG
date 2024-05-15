@@ -1760,3 +1760,487 @@ class Solution {
 }
 ```
 
+
+
+### [1519. 子树中标签相同的节点数](https://leetcode.cn/problems/number-of-nodes-in-the-sub-tree-with-the-same-label/)
+
+中等
+
+给你一棵树（即，一个连通的无环无向图），这棵树由编号从 `0` 到 `n - 1` 的 n 个节点组成，且恰好有 `n - 1` 条 `edges` 。树的根节点为节点 `0` ，树上的每一个节点都有一个标签，也就是字符串 `labels` 中的一个小写字符（编号为 `i` 的 节点的标签就是 `labels[i]` ）
+
+边数组 `edges` 以 `edges[i] = [ai, bi]` 的形式给出，该格式表示节点 `ai` 和 `bi` 之间存在一条边。
+
+返回一个大小为 *`n`* 的数组，其中 `ans[i]` 表示第 `i` 个节点的子树中与节点 `i` 标签相同的节点数。
+
+树 `T` 中的子树是由 `T` 中的某个节点及其所有后代节点组成的树。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/07/19/q3e1.jpg)
+
+```
+输入：n = 7, edges = [[0,1],[0,2],[1,4],[1,5],[2,3],[2,6]], labels = "abaedcd"
+输出：[2,1,1,1,1,1,1]
+解释：节点 0 的标签为 'a' ，以 'a' 为根节点的子树中，节点 2 的标签也是 'a' ，因此答案为 2 。注意树中的每个节点都是这棵子树的一部分。
+节点 1 的标签为 'b' ，节点 1 的子树包含节点 1、4 和 5，但是节点 4、5 的标签与节点 1 不同，故而答案为 1（即，该节点本身）。
+```
+
+C++版本
+
+```c++
+// 方法一：深度优先搜索
+class Solution {
+public:
+    vector<vector<int>> g;
+    vector<vector<int>> f; 
+    
+    void dfs(int o, int pre, const string &labels) {
+        f[o][labels[o] - 'a'] = 1;
+        for (const auto &nex: g[o]) {
+            if (nex == pre) {
+                continue;
+            } 
+            dfs(nex, o, labels);
+            for (int i = 0; i < 26; ++i) {
+                f[o][i] += f[nex][i];
+            }
+        }
+    }
+    
+    vector<int> countSubTrees(int n, vector<vector<int>>& edges, string labels) {
+        g.resize(n);
+        for (const auto &edge: edges) {
+            g[edge[0]].push_back(edge[1]);
+            g[edge[1]].push_back(edge[0]);
+        }
+        f.assign(n, vector<int>(26));
+        dfs(0, -1, labels);
+        vector<int> ans;
+        for (int i = 0; i < n; ++i) {
+            ans.push_back(f[i][labels[i] - 'a']);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：深度优先搜索
+class Solution {
+    public int[] countSubTrees(int n, int[][] edges, String labels) {
+        Map<Integer, List<Integer>> edgesMap = new HashMap<>();
+        for (int[] edge : edges) {
+            int node0 = edge[0], node1 = edge[1];
+            edgesMap.computeIfAbsent(node0, k -> new ArrayList<>()).add(node1);
+            edgesMap.computeIfAbsent(node1, k -> new ArrayList<>()).add(node0);
+            /*
+            int node0 = edge[0], node1 = edge[1];
+            List<Integer> list0 = edgesMap.getOrDefault(node0, new ArrayList<Integer>());
+            List<Integer> list1 = edgesMap.getOrDefault(node1, new ArrayList<Integer>());
+            list0.add(node1);
+            list1.add(node0);
+            edgesMap.put(node0, list0);
+            edgesMap.put(node1, list1);
+            */
+        }
+        
+        int[] counts = new int[n];
+        boolean[] visited = new boolean[n];
+        depthFirstSearch(0, counts, visited, edgesMap, labels);
+        return counts;
+    }
+
+    public int[] depthFirstSearch(int node, int[] counts, boolean[] visited, Map<Integer, List<Integer>> edgesMap, String labels) {
+        visited[node] = true;
+        int[] curCounts = new int[26];
+        curCounts[labels.charAt(node) - 'a']++;
+        
+        List<Integer> nodesList = edgesMap.get(node);
+        if (nodesList != null) {
+            for (int nextNode : nodesList) {
+                if (!visited[nextNode]) {
+                    int[] childCounts = depthFirstSearch(nextNode, counts, visited, edgesMap, labels);
+                    for (int i = 0; i < 26; i++) {
+                        curCounts[i] += childCounts[i];
+                    }
+                }
+            }
+        }
+        
+        counts[node] = curCounts[labels.charAt(node) - 'a'];
+        return curCounts;
+    }
+}
+```
+
+
+
+## 不定根的树形 DP 题目
+
+### [310. 最小高度树](https://leetcode.cn/problems/minimum-height-trees/)
+
+中等
+
+树是一个无向图，其中任何两个顶点只通过一条路径连接。 换句话说，任何一个没有简单环路的连通图都是一棵树。
+
+给你一棵包含 `n` 个节点的树，标记为 `0` 到 `n - 1` 。给定数字 `n` 和一个有 `n - 1` 条无向边的 `edges` 列表（每一个边都是一对标签），其中 `edges[i] = [ai, bi]` 表示树中节点 `ai` 和 `bi` 之间存在一条无向边。
+
+可选择树中任何一个节点作为根。当选择节点 `x` 作为根节点时，设结果树的高度为 `h` 。在所有可能的树中，具有最小高度的树（即，`min(h)`）被称为 **最小高度树** 。
+
+请你找到所有的 **最小高度树** 并按 **任意顺序** 返回它们的根节点标签列表。
+
+树的 **高度** 是指根节点和叶子节点之间最长向下路径上边的数量。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/09/01/e1.jpg)
+
+```
+输入：n = 4, edges = [[1,0],[1,2],[1,3]]
+输出：[1]
+解释：如图所示，当根是标签为 1 的节点时，树的高度是 1 ，这是唯一的最小高度树。
+```
+
+C++版本
+
+```c++
+// 方法一：广度优先搜索
+class Solution {
+public:
+    int findLongestNode(int u, vector<int> & parent, vector<vector<int>>& adj) {
+        int n = adj.size();
+        queue<int> qu;
+        vector<bool> visit(n);
+        qu.emplace(u);
+        visit[u] = true;
+        int node = -1;
+  
+        while (!qu.empty()) {
+            int curr = qu.front();
+            qu.pop();
+            node = curr;
+            for (auto & v : adj[curr]) {
+                if (!visit[v]) {
+                    visit[v] = true;
+                    parent[v] = curr;
+                    qu.emplace(v);
+                }
+            }
+        }
+        return node;
+    }
+
+    vector<int> findMinHeightTrees(int n, vector<vector<int>>& edges) {
+        if (n == 1) {
+            return {0};
+        }
+        vector<vector<int>> adj(n);
+        for (auto & edge : edges) {
+            adj[edge[0]].emplace_back(edge[1]);
+            adj[edge[1]].emplace_back(edge[0]);
+        }
+        
+        vector<int> parent(n, -1);
+        /* 找到与节点 0 最远的节点 x */
+        int x = findLongestNode(0, parent, adj);
+        /* 找到与节点 x 最远的节点 y */
+        int y = findLongestNode(x, parent, adj);
+        /* 求出节点 x 到节点 y 的路径 */
+        vector<int> path;
+        parent[x] = -1;
+        while (y != -1) {
+            path.emplace_back(y);
+            y = parent[y];
+        }
+        int m = path.size();
+        if (m % 2 == 0) {
+            return {path[m / 2 - 1], path[m / 2]};
+        } else {
+            return {path[m / 2]};
+        }
+    }
+};
+
+// 方法二：深度优先搜索
+class Solution {
+public:
+    void dfs(int u, vector<int> & dist, vector<int> & parent, const vector<vector<int>> & adj) {
+        for (auto & v : adj[u]) {
+            if (dist[v] < 0) {
+                dist[v] = dist[u] + 1;
+                parent[v] = u;
+                dfs(v, dist, parent, adj); 
+            }
+        }
+    }
+
+    int findLongestNode(int u, vector<int> & parent, const vector<vector<int>> & adj) {
+        int n = adj.size();
+        vector<int> dist(n, -1);
+        dist[u] = 0;
+        dfs(u, dist, parent, adj);
+        int maxdist = 0;
+        int node = -1;
+        for (int i = 0; i < n; i++) {
+            if (dist[i] > maxdist) {
+                maxdist = dist[i];
+                node = i;
+            }
+        }
+        return node;
+    }
+
+    vector<int> findMinHeightTrees(int n, vector<vector<int>>& edges) {
+        if (n == 1) {
+            return {0};
+        }
+        vector<vector<int>> adj(n);
+        for (auto & edge : edges) {
+            adj[edge[0]].emplace_back(edge[1]);
+            adj[edge[1]].emplace_back(edge[0]);
+        }
+        vector<int> parent(n, -1);
+        /* 找到距离节点 0 最远的节点  x */
+        int x = findLongestNode(0, parent, adj);
+        /* 找到距离节点 x 最远的节点  y */
+        int y = findLongestNode(x, parent, adj);
+        /* 找到节点 x 到节点 y 的路径 */
+        vector<int> path;
+        parent[x] = -1;
+        while (y != -1) {
+            path.emplace_back(y);
+            y = parent[y];
+        }
+        int m = path.size();
+        if (m % 2 == 0) {
+            return {path[m / 2 - 1], path[m / 2]};
+        } else {
+            return {path[m / 2]};
+        }
+    }
+};
+
+// 方法三：拓扑排序
+class Solution {
+public:
+    vector<int> findMinHeightTrees(int n, vector<vector<int>>& edges) {
+        if (n == 1) {
+            return {0};
+        }
+        vector<int> degree(n);
+        vector<vector<int>> adj(n);
+        for (auto & edge : edges){
+            adj[edge[0]].emplace_back(edge[1]);
+            adj[edge[1]].emplace_back(edge[0]);
+            degree[edge[0]]++;
+            degree[edge[1]]++;
+        }
+        queue<int> qu;
+        vector<int> ans;
+        for (int i = 0; i < n; i++) {
+            if (degree[i] == 1) {
+                qu.emplace(i);
+            }
+        }
+        int remainNodes = n;
+        while (remainNodes > 2) {
+            int sz = qu.size();
+            remainNodes -= sz;
+            for (int i = 0; i < sz; i++) {
+                int curr = qu.front();
+                qu.pop();
+                for (auto & v : adj[curr]) {
+                    if (--degree[v] == 1) {
+                        qu.emplace(v);
+                    }
+                }
+            }
+        }
+        while (!qu.empty()) {
+            ans.emplace_back(qu.front());
+            qu.pop();
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：广度优先搜索
+class Solution {
+    public List<Integer> findMinHeightTrees(int n, int[][] edges) {
+        List<Integer> ans = new ArrayList<Integer>();
+        if (n == 1) {
+            ans.add(0);
+            return ans;
+        }
+        List<Integer>[] adj = new List[n];
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<Integer>();
+        }
+        for (int[] edge : edges) {
+            adj[edge[0]].add(edge[1]);
+            adj[edge[1]].add(edge[0]);
+        }
+
+        int[] parent = new int[n];
+        Arrays.fill(parent, -1);
+        /* 找到与节点 0 最远的节点 x */
+        int x = findLongestNode(0, parent, adj);
+        /* 找到与节点 x 最远的节点 y */
+        int y = findLongestNode(x, parent, adj);
+        /* 求出节点 x 到节点 y 的路径 */
+        List<Integer> path = new ArrayList<Integer>();
+        parent[x] = -1;
+        while (y != -1) {
+            path.add(y);
+            y = parent[y];
+        }
+        int m = path.size();
+        if (m % 2 == 0) {
+            ans.add(path.get(m / 2 - 1));
+        }
+        ans.add(path.get(m / 2));
+        return ans;
+    }
+
+    public int findLongestNode(int u, int[] parent, List<Integer>[] adj) {
+        int n = adj.length;
+        Queue<Integer> queue = new ArrayDeque<Integer>();
+        boolean[] visit = new boolean[n];
+        queue.offer(u);
+        visit[u] = true;
+        int node = -1;
+  
+        while (!queue.isEmpty()) {
+            int curr = queue.poll();
+            node = curr;
+            for (int v : adj[curr]) {
+                if (!visit[v]) {
+                    visit[v] = true;
+                    parent[v] = curr;
+                    queue.offer(v);
+                }
+            }
+        }
+        return node;
+    }
+}
+
+// 方法二：深度优先搜索
+class Solution {
+    public List<Integer> findMinHeightTrees(int n, int[][] edges) {
+        List<Integer> ans = new ArrayList<Integer>();
+        if (n == 1) {
+            ans.add(0);
+            return ans;
+        }
+        List<Integer>[] adj = new List[n];
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<Integer>();
+        }
+        for (int[] edge : edges) {
+            adj[edge[0]].add(edge[1]);
+            adj[edge[1]].add(edge[0]);
+        }
+
+        int[] parent = new int[n];
+        Arrays.fill(parent, -1);
+        /* 找到与节点 0 最远的节点 x */
+        int x = findLongestNode(0, parent, adj);
+        /* 找到与节点 x 最远的节点 y */
+        int y = findLongestNode(x, parent, adj);
+        /* 求出节点 x 到节点 y 的路径 */
+        List<Integer> path = new ArrayList<Integer>();
+        parent[x] = -1;
+        while (y != -1) {
+            path.add(y);
+            y = parent[y];
+        }
+        int m = path.size();
+        if (m % 2 == 0) {
+            ans.add(path.get(m / 2 - 1));
+        }
+        ans.add(path.get(m / 2));
+        return ans;
+    }
+
+    public int findLongestNode(int u, int[] parent, List<Integer>[] adj) {
+        int n = adj.length;
+        int[] dist = new int[n];
+        Arrays.fill(dist, -1);
+        dist[u] = 0;
+        dfs(u, dist, parent, adj);
+        int maxdist = 0;
+        int node = -1;
+        for (int i = 0; i < n; i++) {
+            if (dist[i] > maxdist) {
+                maxdist = dist[i];
+                node = i;
+            }
+        }
+        return node;
+    }
+
+    public void dfs(int u, int[] dist, int[] parent, List<Integer>[] adj) {
+        for (int v : adj[u]) {
+            if (dist[v] < 0) {
+                dist[v] = dist[u] + 1;
+                parent[v] = u;
+                dfs(v, dist, parent, adj); 
+            }
+        }
+    }
+}
+
+// 方法三：拓扑排序
+class Solution {
+    public List<Integer> findMinHeightTrees(int n, int[][] edges) {
+        List<Integer> ans = new ArrayList<Integer>();
+        if (n == 1) {
+            ans.add(0);
+            return ans;
+        }
+        int[] degree = new int[n];
+        List<Integer>[] adj = new List[n];
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<Integer>();
+        }
+        for (int[] edge : edges) {
+            adj[edge[0]].add(edge[1]);
+            adj[edge[1]].add(edge[0]);
+            degree[edge[0]]++;
+            degree[edge[1]]++;
+        }
+        Queue<Integer> queue = new ArrayDeque<Integer>();
+        for (int i = 0; i < n; i++) {
+            if (degree[i] == 1) {
+                queue.offer(i);
+            }
+        }
+        int remainNodes = n;
+        while (remainNodes > 2) {
+            int sz = queue.size();
+            remainNodes -= sz;
+            for (int i = 0; i < sz; i++) {
+                int curr = queue.poll();
+                for (int v : adj[curr]) {
+                    degree[v]--;
+                    if (degree[v] == 1) {
+                        queue.offer(v);
+                    }
+                }
+            }
+        }
+        while (!queue.isEmpty()) {
+            ans.add(queue.poll());
+        }
+        return ans;
+    }
+}
+```
+
