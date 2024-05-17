@@ -2,238 +2,47 @@
 
 ## 状态压缩DP题目
 
-### [543. 二叉树的直径](https://leetcode.cn/problems/diameter-of-binary-tree/)
-
-简单
-
-给你一棵二叉树的根节点，返回该树的 **直径** 。
-
-二叉树的 **直径** 是指树中任意两个节点之间最长路径的 **长度** 。这条路径可能经过也可能不经过根节点 `root` 。
-
-两节点之间路径的 **长度** 由它们之间边数表示。
-
-**示例 1：**
-
-![img](https://assets.leetcode.com/uploads/2021/03/06/diamtree.jpg)
-
-```
-输入：root = [1,2,3,4,5]
-输出：3
-解释：3 ，取路径 [4,2,1,3] 或 [5,2,1,3] 的长度。
-```
-
-C++版本
-
-```c++
-// 方法一：深度优先搜索
-class Solution {
-    int ans;
-    int depth(TreeNode* rt){
-        if (rt == NULL) {
-            return 0; // 访问到空节点了，返回0
-        }
-        int L = depth(rt->left); // 左儿子为根的子树的深度
-        int R = depth(rt->right); // 右儿子为根的子树的深度
-        ans = max(ans, L + R + 1); // 计算d_node即L+R+1 并更新ans
-        return max(L, R) + 1; // 返回该节点为根的子树的深度
-    }
-public:
-    int diameterOfBinaryTree(TreeNode* root) {
-        ans = 1;
-        depth(root);
-        return ans - 1;
-    }
-};
-```
-
-Java版本
-
-```java
-// 方法一：深度优先搜索
-class Solution {
-    int ans;
-    public int diameterOfBinaryTree(TreeNode root) {
-        ans = 1;
-        depth(root);
-        return ans - 1;
-    }
-    public int depth(TreeNode node) {
-        if (node == null) {
-            return 0; // 访问到空节点了，返回0
-        }
-        int L = depth(node.left); // 左儿子为根的子树的深度
-        int R = depth(node.right); // 右儿子为根的子树的深度
-        ans = Math.max(ans, L+R+1); // 计算d_node即L+R+1 并更新ans
-        return Math.max(L, R) + 1; // 返回该节点为根的子树的深度
-    }
-}
-```
-
-
-
-### [124. 二叉树中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
+### [1879. 两个数组最小的异或值之和](https://leetcode.cn/problems/minimum-xor-sum-of-two-arrays/)
 
 困难
 
-二叉树中的 **路径** 被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中 **至多出现一次** 。该路径 **至少包含一个** 节点，且不一定经过根节点。
+给你两个整数数组 `nums1` 和 `nums2` ，它们长度都为 `n` 。
 
-**路径和** 是路径中各节点值的总和。
+两个数组的 **异或值之和** 为 `(nums1[0] XOR nums2[0]) + (nums1[1] XOR nums2[1]) + ... + (nums1[n - 1] XOR nums2[n - 1])` （**下标从 0 开始**）。
 
-给你一个二叉树的根节点 `root` ，返回其 **最大路径和** 。
+- 比方说，`[1,2,3]` 和 `[3,2,1]` 的 **异或值之和** 等于 `(1 XOR 3) + (2 XOR 2) + (3 XOR 1) = 2 + 0 + 2 = 4` 。
+
+请你将 `nums2` 中的元素重新排列，使得 **异或值之和** **最小** 。
+
+请你返回重新排列之后的 **异或值之和** 。
 
 **示例 1：**
 
-![img](https://assets.leetcode.com/uploads/2020/10/13/exx1.jpg)
-
 ```
-输入：root = [1,2,3]
-输出：6
-解释：最优路径是 2 -> 1 -> 3 ，路径和为 2 + 1 + 3 = 6
+输入：nums1 = [1,2], nums2 = [2,3]
+输出：2
+解释：将 nums2 重新排列得到 [3,2] 。
+异或值之和为 (1 XOR 3) + (2 XOR 2) = 2 + 0 = 2 。
 ```
 
 C++版本
 
 ```c++
-// 方法一：递归
-class Solution {
-private:
-    int maxSum = INT_MIN;
-
-public:
-    int maxGain(TreeNode* node) {
-        if (node == nullptr) {
-            return 0;
-        }
-        
-        // 递归计算左右子节点的最大贡献值
-        // 只有在最大贡献值大于 0 时，才会选取对应子节点
-        int leftGain = max(maxGain(node->left), 0);
-        int rightGain = max(maxGain(node->right), 0);
-
-        // 节点的最大路径和取决于该节点的值与该节点的左右子节点的最大贡献值
-        int priceNewpath = node->val + leftGain + rightGain;
-
-        // 更新答案
-        maxSum = max(maxSum, priceNewpath);
-
-        // 返回节点的最大贡献值
-        return node->val + max(leftGain, rightGain);
-    }
-
-    int maxPathSum(TreeNode* root) {
-        maxGain(root);
-        return maxSum;
-    }
-};
-```
-
-Java版本
-
-```java
-// 方法一：递归
-class Solution {
-    int maxSum = Integer.MIN_VALUE;
-
-    public int maxPathSum(TreeNode root) {
-        maxGain(root);
-        return maxSum;
-    }
-
-    public int maxGain(TreeNode node) {
-        if (node == null) {
-            return 0;
-        }
-        
-        // 递归计算左右子节点的最大贡献值
-        // 只有在最大贡献值大于 0 时，才会选取对应子节点
-        int leftGain = Math.max(maxGain(node.left), 0);
-        int rightGain = Math.max(maxGain(node.right), 0);
-
-        // 节点的最大路径和取决于该节点的值与该节点的左右子节点的最大贡献值
-        int priceNewpath = node.val + leftGain + rightGain;
-
-        // 更新答案
-        maxSum = Math.max(maxSum, priceNewpath);
-
-        // 返回节点的最大贡献值
-        return node.val + Math.max(leftGain, rightGain);
-    }
-}
-```
-
-
-
-### [2246. 相邻字符不同的最长路径](https://leetcode.cn/problems/longest-path-with-different-adjacent-characters/)
-
-困难
-
-给你一棵 **树**（即一个连通、无向、无环图），根节点是节点 `0` ，这棵树由编号从 `0` 到 `n - 1` 的 `n` 个节点组成。用下标从 **0** 开始、长度为 `n` 的数组 `parent` 来表示这棵树，其中 `parent[i]` 是节点 `i` 的父节点，由于节点 `0` 是根节点，所以 `parent[0] == -1` 。
-
-另给你一个字符串 `s` ，长度也是 `n` ，其中 `s[i]` 表示分配给节点 `i` 的字符。
-
-请你找出路径上任意一对相邻节点都没有分配到相同字符的 **最长路径** ，并返回该路径的长度。
-
-**示例 1：**
-
-![img](https://assets.leetcode.com/uploads/2022/03/25/testingdrawio.png)
-
-```
-输入：parent = [-1,0,0,1,1,2], s = "abacbe"
-输出：3
-解释：任意一对相邻节点字符都不同的最长路径是：0 -> 1 -> 3 。该路径的长度是 3 ，所以返回 3 。
-可以证明不存在满足上述条件且比 3 更长的路径。 
-```
-
-C++版本
-
-```c++
+// 方法一：状态压缩动态规划
 class Solution {
 public:
-    int longestPath(vector<int>& parent, string s) {
-        int n = parent.size();
-
-        vector<pair<int, int>> dp(n, make_pair(0, 0));
-        vector<int> degree(n, 0);
-        for(auto x: parent){
-            if(x == -1) continue;
-            ++degree[x];
-        }
-
-        int res = 0;
-        queue<int> que;
-        for(int i = 0; i<n; i++){
-            if(degree[i] == 0){
-                que.push(i);
-                dp[i] = make_pair(0, 0);
-            }
-        }
-
-        while(!que.empty()){
-            int idx = que.front();
-            que.pop();
-            int pr = parent[idx];
-            res = max(res, dp[idx].first + dp[idx].second + 1);
-
-            if(pr != -1){
-                degree[pr]--;
-                if(degree[pr] <= 0) que.push(pr);
-                if(s[pr] != s[idx]){
-                    if(dp[idx].second + 1 <= dp[pr].first) continue;
-                    else{
-                        if(dp[idx].second + 1 < dp[pr].second){
-                            dp[pr].first = dp[idx].second + 1;
-                        }
-                        else{
-                            dp[pr].first = dp[pr].second;
-                            dp[pr].second = dp[idx].second + 1;
-                        }
-                    }
+    int minimumXORSum(vector<int>& nums1, vector<int>& nums2) {
+        int n = nums1.size();
+        vector<int> f(1 << n, INT_MAX);
+        f[0] = 0;
+        for (int mask = 1; mask < (1 << n); ++mask) {
+            for (int i = 0; i < n; ++i) {
+                if (mask & (1 << i)) {
+                    f[mask] = min(f[mask], f[mask ^ (1 << i)] + (nums1[__builtin_popcount(mask) - 1] ^ nums2[i]));
                 }
             }
-            
         }
-
-        return res;
+        return f[(1 << n) - 1];
     }
 };
 ```
@@ -241,47 +50,118 @@ public:
 Java版本
 
 ```java
+// 方法一：状态压缩动态规划
 class Solution {
-    public int longestPath(int[] parents, String s) {
-        char[] cs = s.toCharArray();
-        int n = cs.length, result = 1; 
-        
-        // topo sort, count in-degree first (in=degree here means child -> parent)
-        int[] degree = new int[n];
-        for (int i = 1; i < n; i++)
-            degree[parents[i]]++; // skip root
-        
-        // stack: for topo sort, start with leaf nodes(in-degree = 0)
-        int[] stack = new int[n];
-        int top = -1; 
-        for (int i = 1; i < n; i++) // skip root
-            if (degree[i] == 0)  
-                 stack[++top] = i;
-        
-        int[] path = new int[n]; // max length of path for each node
-        Arrays.fill(path, 1); // every node is a path of length 1
-        
-        while (top >= 0) { // topo sort till the end
-            int v = stack[top--]; // c: child index
-            int u = parents[v]; // p: parent index
-            if (--degree[u] == 0 && u != 0)
-                 stack[++top] = u; // do not process root
-            
-            if (cs[u] == cs[v]) continue; // nothing to update
-            
-            // we must update res first, otherwise we may double count the same path
-            result = Math.max(result, path[u] + path[v]);
-            path[u] = Math.max(path[u], path[v] + 1);
-        }
+    public int minimumXORSum(int[] nums1, int[] nums2) {
+        int n = nums1.length;
+        int[] f = new int[1 << n];
+        Arrays.fill(f, Integer.MAX_VALUE);
+        f[0] = 0;
 
-        return result;
+        for (int mask = 1; mask < (1 << n); ++mask) {
+            int count = Integer.bitCount(mask);
+            for (int i = 0; i < n; ++i) {
+                if ((mask & (1 << i)) != 0) {
+                    f[mask] = Math.min(f[mask], f[mask ^ (1 << i)] + (nums1[count - 1] ^ nums2[i]));
+                }
+            }
+        }
+        
+        return f[(1 << n) - 1];
     }
 }
 ```
 
 
 
+### [2172. 数组的最大与和](https://leetcode.cn/problems/maximum-and-sum-of-array/)
 
+困难
 
+给你一个长度为 `n` 的整数数组 `nums` 和一个整数 `numSlots` ，满足`2 * numSlots >= n` 。总共有 `numSlots` 个篮子，编号为 `1` 到 `numSlots` 。
 
+你需要把所有 `n` 个整数分到这些篮子中，且每个篮子 **至多** 有 2 个整数。一种分配方案的 **与和** 定义为每个数与它所在篮子编号的 **按位与运算** 结果之和。
+
+- 比方说，将数字 `[1, 3]` 放入篮子 ***`1`\*** 中，`[4, 6]` 放入篮子 ***`2`\*** 中，这个方案的与和为 `(1 AND ***1\***) + (3 AND ***1\***) + (4 AND ***2***) + (6 AND ***2***) = 1 + 1 + 0 + 2 = 4` 。
+
+请你返回将 `nums` 中所有数放入 `numSlots` 个篮子中的最大与和。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,4,5,6], numSlots = 3
+输出：9
+解释：一个可行的方案是 [1, 4] 放入篮子 1 中，[2, 6] 放入篮子 2 中，[3, 5] 放入篮子 3 中。
+最大与和为 (1 AND 1) + (4 AND 1) + (2 AND 2) + (6 AND 2) + (3 AND 3) + (5 AND 3) = 1 + 0 + 2 + 2 + 3 + 1 = 9 。
+```
+
+C++版本
+
+```c++
+// 方法一：三进制状态压缩动态规划
+class Solution {
+public:
+    int maximumANDSum(vector<int>& nums, int numSlots) {
+        int n = nums.size();
+        int mask_max = 1;
+        for (int i = 0; i < numSlots; ++i) {
+            mask_max *= 3;
+        }
+        
+        vector<int> f(mask_max);
+        for (int mask = 1; mask < mask_max; ++mask) {
+            int cnt = 0;
+            for (int i = 0, dummy = mask; i < numSlots; ++i, dummy /= 3) {
+                cnt += dummy % 3;
+            }
+            if (cnt > n) {
+                continue;
+            }
+            for (int i = 0, dummy = mask, w = 1; i < numSlots; ++i, dummy /= 3, w *= 3) {
+                int has = dummy % 3;
+                if (has) {
+                    f[mask] = max(f[mask], f[mask - w] + (nums[cnt - 1] & (i + 1)));
+                }
+            }
+        }
+        
+        return *max_element(f.begin(), f.end());
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：三进制状态压缩动态规划
+class Solution {
+    public int maximumANDSum(int[] nums, int numSlots) {
+        int n = nums.length;
+        int maskMax = 1;
+        for (int i = 0; i < numSlots; ++i) {
+            maskMax *= 3;
+        }
+        
+        int[] f = new int[maskMax];
+        
+        for (int mask = 1; mask < maskMax; ++mask) {
+            int cnt = 0;
+            for (int i = 0, dummy = mask; i < numSlots; ++i, dummy /= 3) {
+                cnt += dummy % 3;
+            }
+            if (cnt > n) {
+                continue;
+            }
+            for (int i = 0, dummy = mask, w = 1; i < numSlots; ++i, dummy /= 3, w *= 3) {
+                int has = dummy % 3;
+                if (has != 0) {
+                    f[mask] = Math.max(f[mask], f[mask - w] + (nums[cnt - 1] & (i + 1)));
+                }
+            }
+        }
+        
+        return Arrays.stream(f).max().getAsInt();
+    }
+}
+```
 
