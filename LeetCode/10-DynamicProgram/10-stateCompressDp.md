@@ -165,3 +165,315 @@ class Solution {
 }
 ```
 
+
+
+### [1947. 最大兼容性评分和](https://leetcode.cn/problems/maximum-compatibility-score-sum/)
+
+中等
+
+有一份由 `n` 个问题组成的调查问卷，每个问题的答案要么是 `0`（no，否），要么是 `1`（yes，是）。
+
+这份调查问卷被分发给 `m` 名学生和 `m` 名导师，学生和导师的编号都是从 `0` 到 `m - 1` 。学生的答案用一个二维整数数组 `students` 表示，其中 `students[i]` 是一个整数数组，包含第 `i` 名学生对调查问卷给出的答案（**下标从 0 开始**）。导师的答案用一个二维整数数组 `mentors` 表示，其中 `mentors[j]` 是一个整数数组，包含第 `j` 名导师对调查问卷给出的答案（**下标从 0 开始**）。
+
+每个学生都会被分配给 **一名** 导师，而每位导师也会分配到 **一名** 学生。配对的学生与导师之间的兼容性评分等于学生和导师答案相同的次数。
+
+- 例如，学生答案为`[1, ***0\***, ***1\***]` 而导师答案为 `[0, ***0\***, ***1\***]` ，那么他们的兼容性评分为 2 ，因为只有第二个和第三个答案相同。
+
+请你找出最优的学生与导师的配对方案，以 **最大程度上** 提高 **兼容性评分和** 。
+
+给你 `students` 和 `mentors` ，返回可以得到的 **最大兼容性评分和** 。
+
+**示例 1：**
+
+```
+输入：students = [[1,1,0],[1,0,1],[0,0,1]], mentors = [[1,0,0],[0,0,1],[1,1,0]]
+输出：8
+解释：按下述方式分配学生和导师：
+- 学生 0 分配给导师 2 ，兼容性评分为 3 。
+- 学生 1 分配给导师 0 ，兼容性评分为 2 。
+- 学生 2 分配给导师 1 ，兼容性评分为 3 。
+最大兼容性评分和为 3 + 2 + 3 = 8 。
+```
+
+C++版本
+
+```c++
+// 方法一：枚举排列
+class Solution {
+public:
+    int maxCompatibilitySum(vector<vector<int>>& students, vector<vector<int>>& mentors) {
+        int m = students.size();
+        int n = students[0].size();
+        vector<vector<int>> g(m, vector<int>(m));
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < m; ++j) {
+                for (int k = 0; k < n; ++k) {
+                    g[i][j] += (students[i][k] == mentors[j][k]);
+                }
+            }
+        }
+
+        vector<int> p(m);
+        iota(p.begin(), p.end(), 0);
+        int ans = 0;
+        do {
+            int cur = 0;
+            for (int i = 0; i < m; ++i) {
+                cur += g[i][p[i]];
+            }
+            ans = max(ans, cur);
+        } while (next_permutation(p.begin(), p.end()));
+        return ans;
+    }
+};
+
+// 方法二：状态压缩动态规划
+class Solution {
+public:
+    int maxCompatibilitySum(vector<vector<int>>& students, vector<vector<int>>& mentors) {
+        int m = students.size();
+        int n = students[0].size();
+        vector<vector<int>> g(m, vector<int>(m));
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < m; ++j) {
+                for (int k = 0; k < n; ++k) {
+                    g[i][j] += (students[i][k] == mentors[j][k]);
+                }
+            }
+        }
+
+        vector<int> f(1 << m);
+        for (int mask = 1; mask < (1 << m); ++mask) {
+            int c = __builtin_popcount(mask);
+            for (int i = 0; i < m; ++i) {
+                // 判断 mask 的第 i 位是否为 1
+                if (mask & (1 << i)) {
+                    f[mask] = max(f[mask], f[mask ^ (1 << i)] + g[c - 1][i]);
+                }
+            }
+        }
+        return f[(1 << m) - 1];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：枚举排列
+class Solution {
+    public int maxCompatibilitySum(int[][] students, int[][] mentors) {
+        int m = students.length;
+        int n = students[0].length;
+        int[][] g = new int[m][m];
+
+        // Calculate compatibility scores
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < m; ++j) {
+                for (int k = 0; k < n; ++k) {
+                    g[i][j] += (students[i][k] == mentors[j][k]) ? 1 : 0;
+                }
+            }
+        }
+
+        // Generate all permutations
+        List<Integer> p = new ArrayList<>();
+        for (int i = 0; i < m; ++i) {
+            p.add(i);
+        }
+
+        int ans = 0;
+        do {
+            int cur = 0;
+            for (int i = 0; i < m; ++i) {
+                cur += g[i][p.get(i)];
+            }
+            ans = Math.max(ans, cur);
+        } while (nextPermutation(p));
+        return ans;
+    }
+
+    private boolean nextPermutation(List<Integer> p) {
+        int n = p.size();
+        int i = n - 2;
+        while (i >= 0 && p.get(i) >= p.get(i + 1)) {
+            i--;
+        }
+        if (i < 0) {
+            return false;
+        }
+        int j = n - 1;
+        while (p.get(j) <= p.get(i)) {
+            j--;
+        }
+        Collections.swap(p, i, j);
+        Collections.reverse(p.subList(i + 1, n));
+        return true;
+    }
+}
+
+
+// 方法二：状态压缩动态规划
+class Solution {
+    public int maxCompatibilitySum(int[][] students, int[][] mentors) {
+        int m = students.length;
+        int n = students[0].length;
+        int[][] g = new int[m][m];
+
+        // Calculate compatibility scores
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < m; ++j) {
+                for (int k = 0; k < n; ++k) {
+                    g[i][j] += (students[i][k] == mentors[j][k]) ? 1 : 0;
+                }
+            }
+        }
+
+        int[] f = new int[1 << m];
+        for (int mask = 1; mask < (1 << m); ++mask) {
+            int c = Integer.bitCount(mask);
+            for (int i = 0; i < m; ++i) {
+                if ((mask & (1 << i)) != 0) {
+                    f[mask] = Math.max(f[mask], f[mask ^ (1 << i)] + g[c - 1][i]);
+                }
+            }
+        }
+        return f[(1 << m) - 1];
+    }
+}
+```
+
+
+
+### [1595. 连通两组点的最小成本](https://leetcode.cn/problems/minimum-cost-to-connect-two-groups-of-points/)
+
+困难
+
+给你两组点，其中第一组中有 `size1` 个点，第二组中有 `size2` 个点，且 `size1 >= size2` 。
+
+任意两点间的连接成本 `cost` 由大小为 `size1 x size2` 矩阵给出，其中 `cost[i][j]` 是第一组中的点 `i` 和第二组中的点 `j` 的连接成本。**如果两个组中的每个点都与另一组中的一个或多个点连接，则称这两组点是连通的。**换言之，第一组中的每个点必须至少与第二组中的一个点连接，且第二组中的每个点必须至少与第一组中的一个点连接。
+
+返回连通两组点所需的最小成本。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/09/20/ex1.jpg)
+
+```
+输入：cost = [[15, 96], [36, 2]]
+输出：17
+解释：连通两组点的最佳方法是：
+1--A
+2--B
+总成本为 17 。
+```
+
+C++版本
+
+```c++
+// 方法一：状态压缩 + 动态规划
+class Solution {
+public:
+    int connectTwoGroups(vector<vector<int>>& cost) {
+        int size1 = cost.size(), size2 = cost[0].size(), m = 1 << size2;
+        vector<vector<int>> dp(size1 + 1, vector<int>(m, INT_MAX / 2));
+        dp[0][0] = 0;
+        for (int i = 1; i <= size1; i++) {
+            for (int s = 0; s < m; s++) {
+                for (int k = 0; k < size2; k++) {
+                    if ((s & (1 << k)) == 0) {
+                        continue;
+                    }
+                    dp[i][s] = min(dp[i][s], dp[i][s ^ (1 << k)] + cost[i - 1][k]);
+                    dp[i][s] = min(dp[i][s], dp[i - 1][s] + cost[i - 1][k]);
+                    dp[i][s] = min(dp[i][s], dp[i - 1][s ^ (1 << k)] + cost[i - 1][k]);
+                }
+            }
+        }
+        return dp[size1][m - 1];
+    }
+};
+
+// 优化空间
+class Solution {
+public:
+    int connectTwoGroups(vector<vector<int>>& cost) {
+        int size1 = cost.size(), size2 = cost[0].size(), m = 1 << size2;
+        vector<int> dp1(m, INT_MAX / 2), dp2(m);
+        dp1[0] = 0;
+        for (int i = 1; i <= size1; i++) {
+            for (int s = 0; s < m; s++) {
+                dp2[s] = INT_MAX / 2;
+                for (int k = 0; k < size2; k++) {
+                    if ((s & (1 << k)) == 0) {
+                        continue;
+                    }
+                    dp2[s] = min(dp2[s], dp2[s ^ (1 << k)] + cost[i - 1][k]);
+                    dp2[s] = min(dp2[s], dp1[s] + cost[i - 1][k]);
+                    dp2[s] = min(dp2[s], dp1[s ^ (1 << k)] + cost[i - 1][k]);
+                }
+            }
+            dp1.swap(dp2);
+        }
+        return dp1[m - 1];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：状态压缩 + 动态规划
+class Solution {
+    public int connectTwoGroups(List<List<Integer>> cost) {
+        int size1 = cost.size(), size2 = cost.get(0).size(), m = 1 << size2;
+        int[][] dp = new int[size1 + 1][m];
+        for (int i = 0; i <= size1; i++) {
+            Arrays.fill(dp[i], Integer.MAX_VALUE / 2);
+        }
+        dp[0][0] = 0;
+        for (int i = 1; i <= size1; i++) {
+            for (int s = 0; s < m; s++) {
+                for (int k = 0; k < size2; k++) {
+                    if ((s & (1 << k)) == 0) {
+                        continue;
+                    }
+                    dp[i][s] = Math.min(dp[i][s], dp[i][s ^ (1 << k)] + cost.get(i - 1).get(k));
+                    dp[i][s] = Math.min(dp[i][s], dp[i - 1][s] + cost.get(i - 1).get(k));
+                    dp[i][s] = Math.min(dp[i][s], dp[i - 1][s ^ (1 << k)] + cost.get(i - 1).get(k));
+                }
+            }
+        }
+        return dp[size1][m - 1];
+    }
+}
+
+// 优化空间
+class Solution {
+    public int connectTwoGroups(List<List<Integer>> cost) {
+        int size1 = cost.size(), size2 = cost.get(0).size(), m = 1 << size2;
+        int[] dp1 = new int[m];
+        Arrays.fill(dp1, Integer.MAX_VALUE / 2);
+        int[] dp2 = new int[m];
+        dp1[0] = 0;
+        for (int i = 1; i <= size1; i++) {
+            for (int s = 0; s < m; s++) {
+                dp2[s] = Integer.MAX_VALUE / 2;
+                for (int k = 0; k < size2; k++) {
+                    if ((s & (1 << k)) == 0) {
+                        continue;
+                    }
+                    dp2[s] = Math.min(dp2[s], dp2[s ^ (1 << k)] + cost.get(i - 1).get(k));
+                    dp2[s] = Math.min(dp2[s], dp1[s] + cost.get(i - 1).get(k));
+                    dp2[s] = Math.min(dp2[s], dp1[s ^ (1 << k)] + cost.get(i - 1).get(k));
+                }
+            }
+            System.arraycopy(dp2, 0, dp1, 0, m);
+        }
+        return dp1[m - 1];
+    }
+}
+```
+
+
+
