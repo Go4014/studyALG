@@ -477,3 +477,231 @@ class Solution {
 
 
 
+### [1494. 并行课程 II](https://leetcode.cn/problems/parallel-courses-ii/)
+
+困难
+
+给你一个整数 `n` 表示某所大学里课程的数目，编号为 `1` 到 `n` ，数组 `relations` 中， `relations[i] = [xi, yi]` 表示一个先修课的关系，也就是课程 `xi` 必须在课程 `yi` 之前上。同时你还有一个整数 `k` 。
+
+在一个学期中，你 **最多** 可以同时上 `k` 门课，前提是这些课的先修课在之前的学期里已经上过了。
+
+请你返回上完所有课最少需要多少个学期。题目保证一定存在一种上完所有课的方式。
+
+**示例 1：**
+
+**![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/06/27/leetcode_parallel_courses_1.png)**
+
+```
+输入：n = 4, relations = [[2,1],[3,1],[1,4]], k = 2
+输出：3 
+解释：上图展示了题目输入的图。在第一个学期中，我们可以上课程 2 和课程 3 。然后第二个学期上课程 1 ，第三个学期上课程 4 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划 + 状态压缩
+class Solution {
+public:
+    int minNumberOfSemesters(int n, vector<vector<int>>& relations, int k) {
+        vector<int> dp(1 << n, INT_MAX);
+        vector<int> need(1 << n, 0);
+        for (auto& edge : relations) {
+            need[(1 << (edge[1] - 1))] |= 1 << (edge[0] - 1);
+        }
+        dp[0] = 0;
+        for (int i = 1; i < (1 << n); ++i) {
+            need[i] = need[i & (i - 1)] | need[i & (-i)];
+            if ((need[i] | i) != i) { // i 中有任意一门课程的前置课程没有完成学习
+                continue;
+            }
+            int valid = i ^ need[i]; // 当前学期可以进行学习的课程集合
+            if (__builtin_popcount(valid) <= k) { // 如果个数小于 k，则可以全部学习，不再枚举子集
+                dp[i] = min(dp[i], dp[i ^ valid] + 1);
+            } else { // 否则枚举当前学期需要进行学习的课程集合
+                for (int sub = valid; sub; sub = (sub - 1) & valid) {
+                    if (__builtin_popcount(sub) <= k) {
+                        dp[i] = min(dp[i], dp[i ^ sub] + 1);
+                    }
+                }
+            }
+        }
+        return dp[(1 << n) - 1];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划 + 状态压缩
+class Solution {
+    public int minNumberOfSemesters(int n, int[][] relations, int k) {
+        int[] dp = new int[1 << n];
+        Arrays.fill(dp, Integer.MAX_VALUE);
+        int[] need = new int[1 << n];
+        for (int[] edge : relations) {
+            need[(1 << (edge[1] - 1))] |= 1 << (edge[0] - 1);
+        }
+        dp[0] = 0;
+        for (int i = 1; i < (1 << n); ++i) {
+            need[i] = need[i & (i - 1)] | need[i & (-i)];
+            if ((need[i] | i) != i) { // i 中有任意一门课程的前置课程没有完成学习
+                continue;
+            }
+            int valid = i ^ need[i]; // 当前学期可以进行学习的课程集合
+            if (Integer.bitCount(valid) <= k) { // 如果个数小于 k，则可以全部学习，不再枚举子集
+                dp[i] = Math.min(dp[i], dp[i ^ valid] + 1);
+            } else { // 否则枚举当前学期需要进行学习的课程集合
+                for (int sub = valid; sub > 0; sub = (sub - 1) & valid) {
+                    if (Integer.bitCount(sub) <= k) {
+                        dp[i] = Math.min(dp[i], dp[i ^ sub] + 1);
+                    }
+                }
+            }
+        }
+        return dp[(1 << n) - 1];
+    }
+}
+```
+
+
+
+### [1655. 分配重复整数](https://leetcode.cn/problems/distribute-repeating-integers/)
+
+困难
+
+给你一个长度为 `n` 的整数数组 `nums` ，这个数组中至多有 `50` 个不同的值。同时你有 `m` 个顾客的订单 `quantity` ，其中，整数 `quantity[i]` 是第 `i` 位顾客订单的数目。请你判断是否能将 `nums` 中的整数分配给这些顾客，且满足：
+
+- 第 `i` 位顾客 **恰好** 有 `quantity[i]` 个整数。
+- 第 `i` 位顾客拿到的整数都是 **相同的** 。
+- 每位顾客都满足上述两个要求。
+
+如果你可以分配 `nums` 中的整数满足上面的要求，那么请返回 `true` ，否则返回 `false` 。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,4], quantity = [2]
+输出：false
+解释：第 0 位顾客没办法得到两个相同的整数。
+```
+
+C++版本
+
+```c++
+class Solution {
+public:
+    bool canDistribute(vector<int>& nums, vector<int>& quantity) {
+        unordered_map<int, int> cache;
+        for (int x: nums) {
+            cache[x]++;
+        }
+        vector<int> cnt;
+        for (auto& kv: cache) {
+            cnt.push_back(kv.second);
+        }
+        
+        int n = cnt.size(), m = quantity.size();
+        vector<int> sum(1 << m, 0);
+        for (int i = 1; i < (1 << m); i++) {
+            for (int j = 0; j < m; j++) {
+                if ((i & (1 << j)) != 0) {
+                    int left = i - (1 << j);
+                    sum[i] = sum[left] + quantity[j];
+                    break;
+                }
+            }
+        }
+        
+        vector<vector<bool>> dp(n, vector<bool>(1 << m, false));
+        for (int i = 0; i < n; i++) {
+            dp[i][0] = true;
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < (1 << m); j++) {
+                if (i > 0 && dp[i-1][j]) {
+                    dp[i][j] = true;
+                    continue;
+                }
+                for (int s = j; s != 0; s = ((s - 1) & j)) { // 子集枚举，详见 https://oi-wiki.org/math/bit/#_14
+                    int prev = j - s; // 前 i-1 个元素需要满足子集 prev = j-s
+                    bool last = (i == 0) ? (prev == 0): dp[i-1][prev]; // cnt[0..i-1] 能否满足子集 prev
+                    bool need = sum[s] <= cnt[i]; // cnt[i] 能否满足子集 s
+                    if (last && need) {
+                        dp[i][j] = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return dp[n-1][(1<<m)-1];
+    }
+};
+```
+
+Java版本
+
+```java
+public class Solution {
+    public boolean canDistribute(int[] nums, int[] quantity) {
+        // Count the frequency of each number in nums
+        Map<Integer, Integer> cache = new HashMap<>();
+        for (int x : nums) {
+            cache.put(x, cache.getOrDefault(x, 0) + 1);
+        }
+
+        // Extract the frequencies into an array cnt
+        int[] cnt = new int[cache.size()];
+        int index = 0;
+        for (int value : cache.values()) {
+            cnt[index++] = value;
+        }
+
+        int n = cnt.length;
+        int m = quantity.length;
+
+        // Calculate the sum of quantities for each subset
+        int[] sum = new int[1 << m];
+        for (int i = 1; i < (1 << m); i++) {
+            for (int j = 0; j < m; j++) {
+                if ((i & (1 << j)) != 0) {
+                    int left = i - (1 << j);
+                    sum[i] = sum[left] + quantity[j];
+                    break;
+                }
+            }
+        }
+
+        // Initialize the dp table
+        boolean[][] dp = new boolean[n][1 << m];
+        for (int i = 0; i < n; i++) {
+            dp[i][0] = true;
+        }
+
+        // Fill the dp table
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < (1 << m); j++) {
+                if (i > 0 && dp[i-1][j]) {
+                    dp[i][j] = true;
+                    continue;
+                }
+                for (int s = j; s != 0; s = (s - 1) & j) {
+                    int prev = j - s;
+                    boolean last = (i == 0) ? (prev == 0) : dp[i-1][prev];
+                    boolean need = sum[s] <= cnt[i];
+                    if (last && need) {
+                        dp[i][j] = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Return the final result
+        return dp[n-1][(1 << m) - 1];
+    }
+
+}
+```
+
