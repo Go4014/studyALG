@@ -705,3 +705,299 @@ public class Solution {
 }
 ```
 
+
+
+### [1986. 完成任务的最少工作时间段](https://leetcode.cn/problems/minimum-number-of-work-sessions-to-finish-the-tasks/)
+
+中等
+
+你被安排了 `n` 个任务。任务需要花费的时间用长度为 `n` 的整数数组 `tasks` 表示，第 `i` 个任务需要花费 `tasks[i]` 小时完成。一个 **工作时间段** 中，你可以 **至多** 连续工作 `sessionTime` 个小时，然后休息一会儿。
+
+你需要按照如下条件完成给定任务：
+
+- 如果你在某一个时间段开始一个任务，你需要在 **同一个** 时间段完成它。
+- 完成一个任务后，你可以 **立马** 开始一个新的任务。
+- 你可以按 **任意顺序** 完成任务。
+
+给你 `tasks` 和 `sessionTime` ，请你按照上述要求，返回完成所有任务所需要的 **最少** 数目的 **工作时间段** 。
+
+测试数据保证 `sessionTime` **大于等于** `tasks[i]` 中的 **最大值** 。
+
+**示例 1：**
+
+```
+输入：tasks = [1,2,3], sessionTime = 3
+输出：2
+解释：你可以在两个工作时间段内完成所有任务。
+- 第一个工作时间段：完成第一和第二个任务，花费 1 + 2 = 3 小时。
+- 第二个工作时间段：完成第三个任务，花费 3 小时。
+```
+
+C++版本
+
+```c++
+// 方法一：枚举子集的动态规划
+class Solution {
+public:
+    int minSessions(vector<int>& tasks, int sessionTime) {
+        int n = tasks.size();
+        vector<int> valid(1 << n);
+        for (int mask = 1; mask < (1 << n); ++mask) {
+            int needTime = 0;
+            for (int i = 0; i < n; ++i) {
+                if (mask & (1 << i)) {
+                    needTime += tasks[i];
+                }
+            }
+            if (needTime <= sessionTime) {
+                valid[mask] = true;
+            }
+        }
+
+        vector<int> f(1 << n, INT_MAX / 2);
+        f[0] = 0;
+        for (int mask = 1; mask < (1 << n); ++mask) {
+            for (int subset = mask; subset; subset = (subset - 1) & mask) {
+                if (valid[subset]) {
+                    f[mask] = min(f[mask], f[mask ^ subset] + 1);
+                }
+            }
+        }
+        return f[(1 << n) - 1];
+    }
+};
+
+// 方法二：存储两个值的动态规划
+class Solution {
+public:
+    int minSessions(vector<int>& tasks, int sessionTime) {
+        int n = tasks.size();
+        vector<pair<int, int>> f(1 << n, {INT_MAX, INT_MAX});
+        f[0] = {1, 0};
+        
+        auto add = [&](const pair<int, int>& o, int x) -> pair<int, int> {
+            if (o.second + x <= sessionTime) {
+                return {o.first, o.second + x};
+            }
+            return {o.first + 1, x};
+        };
+        
+        for (int mask = 1; mask < (1 << n); ++mask) {
+            for (int i = 0; i < n; ++i) {
+                if (mask & (1 << i)) {
+                    f[mask] = min(f[mask], add(f[mask ^ (1 << i)], tasks[i]));
+                }
+            }
+        }
+        return f[(1 << n) - 1].first;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：枚举子集的动态规划
+class Solution {
+    public int minSessions(int[] tasks, int sessionTime) {
+        int n = tasks.length;
+        int[] valid = new int[1 << n];
+        for (int mask = 1; mask < (1 << n); ++mask) {
+            int needTime = 0;
+            for (int i = 0; i < n; ++i) {
+                if ((mask & (1 << i)) != 0) {
+                    needTime += tasks[i];
+                }
+            }
+            if (needTime <= sessionTime) {
+                valid[mask] = 1;
+            }
+        }
+
+        int[] f = new int[1 << n];
+        Arrays.fill(f, Integer.MAX_VALUE / 2);
+        f[0] = 0;
+        for (int mask = 1; mask < (1 << n); ++mask) {
+            for (int subset = mask; subset > 0; subset = (subset - 1) & mask) {
+                if (valid[subset] == 1) {
+                    f[mask] = Math.min(f[mask], f[mask ^ subset] + 1);
+                }
+            }
+        }
+        return f[(1 << n) - 1];
+    }
+}
+
+// 方法二：存储两个值的动态规划
+class Solution {
+    public int minSessions(int[] tasks, int sessionTime) {
+        int n = tasks.length;
+        Pair[] f = new Pair[1 << n];
+        for (int i = 0; i < (1 << n); i++) {
+            f[i] = new Pair(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        }
+        f[0] = new Pair(1, 0);
+
+        for (int mask = 1; mask < (1 << n); ++mask) {
+            for (int i = 0; i < n; ++i) {
+                if ((mask & (1 << i)) != 0) {
+                    f[mask] = minPair(f[mask], addPair(f[mask ^ (1 << i)], tasks[i], sessionTime));
+                }
+            }
+        }
+        return f[(1 << n) - 1].first;
+    }
+
+    private Pair addPair(Pair o, int x, int sessionTime) {
+        if (o.second + x <= sessionTime) {
+            return new Pair(o.first, o.second + x);
+        }
+        return new Pair(o.first + 1, x);
+    }
+
+    private Pair minPair(Pair a, Pair b) {
+        if (a.first != b.first) {
+            return a.first < b.first ? a : b;
+        }
+        return a.second <= b.second ? a : b;
+    }
+
+    class Pair {
+        int first, second;
+
+        Pair(int f, int s) {
+            this.first = f;
+            this.second = s;
+        }
+    }
+}
+```
+
+
+
+### [1434. 每个人戴不同帽子的方案数](https://leetcode.cn/problems/number-of-ways-to-wear-different-hats-to-each-other/)
+
+困难
+
+总共有 `n` 个人和 `40` 种不同的帽子，帽子编号从 `1` 到 `40` 。
+
+给你一个整数列表的列表 `hats` ，其中 `hats[i]` 是第 `i` 个人所有喜欢帽子的列表。
+
+请你给每个人安排一顶他喜欢的帽子，确保每个人戴的帽子跟别人都不一样，并返回方案数。
+
+由于答案可能很大，请返回它对 `10^9 + 7` 取余后的结果。
+
+**示例 1：**
+
+```
+输入：hats = [[3,4],[4,5],[5]]
+输出：1
+解释：给定条件下只有一种方法选择帽子。
+第一个人选择帽子 3，第二个人选择帽子 4，最后一个人选择帽子 5。
+```
+
+C++版本
+
+```c++
+// 方法一：状态压缩动态规划
+using LL = long long;
+
+class Solution {
+private:
+    static constexpr int mod = 1000000007;
+    
+public:
+    int numberWays(vector<vector<int>>& hats) {
+        int n = hats.size();
+        // 找到帽子编号的最大值，这样我们只需要求出 $f[maxhatid][2^n - 1]$ 作为答案
+        int maxHatId = 0;
+        for (int i = 0; i < n; ++i) {
+            for (int h: hats[i]) {
+                maxHatId = max(maxHatId, h);
+            }
+        }
+        
+        // 对于每一顶帽子 h，hatToPerson[h] 中存储了喜欢这顶帽子的所有人，方便进行动态规划
+        vector<vector<int>> hatToPerson(maxHatId + 1);
+        for (int i = 0; i < n; ++i) {
+            for (int h: hats[i]) {
+                hatToPerson[h].push_back(i);
+            }
+        }
+        
+        vector<vector<int>> f(maxHatId + 1, vector<int>(1 << n));
+        // 边界条件
+        f[0][0] = 1;
+        for (int i = 1; i <= maxHatId; ++i) {
+            for (int mask = 0; mask < (1 << n); ++mask) {
+                f[i][mask] = f[i - 1][mask];
+                for (int j: hatToPerson[i]) {
+                    if (mask & (1 << j)) {
+                        f[i][mask] += f[i - 1][mask ^ (1 << j)];
+                        f[i][mask] %= mod;
+                    }
+                }
+            }
+        }
+        
+        return f[maxHatId][(1 << n) - 1];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：状态压缩动态规划
+class Solution {
+    public int numberWays(List<List<Integer>> hats) {
+        final int MOD = 1000000007;
+        int n = hats.size();
+        // 找到帽子编号的最大值，这样我们只需要求出 f[maxhatid][2^n - 1] 作为答案
+        int maxHatId = 0;
+        for (int i = 0; i < n; ++i) {
+            List<Integer> list = hats.get(i);
+            for (int h: list) {
+                maxHatId = Math.max(maxHatId, h);
+            }
+        }
+        
+        // 对于每一顶帽子 h，hatToPerson[h] 中存储了喜欢这顶帽子的所有人，方便进行动态规划
+        List<List<Integer>> hatToPerson = new ArrayList<List<Integer>>();
+        for (int i = 0; i <= maxHatId; i++) {
+            hatToPerson.add(new ArrayList<Integer>());
+        }
+        for (int i = 0; i < n; ++i) {
+            List<Integer> list = hats.get(i);
+            for (int h: list) {
+                hatToPerson.get(h).add(i);
+            }
+        }
+        
+        int[][] f = new int[maxHatId + 1][1 << n];
+        // 边界条件
+        f[0][0] = 1;
+        for (int i = 1; i <= maxHatId; ++i) {
+            for (int mask = 0; mask < (1 << n); ++mask) {
+                f[i][mask] = f[i - 1][mask];
+                List<Integer> list = hatToPerson.get(i);
+                for (int j: list) {
+                    if ((mask & (1 << j)) != 0) {
+                        f[i][mask] += f[i - 1][mask ^ (1 << j)];
+                        f[i][mask] %= MOD;
+                    }
+                }
+            }
+        }
+        
+        return f[maxHatId][(1 << n) - 1];
+    }
+}
+```
+
+
+
+
+
+
+
