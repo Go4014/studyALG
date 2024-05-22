@@ -997,7 +997,261 @@ class Solution {
 
 
 
+### [1799. N 次操作后的最大分数和](https://leetcode.cn/problems/maximize-score-after-n-operations/)
+
+困难
+
+给你 `nums` ，它是一个大小为 `2 * n` 的正整数数组。你必须对这个数组执行 `n` 次操作。
+
+在第 `i` 次操作时（操作编号从 **1** 开始），你需要：
+
+- 选择两个元素 `x` 和 `y` 。
+- 获得分数 `i * gcd(x, y)` 。
+- 将 `x` 和 `y` 从 `nums` 中删除。
+
+请你返回 `n` 次操作后你能获得的分数和最大为多少。
+
+函数 `gcd(x, y)` 是 `x` 和 `y` 的最大公约数。
+
+**示例 1：**
+
+```
+输入：nums = [1,2]
+输出：1
+解释：最优操作是：
+(1 * gcd(1, 2)) = 1
+```
+
+C++版本
+
+```c++
+// 方法一：状态压缩 + 动态规划
+class Solution {
+public:
+    int maxScore(vector<int>& nums) {
+        int m = nums.size();
+        vector<int> dp(1 << m, 0);
+        vector<vector<int>> gcd_tmp(m, vector<int>(m, 0));
+        for (int i = 0; i < m; ++i) {
+            for (int j = i + 1; j < m; ++j) {
+                gcd_tmp[i][j] = gcd(nums[i], nums[j]);
+            }
+        }
+        int all = 1 << m;
+        for (int s = 1; s < all; ++s) {
+            int t = __builtin_popcount(s);
+            if (t & 1) {
+                continue;
+            }
+            for (int i = 0; i < m; ++i) {
+                if ((s >> i) & 1) {
+                    for (int j = i + 1; j < m; ++j) {
+                        if ((s >> j) & 1) {
+                            dp[s] = max(dp[s], dp[s ^ (1 << i) ^ (1 << j)] + t / 2 * gcd_tmp[i][j]);
+                        }
+                    }
+                }
+            }
+        }
+        return dp[all - 1];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：状态压缩 + 动态规划
+class Solution {
+    public int maxScore(int[] nums) {
+        int m = nums.length;
+        int[] dp = new int[1 << m];
+        int[][] gcdTmp = new int[m][m];
+        for (int i = 0; i < m; ++i) {
+            for (int j = i + 1; j < m; ++j) {
+                gcdTmp[i][j] = gcd(nums[i], nums[j]);
+            }
+        }
+        int all = 1 << m;
+        for (int s = 1; s < all; ++s) {
+            int t = Integer.bitCount(s);
+            if ((t & 1) != 0) {
+                continue;
+            }
+            for (int i = 0; i < m; ++i) {
+                if (((s >> i) & 1) != 0) {
+                    for (int j = i + 1; j < m; ++j) {
+                        if (((s >> j) & 1) != 0) {
+                            dp[s] = Math.max(dp[s], dp[s ^ (1 << i) ^ (1 << j)] + t / 2 * gcdTmp[i][j]);
+                        }
+                    }
+                }
+            }
+        }
+        return dp[all - 1];
+    }
+
+    public int gcd(int num1, int num2) {
+        while (num2 != 0) {
+            int temp = num1;
+            num1 = num2;
+            num2 = temp % num2;
+        }
+        return num1;
+    }
+}
+```
 
 
 
+### [1681. 最小不兼容性](https://leetcode.cn/problems/minimum-incompatibility/)
+
+困难
+
+给你一个整数数组 `nums` 和一个整数 `k` 。你需要将这个数组划分到 `k` 个相同大小的子集中，使得同一个子集里面没有两个相同的元素。
+
+一个子集的 **不兼容性** 是该子集里面最大值和最小值的差。
+
+请你返回将数组分成 `k` 个子集后，各子集 **不兼容性** 的 **和** 的 **最小值** ，如果无法分成分成 `k` 个子集，返回 `-1` 。
+
+子集的定义是数组中一些数字的集合，对数字顺序没有要求。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,1,4], k = 2
+输出：4
+解释：最优的分配是 [1,2] 和 [1,4] 。
+不兼容性和为 (2-1) + (4-1) = 4 。
+注意到 [1,1] 和 [2,4] 可以得到更小的和，但是第一个集合有 2 个相同的元素，所以不可行。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划 + 状态压缩
+class Solution {
+public:
+    int minimumIncompatibility(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> dp(1 << n, INT_MAX);
+        dp[0] = 0;
+        int group = n / k;
+        unordered_map<int, int> values;
+
+        for (int mask = 1; mask < (1 << n); mask++) {
+            if (__builtin_popcount(mask) != group) {
+                continue;
+            }
+            int mn = 20, mx = 0;
+            unordered_set<int> cur;
+            for (int i = 0; i < n; i++) {
+                if (mask & (1 << i)) {
+                    if (cur.count(nums[i]) > 0) {
+                        break;
+                    }
+                    cur.insert(nums[i]);
+                    mn = min(mn, nums[i]);
+                    mx = max(mx, nums[i]);
+                }
+            }
+            if (cur.size() == group) {
+                values[mask] = mx - mn;
+            }
+        }
+
+        for (int mask = 0; mask < (1 << n); mask++) {
+            if (dp[mask] == INT_MAX) {
+                continue;
+            }
+            unordered_map<int, int> seen;
+            for (int i = 0; i < n; i++) {
+                if ((mask & (1 << i)) == 0) {
+                    seen[nums[i]] = i;
+                }
+            }
+            if (seen.size() < group) {
+                continue;
+            }
+            int sub = 0;
+            for (auto& pair : seen) {
+                sub |= (1 << pair.second);
+            }
+            int nxt = sub;
+            while (nxt > 0) {
+                if (values.count(nxt) > 0) {
+                    dp[mask | nxt] = min(dp[mask | nxt], dp[mask] + values[nxt]);
+                }
+                nxt = (nxt - 1) & sub;
+            }
+        }
+
+        return (dp[(1 << n) - 1] < INT_MAX) ? dp[(1 << n) - 1] : -1;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划 + 状态压缩
+class Solution {
+    public int minimumIncompatibility(int[] nums, int k) {
+        int n = nums.length, group = n / k, inf = Integer.MAX_VALUE;
+        int[] dp = new int[1 << n];
+        Arrays.fill(dp, inf);
+        dp[0] = 0;
+        HashMap<Integer, Integer> values = new HashMap<>();
+
+        for (int mask = 1; mask < (1 << n); mask++) {
+            if (Integer.bitCount(mask) != group) {
+                continue;
+            }
+            int mn = 20, mx = 0;
+            HashSet<Integer> cur = new HashSet<>();
+            for (int i = 0; i < n; i++) {
+                if ((mask & (1 << i)) > 0) {
+                    if (cur.contains(nums[i])) {
+                        break;
+                    }
+                    cur.add(nums[i]);
+                    mn = Math.min(mn, nums[i]);
+                    mx = Math.max(mx, nums[i]);
+                }
+            }
+            if (cur.size() == group) {
+                values.put(mask, mx - mn);
+            }
+        }
+
+        for (int mask = 0; mask < (1 << n); mask++) {
+            if (dp[mask] == inf) {
+                continue;
+            }
+            HashMap<Integer, Integer> seen = new HashMap<>();
+            for (int i = 0; i < n; i++) {
+                if ((mask & (1 << i)) == 0) {
+                    seen.put(nums[i], i);
+                }
+            }
+            if (seen.size() < group) {
+                continue;
+            }
+            int sub = 0;
+            for (int v : seen.values()) {
+                sub |= (1 << v);
+            }
+            int nxt = sub;
+            while (nxt > 0) {
+                if (values.containsKey(nxt)) {
+                    dp[mask | nxt] = Math.min(dp[mask | nxt], dp[mask] + values.get(nxt));
+                }
+                nxt = (nxt - 1) & sub;
+            }
+        }
+
+        return (dp[(1 << n) - 1] < inf) ? dp[(1 << n) - 1] : -1;
+    }
+}
+```
 
