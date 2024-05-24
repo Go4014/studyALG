@@ -1255,3 +1255,257 @@ class Solution {
 }
 ```
 
+
+
+### [526. 优美的排列](https://leetcode.cn/problems/beautiful-arrangement/)
+
+中等
+
+假设有从1到n的n个整数。用这些整数构造一个数组 `perm`（**下标从 1 开始**），只要满足下述条件 **之一** ，该数组就是一个**优美的排列** ：
+
+- `perm[i]` 能够被 `i` 整除
+- `i` 能够被 `perm[i]` 整除
+
+给你一个整数 `n` ，返回可以构造的 **优美排列** 的 **数量** 。
+
+**示例 1：**
+
+```
+输入：n = 2
+输出：2
+解释：
+第 1 个优美的排列是 [1,2]：
+    - perm[1] = 1 能被 i = 1 整除
+    - perm[2] = 2 能被 i = 2 整除
+第 2 个优美的排列是 [2,1]:
+    - perm[1] = 2 能被 i = 1 整除
+    - i = 2 能被 perm[2] = 1 整除
+```
+
+C++版本
+
+```C++
+// 方法一：回溯
+class Solution {
+public:
+    vector<vector<int>> match;
+    vector<int> vis;
+    int num;
+
+    void backtrack(int index, int n) {
+        if (index == n + 1) {
+            num++;
+            return;
+        }
+        for (auto &x : match[index]) {
+            if (!vis[x]) {
+                vis[x] = true;
+                backtrack(index + 1, n);
+                vis[x] = false;
+            }
+        }
+    }
+
+    int countArrangement(int n) {
+        vis.resize(n + 1);
+        match.resize(n + 1);
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (i % j == 0 || j % i == 0) {
+                    match[i].push_back(j);
+                }
+            }
+        }
+        backtrack(1, n);
+        return num;
+    }
+};
+
+// 方法二：状态压缩 + 动态规划
+class Solution {
+public:
+    int countArrangement(int n) {
+        vector<int> f(1 << n);
+        f[0] = 1;
+        for (int mask = 1; mask < (1 << n); mask++) {
+            int num = __builtin_popcount(mask);
+            for (int i = 0; i < n; i++) {
+                if (mask & (1 << i) && (num % (i + 1) == 0 || (i + 1) % num == 0)) {
+                    f[mask] += f[mask ^ (1 << i)];
+                }
+            }
+        }
+        return f[(1 << n) - 1];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：回溯
+class Solution {
+    List<Integer>[] match;
+    boolean[] vis;
+    int num;
+
+    public int countArrangement(int n) {
+        vis = new boolean[n + 1];
+        match = new List[n + 1];
+        for (int i = 0; i <= n; i++) {
+            match[i] = new ArrayList<Integer>();
+        }
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (i % j == 0 || j % i == 0) {
+                    match[i].add(j);
+                }
+            }
+        }
+        backtrack(1, n);
+        return num;
+    }
+
+    public void backtrack(int index, int n) {
+        if (index == n + 1) {
+            num++;
+            return;
+        }
+        for (int x : match[index]) {
+            if (!vis[x]) {
+                vis[x] = true;
+                backtrack(index + 1, n);
+                vis[x] = false;
+            }
+        }
+    }
+}
+
+// 方法二：状态压缩 + 动态规划
+class Solution {
+    public int countArrangement(int n) {
+        int[] f = new int[1 << n];
+        f[0] = 1;
+        for (int mask = 1; mask < (1 << n); mask++) {
+            int num = Integer.bitCount(mask);
+            for (int i = 0; i < n; i++) {
+                if ((mask & (1 << i)) != 0 && ((num % (i + 1)) == 0 || (i + 1) % num == 0)) {
+                    f[mask] += f[mask ^ (1 << i)];
+                }
+            }
+        }
+        return f[(1 << n) - 1];
+    }
+}
+```
+
+
+
+### [464. 我能赢吗](https://leetcode.cn/problems/can-i-win/)
+
+中等
+
+在 "100 game" 这个游戏中，两名玩家轮流选择从 `1` 到 `10` 的任意整数，累计整数和，先使得累计整数和 **达到或超过** 100 的玩家，即为胜者。
+
+如果我们将游戏规则改为 “玩家 **不能** 重复使用整数” 呢？
+
+例如，两个玩家可以轮流从公共整数池中抽取从 1 到 15 的整数（不放回），直到累计整数和 >= 100。
+
+给定两个整数 `maxChoosableInteger` （整数池中可选择的最大数）和 `desiredTotal`（累计和），若先出手的玩家能稳赢则返回 `true` ，否则返回 `false` 。假设两位玩家游戏时都表现 **最佳** 。
+
+**示例 1：**
+
+```
+输入：maxChoosableInteger = 10, desiredTotal = 11
+输出：false
+解释：
+无论第一个玩家选择哪个整数，他都会失败。
+第一个玩家可以选择从 1 到 10 的整数。
+如果第一个玩家选择 1，那么第二个玩家只能选择从 2 到 10 的整数。
+第二个玩家可以通过选择整数 10（那么累积和为 11 >= desiredTotal），从而取得胜利.
+同样地，第一个玩家选择任意其他整数，第二个玩家都会赢。
+```
+
+C++版本
+
+```C++
+// 方法一：记忆化搜索 + 状态压缩
+class Solution {
+public:
+    unordered_map<int, bool> memo;
+
+    bool canIWin(int maxChoosableInteger, int desiredTotal) {
+        if ((1 + maxChoosableInteger) * (maxChoosableInteger) / 2 < desiredTotal) {
+            return false;
+        }
+        return dfs(maxChoosableInteger, 0, desiredTotal, 0);
+    }
+
+    bool dfs(int maxChoosableInteger, int usedNumbers, int desiredTotal, int currentTotal) {
+        if (!memo.count(usedNumbers)) {
+            bool res = false;
+            for (int i = 0; i < maxChoosableInteger; i++) {
+                if (((usedNumbers >> i) & 1) == 0) {
+                    if (i + 1 + currentTotal >= desiredTotal) {
+                        res = true;
+                        break;
+                    }
+                    if (!dfs(maxChoosableInteger, usedNumbers | (1 << i), desiredTotal, currentTotal + i + 1)) {
+                        res = true;
+                        break;
+                    }
+                }
+            }
+            memo[usedNumbers] = res;
+        }
+        return memo[usedNumbers];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：记忆化搜索 + 状态压缩
+class Solution {
+    Map<Integer, Boolean> memo = new HashMap<Integer, Boolean>();
+
+    public boolean canIWin(int maxChoosableInteger, int desiredTotal) {
+        if ((1 + maxChoosableInteger) * (maxChoosableInteger) / 2 < desiredTotal) {
+            return false;
+        }
+        return dfs(maxChoosableInteger, 0, desiredTotal, 0);
+    }
+
+    public boolean dfs(int maxChoosableInteger, int usedNumbers, int desiredTotal, int currentTotal) {
+        if (!memo.containsKey(usedNumbers)) {
+            boolean res = false;
+            for (int i = 0; i < maxChoosableInteger; i++) {
+                if (((usedNumbers >> i) & 1) == 0) {
+                    if (i + 1 + currentTotal >= desiredTotal) {
+                        res = true;
+                        break;
+                    }
+                    if (!dfs(maxChoosableInteger, usedNumbers | (1 << i), desiredTotal, currentTotal + i + 1)) {
+                        res = true;
+                        break;
+                    }
+                }
+            }
+            memo.put(usedNumbers, res);
+        }
+        return memo.get(usedNumbers);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
