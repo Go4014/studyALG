@@ -1501,11 +1501,484 @@ class Solution {
 
 
 
+### [847. 访问所有节点的最短路径](https://leetcode.cn/problems/shortest-path-visiting-all-nodes/)
+
+困难
+
+存在一个由 `n` 个节点组成的无向连通图，图中的节点按从 `0` 到 `n - 1` 编号。
+
+给你一个数组 `graph` 表示这个图。其中，`graph[i]` 是一个列表，由所有与节点 `i` 直接相连的节点组成。
+
+返回能够访问所有节点的最短路径的长度。你可以在任一节点开始和停止，也可以多次重访节点，并且可以重用边。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/05/12/shortest1-graph.jpg)
+
+```
+输入：graph = [[1,2,3],[0],[0],[0]]
+输出：4
+解释：一种可能的路径为 [1,0,2,0,3]
+```
+
+C++版本
+
+```java
+// 方法一：状态压缩 + 广度优先搜索
+class Solution {
+public:
+    int shortestPathLength(vector<vector<int>>& graph) {
+        int n = graph.size();
+        queue<tuple<int, int, int>> q;
+        vector<vector<int>> seen(n, vector<int>(1 << n));
+        for (int i = 0; i < n; ++i) {
+            q.emplace(i, 1 << i, 0);
+            seen[i][1 << i] = true;
+        }
+
+        int ans = 0;
+        while (!q.empty()) {
+            auto [u, mask, dist] = q.front();
+            q.pop();
+            if (mask == (1 << n) - 1) {
+                ans = dist;
+                break;
+            }
+            // 搜索相邻的节点
+            for (int v: graph[u]) {
+                // 将 mask 的第 v 位置为 1
+                int mask_v = mask | (1 << v);
+                if (!seen[v][mask_v]) {
+                    q.emplace(v, mask_v, dist + 1);
+                    seen[v][mask_v] = true;
+                }
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：预处理点对间最短路 + 状态压缩动态规划
+class Solution {
+public:
+    int shortestPathLength(vector<vector<int>>& graph) {
+        int n = graph.size();
+        vector<vector<int>> d(n, vector<int>(n, n + 1));
+        for (int i = 0; i < n; ++i) {
+            for (int j: graph[i]) {
+                d[i][j] = 1;
+            }
+        }
+        // 使用 floyd 算法预处理出所有点对之间的最短路径长度
+        for (int k = 0; k < n; ++k) {
+            for (int i = 0; i < n; ++i) {
+                for (int j = 0; j < n; ++j) {
+                    d[i][j] = min(d[i][j], d[i][k] + d[k][j]);
+                }
+            }
+        }
+
+        vector<vector<int>> f(n, vector<int>(1 << n, INT_MAX / 2));
+        for (int mask = 1; mask < (1 << n); ++mask) {
+            // 如果 mask 只包含一个 1，即 mask 是 2 的幂
+            if ((mask & (mask - 1)) == 0) {
+                int u = __builtin_ctz(mask);
+                f[u][mask] = 0;
+            }
+            else {
+                for (int u = 0; u < n; ++u) {
+                    if (mask & (1 << u)) {
+                        for (int v = 0; v < n; ++v) {
+                            if ((mask & (1 << v)) && u != v) {
+                                f[u][mask] = min(f[u][mask], f[v][mask ^ (1 << u)] + d[v][u]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        int ans = INT_MAX;
+        for (int u = 0; u < n; ++u) {
+            ans = min(ans, f[u][(1 << n) - 1]);
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：状态压缩 + 广度优先搜索
+class Solution {
+    public int shortestPathLength(int[][] graph) {
+        int n = graph.length;
+        Queue<int[]> queue = new LinkedList<int[]>();
+        boolean[][] seen = new boolean[n][1 << n];
+        for (int i = 0; i < n; ++i) {
+            queue.offer(new int[]{i, 1 << i, 0});
+            seen[i][1 << i] = true;
+        }
+
+        int ans = 0;
+        while (!queue.isEmpty()) {
+            int[] tuple = queue.poll();
+            int u = tuple[0], mask = tuple[1], dist = tuple[2];
+            if (mask == (1 << n) - 1) {
+                ans = dist;
+                break;
+            }
+            // 搜索相邻的节点
+            for (int v : graph[u]) {
+                // 将 mask 的第 v 位置为 1
+                int maskV = mask | (1 << v);
+                if (!seen[v][maskV]) {
+                    queue.offer(new int[]{v, maskV, dist + 1});
+                    seen[v][maskV] = true;
+                }
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：预处理点对间最短路 + 状态压缩动态规划
+class Solution {
+    public int shortestPathLength(int[][] graph) {
+        int n = graph.length;
+        int[][] d = new int[n][n];
+        for (int i = 0; i < n; ++i) {
+            Arrays.fill(d[i], n + 1);
+        }
+        for (int i = 0; i < n; ++i) {
+            for (int j : graph[i]) {
+                d[i][j] = 1;
+            }
+        }
+        // 使用 floyd 算法预处理出所有点对之间的最短路径长度
+        for (int k = 0; k < n; ++k) {
+            for (int i = 0; i < n; ++i) {
+                for (int j = 0; j < n; ++j) {
+                    d[i][j] = Math.min(d[i][j], d[i][k] + d[k][j]);
+                }
+            }
+        }
+
+        int[][] f = new int[n][1 << n];
+        for (int i = 0; i < n; ++i) {
+            Arrays.fill(f[i], Integer.MAX_VALUE / 2);
+        }
+        for (int mask = 1; mask < (1 << n); ++mask) {
+            // 如果 mask 只包含一个 1，即 mask 是 2 的幂
+            if ((mask & (mask - 1)) == 0) {
+                int u = Integer.bitCount((mask & (-mask)) - 1);
+                f[u][mask] = 0;
+            } else {
+                for (int u = 0; u < n; ++u) {
+                    if ((mask & (1 << u)) != 0) {
+                        for (int v = 0; v < n; ++v) {
+                            if ((mask & (1 << v)) != 0 && u != v) {
+                                f[u][mask] = Math.min(f[u][mask], f[v][mask ^ (1 << u)] + d[v][u]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        int ans = Integer.MAX_VALUE;
+        for (int u = 0; u < n; ++u) {
+            ans = Math.min(ans, f[u][(1 << n) - 1]);
+        }
+        return ans;
+    }
+}
+```
 
 
 
+### [638. 大礼包](https://leetcode.cn/problems/shopping-offers/)
+
+中等
+
+在 LeetCode 商店中， 有 `n` 件在售的物品。每件物品都有对应的价格。然而，也有一些大礼包，每个大礼包以优惠的价格捆绑销售一组物品。
+
+给你一个整数数组 `price` 表示物品价格，其中 `price[i]` 是第 `i` 件物品的价格。另有一个整数数组 `needs` 表示购物清单，其中 `needs[i]` 是需要购买第 `i` 件物品的数量。
+
+还有一个数组 `special` 表示大礼包，`special[i]` 的长度为 `n + 1` ，其中 `special[i][j]` 表示第 `i` 个大礼包中内含第 `j` 件物品的数量，且 `special[i][n]` （也就是数组中的最后一个整数）为第 `i` 个大礼包的价格。
+
+返回 **确切** 满足购物清单所需花费的最低价格，你可以充分利用大礼包的优惠活动。你不能购买超出购物清单指定数量的物品，即使那样会降低整体价格。任意大礼包可无限次购买。
+
+**示例 1：**
+
+```
+输入：price = [2,5], special = [[3,0,5],[1,2,10]], needs = [3,2]
+输出：14
+解释：有 A 和 B 两种物品，价格分别为 ¥2 和 ¥5 。 
+大礼包 1 ，你可以以 ¥5 的价格购买 3A 和 0B 。 
+大礼包 2 ，你可以以 ¥10 的价格购买 1A 和 2B 。 
+需要购买 3 个 A 和 2 个 B ， 所以付 ¥10 购买 1A 和 2B（大礼包 2），以及 ¥4 购买 2A 。
+```
+
+C++版本
+
+```java
+// 方法一：记忆化搜索
+class Solution {
+public:
+    map<vector<int>, int> memo;
+
+    int shoppingOffers(vector<int>& price, vector<vector<int>>& special, vector<int>& needs) {
+        int n = price.size();
+
+        // 过滤不需要计算的大礼包，只保留需要计算的大礼包
+        vector<vector<int>> filterSpecial;
+        for (auto & sp : special) {
+            int totalCount = 0, totalPrice = 0;
+            for (int i = 0; i < n; ++i) {
+                totalCount += sp[i];
+                totalPrice += sp[i] * price[i];
+            }
+            if (totalCount > 0 && totalPrice > sp[n]) {
+                filterSpecial.emplace_back(sp);
+            }
+        }
+
+        return dfs(price, special, needs, filterSpecial, n);
+    }
+
+    // 记忆化搜索计算满足购物清单所需花费的最低价格
+    int dfs(vector<int> price,const vector<vector<int>> & special, vector<int> curNeeds, vector<vector<int>> & filterSpecial, int n) {
+        if (!memo.count(curNeeds)) {
+            int minPrice = 0;
+            for (int i = 0; i < n; ++i) {
+                minPrice += curNeeds[i] * price[i]; // 不购买任何大礼包，原价购买购物清单中的所有物品
+            }
+            for (auto & curSpecial : filterSpecial) {
+                int specialPrice = curSpecial[n];
+                vector<int> nxtNeeds;
+                for (int i = 0; i < n; ++i) {
+                    if (curSpecial[i] > curNeeds[i]) { // 不能购买超出购物清单指定数量的物品
+                        break;
+                    }
+                    nxtNeeds.emplace_back(curNeeds[i] - curSpecial[i]);
+                }
+                if (nxtNeeds.size() == n) { // 大礼包可以购买
+                    minPrice = min(minPrice, dfs(price, special, nxtNeeds, filterSpecial, n) + specialPrice);
+                }
+            }
+            memo[curNeeds] = minPrice;
+        }
+        return memo[curNeeds];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：记忆化搜索
+class Solution {
+    Map<List<Integer>, Integer> memo = new HashMap<List<Integer>, Integer>();
+
+    public int shoppingOffers(List<Integer> price, List<List<Integer>> special, List<Integer> needs) {
+        int n = price.size();
+
+        // 过滤不需要计算的大礼包，只保留需要计算的大礼包
+        List<List<Integer>> filterSpecial = new ArrayList<List<Integer>>();
+        for (List<Integer> sp : special) {
+            int totalCount = 0, totalPrice = 0;
+            for (int i = 0; i < n; ++i) {
+                totalCount += sp.get(i);
+                totalPrice += sp.get(i) * price.get(i);
+            }
+            if (totalCount > 0 && totalPrice > sp.get(n)) {
+                filterSpecial.add(sp);
+            }
+        }
+
+        return dfs(price, special, needs, filterSpecial, n);
+    }
+
+    // 记忆化搜索计算满足购物清单所需花费的最低价格
+    public int dfs(List<Integer> price, List<List<Integer>> special, List<Integer> curNeeds, List<List<Integer>> filterSpecial, int n) {
+        if (!memo.containsKey(curNeeds)) {
+            int minPrice = 0;
+            for (int i = 0; i < n; ++i) {
+                minPrice += curNeeds.get(i) * price.get(i); // 不购买任何大礼包，原价购买购物清单中的所有物品
+            }
+            for (List<Integer> curSpecial : filterSpecial) {
+                int specialPrice = curSpecial.get(n);
+                List<Integer> nxtNeeds = new ArrayList<Integer>();
+                for (int i = 0; i < n; ++i) {
+                    if (curSpecial.get(i) > curNeeds.get(i)) { // 不能购买超出购物清单指定数量的物品
+                        break;
+                    }
+                    nxtNeeds.add(curNeeds.get(i) - curSpecial.get(i));
+                }
+                if (nxtNeeds.size() == n) { // 大礼包可以购买
+                    minPrice = Math.min(minPrice, dfs(price, special, nxtNeeds, filterSpecial, n) + specialPrice);
+                }
+            }
+            memo.put(curNeeds, minPrice);
+        }
+        return memo.get(curNeeds);
+    }
+}
+```
 
 
 
+### [1994. 好子集的数目](https://leetcode.cn/problems/the-number-of-good-subsets/)
 
+困难
+
+给你一个整数数组 `nums` 。如果 `nums` 的一个子集中，所有元素的乘积可以表示为一个或多个 **互不相同的质数** 的乘积，那么我们称它为 **好子集** 。
+
+- 比方说，如果 nums = [1, 2, 3, 4]：
+  - `[2, 3]` ，`[1, 2, 3]` 和 `[1, 3]` 是 **好** 子集，乘积分别为 `6 = 2*3` ，`6 = 2*3` 和 `3 = 3` 。
+  - `[1, 4]` 和 `[4]` 不是 **好** 子集，因为乘积分别为 `4 = 2*2` 和 `4 = 2*2` 。
+
+请你返回 `nums` 中不同的 **好** 子集的数目对 `109 + 7` **取余** 的结果。
+
+`nums` 中的 **子集** 是通过删除 `nums` 中一些（可能一个都不删除，也可能全部都删除）元素后剩余元素组成的数组。如果两个子集删除的下标不同，那么它们被视为不同的子集。
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3,4]
+输出：6
+解释：好子集为：
+- [1,2]：乘积为 2 ，可以表示为质数 2 的乘积。
+- [1,2,3]：乘积为 6 ，可以表示为互不相同的质数 2 和 3 的乘积。
+- [1,3]：乘积为 3 ，可以表示为质数 3 的乘积。
+- [2]：乘积为 2 ，可以表示为质数 2 的乘积。
+- [2,3]：乘积为 6 ，可以表示为互不相同的质数 2 和 3 的乘积。
+- [3]：乘积为 3 ，可以表示为质数 3 的乘积。
+```
+
+C++版本
+
+```java
+// 方法一：状态压缩动态规划
+class Solution {
+private:
+    static constexpr array<int, 10> primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
+    static constexpr int num_max = 30;
+    static constexpr int mod = 1000000007;
+
+public:
+    int numberOfGoodSubsets(vector<int>& nums) {
+        vector<int> freq(num_max + 1);
+        for (int num: nums) {
+            ++freq[num];
+        }
+
+        vector<int> f(1 << primes.size());
+        f[0] = 1;
+        for (int _ = 0; _ < freq[1]; ++_) {
+            f[0] = f[0] * 2 % mod;
+        }
+        
+        for (int i = 2; i <= num_max; ++i) {
+            if (!freq[i]) {
+                continue;
+            }
+            
+            // 检查 i 的每个质因数是否均不超过 1 个
+            int subset = 0, x = i;
+            bool check = true;
+            for (int j = 0; j < primes.size(); ++j) {
+                int prime = primes[j];
+                if (x % (prime * prime) == 0) {
+                    check = false;
+                    break;
+                }
+                if (x % prime == 0) {
+                    subset |= (1 << j);
+                }
+            }
+            if (!check) {
+                continue;
+            }
+
+            // 动态规划
+            for (int mask = (1 << primes.size()) - 1; mask > 0; --mask) {
+                if ((mask & subset) == subset) {
+                    f[mask] = (f[mask] + static_cast<long long>(f[mask ^ subset]) * freq[i]) % mod;
+                }
+            }
+        }
+
+        int ans = 0;
+        for (int mask = 1, mask_max = (1 << primes.size()); mask < mask_max; ++mask) {
+            ans = (ans + f[mask]) % mod;
+        }
+        
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：状态压缩动态规划
+class Solution {
+    static final int[] PRIMES = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
+    static final int NUM_MAX = 30;
+    static final int MOD = 1000000007;
+
+    public int numberOfGoodSubsets(int[] nums) {
+        int[] freq = new int[NUM_MAX + 1];
+        for (int num : nums) {
+            ++freq[num];
+        }
+
+        int[] f = new int[1 << PRIMES.length];
+        f[0] = 1;
+        for (int i = 0; i < freq[1]; ++i) {
+            f[0] = f[0] * 2 % MOD;
+        }
+        
+        for (int i = 2; i <= NUM_MAX; ++i) {
+            if (freq[i] == 0) {
+                continue;
+            }
+            
+            // 检查 i 的每个质因数是否均不超过 1 个
+            int subset = 0, x = i;
+            boolean check = true;
+            for (int j = 0; j < PRIMES.length; ++j) {
+                int prime = PRIMES[j];
+                if (x % (prime * prime) == 0) {
+                    check = false;
+                    break;
+                }
+                if (x % prime == 0) {
+                    subset |= (1 << j);
+                }
+            }
+            if (!check) {
+                continue;
+            }
+
+            // 动态规划
+            for (int mask = (1 << PRIMES.length) - 1; mask > 0; --mask) {
+                if ((mask & subset) == subset) {
+                    f[mask] = (int) ((f[mask] + ((long) f[mask ^ subset]) * freq[i]) % MOD);
+                }
+            }
+        }
+
+        int ans = 0;
+        for (int mask = 1, maskMax = (1 << PRIMES.length); mask < maskMax; ++mask) {
+            ans = (ans + f[mask]) % MOD;
+        }
+        
+        return ans;
+    }
+}
+```
 
