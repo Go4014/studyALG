@@ -1982,3 +1982,552 @@ class Solution {
 }
 ```
 
+
+
+### [1349. 参加考试的最大学生数](https://leetcode.cn/problems/maximum-students-taking-exam/)
+
+困难
+
+给你一个 `m * n` 的矩阵 `seats` 表示教室中的座位分布。如果座位是坏的（不可用），就用 `'#'` 表示；否则，用 `'.'` 表示。
+
+学生可以看到左侧、右侧、左上、右上这四个方向上紧邻他的学生的答卷，但是看不到直接坐在他前面或者后面的学生的答卷。请你计算并返回该考场可以容纳的同时参加考试且无法作弊的 **最大** 学生人数。
+
+学生必须坐在状况良好的座位上。
+
+**示例 1：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/02/09/image.png)
+
+```
+输入：seats = [["#",".","#","#",".","#"],
+              [".","#","#","#","#","."],
+              ["#",".","#","#",".","#"]]
+输出：4
+解释：教师可以让 4 个学生坐在可用的座位上，这样他们就无法在考试中作弊。
+```
+
+C++版本
+
+```c++
+// 方法一：记忆化搜索 + 状态压缩
+class Solution {
+public:
+    int maxStudents(vector<vector<char>>& seats) {
+        int m = seats.size(), n = seats[0].size();
+        unordered_map<int, int> memo;
+
+        auto isSingleRowCompliant = [&](int status, int row) -> bool {
+            for (int j = 0; j < n; j++) {
+                if ((status >> j) & 1) {
+                    if (seats[row][j] == '#') {
+                        return false;
+                    }
+                    if (j > 0 && ((status >> (j - 1)) & 1)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+        
+        auto isCrossRowsCompliant = [&](int status, int upperRowStatus) -> bool {
+            for (int j = 0; j < n; j++) {
+                if ((status >> j) & 1) {
+                    if (j > 0 && ((upperRowStatus >> (j - 1)) & 1)) {
+                        return false;
+                    }
+                    if (j < n - 1 && ((upperRowStatus >> (j + 1)) & 1)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+
+        function<int(int, int)> dp = [&](int row, int status) -> int {
+            int key = (row << n) + status;
+            if (!memo.count(key)) {
+                if (!isSingleRowCompliant(status, row)) {
+                    memo[key] = INT_MIN;
+                    return INT_MIN;
+                }
+                int students = __builtin_popcount(status);
+                if (row == 0) {
+                    memo[key] = students;
+                    return students;
+                }
+                int mx = 0;
+                for (int upperRowStatus = 0; upperRowStatus < 1 << n; upperRowStatus++) {
+                    if (isCrossRowsCompliant(status, upperRowStatus)) {
+                        mx = max(mx, dp(row - 1, upperRowStatus));
+                    }
+                }
+                memo[key] = students + mx;
+            }
+            return memo[key];
+        };
+        
+        int mx = 0;
+        for (int i = 0; i < (1 << n); i++) {
+            mx = max(mx, dp(m - 1, i));
+        }
+        return mx;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：记忆化搜索 + 状态压缩
+class Solution {
+    Map<Integer, Integer> memo = new HashMap<Integer, Integer>();
+
+    public int maxStudents(char[][] seats) {
+        int m = seats.length, n = seats[0].length;
+        int mx = 0;
+        for (int i = 0; i < 1 << n; i++) {
+            mx = Math.max(mx, dp(seats, m - 1, i));
+        }
+        return mx;
+    }
+
+    public int dp(char[][] seats, int row, int status) {
+        int n = seats[0].length;
+        int key = (row << n) + status;
+        if (!memo.containsKey(key)) {
+            if (!isSingleRowCompliant(seats, status, n, row)) {
+                memo.put(key, Integer.MIN_VALUE);
+                return Integer.MIN_VALUE;
+            }
+            int students = Integer.bitCount(status);
+            if (row == 0) {
+                memo.put(key, students);
+                return students;
+            }
+            int mx = 0;
+            for (int upperRowStatus = 0; upperRowStatus < 1 << n; upperRowStatus++) {
+                if (isCrossRowsCompliant(status, upperRowStatus, n)) {
+                    mx = Math.max(mx, dp(seats, row - 1, upperRowStatus));
+                }
+            }
+            memo.put(key, students + mx);
+        }
+        return memo.get(key);
+    }
+
+    public boolean isSingleRowCompliant(char[][] seats, int status, int n, int row) {
+        for (int j = 0; j < n; j++) {
+            if (((status >> j) & 1) == 1) {
+                if (seats[row][j] == '#') {
+                    return false;
+                }
+                if (j > 0 && ((status >> (j - 1)) & 1) == 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isCrossRowsCompliant(int status, int upperRowStatus, int n) {
+        for (int j = 0; j < n; j++) {
+            if (((status >> j) & 1) == 1) {
+                if (j > 0 && ((upperRowStatus >> (j - 1)) & 1) == 1) {
+                    return false;
+                }
+                if (j < n - 1 && ((upperRowStatus >> (j + 1)) & 1) == 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+```
+
+
+
+### [698. 划分为k个相等的子集](https://leetcode.cn/problems/partition-to-k-equal-sum-subsets/)
+
+中等
+
+给定一个整数数组 `nums` 和一个正整数 `k`，找出是否有可能把这个数组分成 `k` 个非空子集，其总和都相等。
+
+**示例 1：**
+
+```
+输入： nums = [4, 3, 2, 3, 5, 2, 1], k = 4
+输出： True
+说明： 有可能将其分成 4 个子集（5），（1,4），（2,3），（2,3）等于总和。
+```
+
+C++版本
+
+```c++
+// 方法一：状态压缩 + 记忆化搜索
+class Solution {
+public:
+    bool canPartitionKSubsets(vector<int>& nums, int k) {
+        int all = accumulate(nums.begin(), nums.end(), 0);
+        if (all % k > 0) {
+            return false;
+        }
+        int per = all / k; 
+        sort(nums.begin(), nums.end());
+        if (nums.back() > per) {
+            return false;
+        }
+        int n = nums.size();
+        vector<bool> dp(1 << n, true);
+        function<bool(int,int)> dfs = [&](int s, int p)->bool {
+            if (s == 0) {
+                return true;
+            }
+            if (!dp[s]) {
+                return dp[s];
+            }
+            dp[s] = false;
+            for (int i = 0; i < n; i++) {
+                if (nums[i] + p > per) {
+                    break;
+                }
+                if ((s >> i) & 1) {
+                    if (dfs(s ^ (1 << i), (p + nums[i]) % per)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+        return dfs((1 << n) - 1, 0);
+    }
+};
+
+// 方法二：状态压缩 + 动态规划
+class Solution {
+public:
+    bool canPartitionKSubsets(vector<int>& nums, int k) {
+        int all = accumulate(nums.begin(), nums.end(), 0);
+        if (all % k > 0) {
+            return false;
+        }
+        int per = all / k; 
+        sort(nums.begin(), nums.end());
+        if (nums.back() > per) {
+            return false;
+        }
+        int n = nums.size();
+        vector<bool> dp(1 << n, false);
+        vector<int> curSum(1 << n, 0);
+        dp[0] = true;
+        for (int i = 0; i < 1 << n; i++) {
+            if (!dp[i]) {
+                continue;
+            }
+            for (int j = 0; j < n; j++) {
+                if (curSum[i] + nums[j] > per) {
+                    break;
+                }
+                if (((i >> j) & 1) == 0) {
+                    int next = i | (1 << j);
+                    if (!dp[next]) {
+                        curSum[next] = (curSum[i] + nums[j]) % per;
+                        dp[next] = true;
+                    }
+                }
+            }
+        }
+        return dp[(1 << n) - 1];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：状态压缩 + 记忆化搜索
+class Solution {
+    int[] nums;
+    int per, n;
+    boolean[] dp;
+
+    public boolean canPartitionKSubsets(int[] nums, int k) {
+        this.nums = nums;
+        int all = Arrays.stream(nums).sum();
+        if (all % k != 0) {
+            return false;
+        }
+        per = all / k;
+        Arrays.sort(nums);
+        n = nums.length;
+        if (nums[n - 1] > per) {
+            return false;
+        }
+        dp = new boolean[1 << n];
+        Arrays.fill(dp, true);
+        return dfs((1 << n) - 1, 0);
+    }
+
+    public boolean dfs(int s, int p) {
+        if (s == 0) {
+            return true;
+        }
+        if (!dp[s]) {
+            return dp[s];
+        }
+        dp[s] = false;
+        for (int i = 0; i < n; i++) {
+            if (nums[i] + p > per) {
+                break;
+            }
+            if (((s >> i) & 1) != 0) {
+                if (dfs(s ^ (1 << i), (p + nums[i]) % per)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
+
+// 方法二：状态压缩 + 动态规划
+class Solution {
+    public boolean canPartitionKSubsets(int[] nums, int k) {
+        int all = Arrays.stream(nums).sum();
+        if (all % k != 0) {
+            return false;
+        }
+        int per = all / k;
+        Arrays.sort(nums);
+        int n = nums.length;
+        if (nums[n - 1] > per) {
+            return false;
+        }
+        boolean[] dp = new boolean[1 << n];
+        int[] curSum = new int[1 << n];
+        dp[0] = true;
+        for (int i = 0; i < 1 << n; i++) {
+            if (!dp[i]) {
+                continue;
+            }
+            for (int j = 0; j < n; j++) {
+                if (curSum[i] + nums[j] > per) {
+                    break;
+                }
+                if (((i >> j) & 1) == 0) {
+                    int next = i | (1 << j);
+                    if (!dp[next]) {
+                        curSum[next] = (curSum[i] + nums[j]) % per;
+                        dp[next] = true;
+                    }
+                }
+            }
+        }
+        return dp[(1 << n) - 1];
+    }
+}
+```
+
+
+
+### [943. 最短超级串](https://leetcode.cn/problems/find-the-shortest-superstring/)
+
+困难
+
+给定一个字符串数组 `words`，找到以 `words` 中每个字符串作为子字符串的最短字符串。如果有多个有效最短字符串满足题目条件，返回其中 **任意一个** 即可。
+
+我们可以假设 `words` 中没有字符串是 `words` 中另一个字符串的子字符串。
+
+**示例 1：**
+
+```
+输入：words = ["alex","loves","leetcode"]
+输出："alexlovesleetcode"
+解释："alex"，"loves"，"leetcode" 的所有排列都会被接受。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    string shortestSuperstring(vector<string>& A) {
+        int N = A.size();
+
+        // Populate overlaps
+        vector<vector<int>> overlaps(N, vector<int>(N, 0));
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                if (i != j) {
+                    int m = min(A[i].length(), A[j].length());
+                    for (int k = m; k >= 0; --k) {
+                        if (A[i].substr(A[i].length() - k) == A[j].substr(0, k)) {
+                            overlaps[i][j] = k;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // dp[mask][i] = most overlap with mask, ending with ith element
+        vector<vector<int>> dp(1 << N, vector<int>(N, 0));
+        vector<vector<int>> parent(1 << N, vector<int>(N, -1));
+
+        for (int mask = 0; mask < (1 << N); ++mask) {
+            for (int bit = 0; bit < N; ++bit) {
+                if ((mask & (1 << bit)) != 0) {
+                    int pmask = mask ^ (1 << bit);
+                    if (pmask == 0) continue;
+                    for (int i = 0; i < N; ++i) {
+                        if ((pmask & (1 << i)) != 0) {
+                            int val = dp[pmask][i] + overlaps[i][bit];
+                            if (val > dp[mask][bit]) {
+                                dp[mask][bit] = val;
+                                parent[mask][bit] = i;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Answer will have length sum(len(A[i]) for i) - max(dp[-1])
+        // Reconstruct answer, first as a sequence 'perm' representing
+        // the indices of each word from left to right.
+        vector<int> perm(N);
+        vector<bool> seen(N, false);
+        int t = 0;
+        int mask = (1 << N) - 1;
+
+        // p: the last element of perm (last word written left to right)
+        int p = 0;
+        for (int j = 0; j < N; ++j) {
+            if (dp[(1 << N) - 1][j] > dp[(1 << N) - 1][p]) {
+                p = j;
+            }
+        }
+
+        // Follow parents down backwards path that retains maximum overlap
+        while (p != -1) {
+            perm[t++] = p;
+            seen[p] = true;
+            int p2 = parent[mask][p];
+            mask ^= 1 << p;
+            p = p2;
+        }
+
+        // Reverse perm
+        reverse(perm.begin(), perm.begin() + t);
+
+        // Fill in remaining words not yet added
+        for (int i = 0; i < N; ++i) {
+            if (!seen[i]) {
+                perm[t++] = i;
+            }
+        }
+
+        // Reconstruct final answer given perm
+        string ans = A[perm[0]];
+        for (int i = 1; i < N; ++i) {
+            int overlap = overlaps[perm[i-1]][perm[i]];
+            ans += A[perm[i]].substr(overlap);
+        }
+
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public String shortestSuperstring(String[] A) {
+        int N = A.length;
+
+        // Populate overlaps
+        int[][] overlaps = new int[N][N];
+        for (int i = 0; i < N; ++i)
+            for (int j = 0; j < N; ++j) if (i != j) {
+                int m = Math.min(A[i].length(), A[j].length());
+                for (int k = m; k >= 0; --k)
+                    if (A[i].endsWith(A[j].substring(0, k))) {
+                        overlaps[i][j] = k;
+                        break;
+                    }
+            }
+
+        // dp[mask][i] = most overlap with mask, ending with ith element
+        int[][] dp = new int[1<<N][N];
+        int[][] parent = new int[1<<N][N];
+        for (int mask = 0; mask < (1<<N); ++mask) {
+            Arrays.fill(parent[mask], -1);
+
+            for (int bit = 0; bit < N; ++bit) if (((mask >> bit) & 1) > 0) {
+                // Let's try to find dp[mask][bit].  Previously, we had
+                // a collection of items represented by pmask.
+                int pmask = mask ^ (1 << bit);
+                if (pmask == 0) continue;
+                for (int i = 0; i < N; ++i) if (((pmask >> i) & 1) > 0) {
+                    // For each bit i in pmask, calculate the value
+                    // if we ended with word i, then added word 'bit'.
+                    int val = dp[pmask][i] + overlaps[i][bit];
+                    if (val > dp[mask][bit]) {
+                        dp[mask][bit] = val;
+                        parent[mask][bit] = i;
+                    }
+                }
+            }
+        }
+
+        // # Answer will have length sum(len(A[i]) for i) - max(dp[-1])
+        // Reconstruct answer, first as a sequence 'perm' representing
+        // the indices of each word from left to right.
+
+        int[] perm = new int[N];
+        boolean[] seen = new boolean[N];
+        int t = 0;
+        int mask = (1 << N) - 1;
+
+        // p: the last element of perm (last word written left to right)
+        int p = 0;
+        for (int j = 0; j < N; ++j)
+            if (dp[(1<<N) - 1][j] > dp[(1<<N) - 1][p])
+                p = j;
+
+        // Follow parents down backwards path that retains maximum overlap
+        while (p != -1) {
+            perm[t++] = p;
+            seen[p] = true;
+            int p2 = parent[mask][p];
+            mask ^= 1 << p;
+            p = p2;
+        }
+
+        // Reverse perm
+        for (int i = 0; i < t/2; ++i) {
+            int v = perm[i];
+            perm[i] = perm[t-1-i];
+            perm[t-1-i] = v;
+        }
+
+        // Fill in remaining words not yet added
+        for (int i = 0; i < N; ++i) if (!seen[i])
+            perm[t++] = i;
+
+        // Reconstruct final answer given perm
+        StringBuilder ans = new StringBuilder(A[perm[0]]);
+        for (int i = 1; i < N; ++i) {
+            int overlap = overlaps[perm[i-1]][perm[i]];
+            ans.append(A[perm[i]].substring(overlap));
+        }
+
+        return ans.toString();
+    }
+}
+```
+
