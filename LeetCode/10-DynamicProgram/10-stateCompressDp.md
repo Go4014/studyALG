@@ -2531,3 +2531,294 @@ class Solution {
 }
 ```
 
+
+
+### [691. 贴纸拼词](https://leetcode.cn/problems/stickers-to-spell-word/)
+
+困难
+
+我们有 `n` 种不同的贴纸。每个贴纸上都有一个小写的英文单词。
+
+您想要拼写出给定的字符串 `target` ，方法是从收集的贴纸中切割单个字母并重新排列它们。如果你愿意，你可以多次使用每个贴纸，每个贴纸的数量是无限的。
+
+返回你需要拼出 `target` 的最小贴纸数量。如果任务不可能，则返回 `-1` 。
+
+**注意：**在所有的测试用例中，所有的单词都是从 `1000` 个最常见的美国英语单词中随机选择的，并且 `target` 被选择为两个随机单词的连接。
+
+**示例 1：**
+
+```
+输入： stickers = ["with","example","science"], target = "thehat"
+输出：3
+解释：
+我们可以使用 2 个 "with" 贴纸，和 1 个 "example" 贴纸。
+把贴纸上的字母剪下来并重新排列后，就可以形成目标 “thehat“ 了。
+此外，这是形成目标字符串所需的最小贴纸数量。
+```
+
+C++版本
+
+```c++
+// 方法一：记忆化搜索 + 状态压缩
+class Solution {
+public:
+    int minStickers(vector<string>& stickers, string target) {
+        int m = target.size();
+        vector<int> dp(1 << m, -1);
+        dp[0] = 0;
+        function<int(int)> helper = [&](int mask) {
+            if (dp[mask] != -1) {
+                return dp[mask];
+            }
+            dp[mask] = m + 1;
+            for (auto & sticker : stickers) {
+                int left = mask;
+                vector<int> cnt(26);
+                for (char & c : sticker) {
+                    cnt[c - 'a']++;
+                }
+                for (int i = 0; i < m; i++) {
+                    if ((mask >> i & 1) && cnt[target[i] - 'a'] > 0) {
+                        cnt[target[i] - 'a']--;
+                        left ^= 1 << i;
+                    }
+                }
+                if (left < mask) {
+                    dp[mask] = min(dp[mask], helper(left) + 1);
+                }
+            }
+            return dp[mask];
+        };
+        int res = helper((1 << m) - 1);
+        return res > m ? -1 : res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：记忆化搜索 + 状态压缩
+class Solution {
+    public int minStickers(String[] stickers, String target) {
+        int m = target.length();
+        int[] memo = new int[1 << m];
+        Arrays.fill(memo, -1);
+        memo[0] = 0;
+        int res = dp(stickers, target, memo, (1 << m) - 1);
+        return res <= m ? res : -1;
+    }
+
+    public int dp(String[] stickers, String target, int[] memo, int mask) {
+        int m = target.length();
+        if (memo[mask] < 0) {
+            int res = m + 1;
+            for (String sticker : stickers) {
+                int left = mask;
+                int[] cnt = new int[26];
+                for (int i = 0; i < sticker.length(); i++) {
+                    cnt[sticker.charAt(i) - 'a']++;
+                }
+                for (int i = 0; i < target.length(); i++) {
+                    char c = target.charAt(i);
+                    if (((mask >> i) & 1) == 1 && cnt[c - 'a'] > 0) {
+                        cnt[c - 'a']--;
+                        left ^= 1 << i;
+                    }
+                }
+                if (left < mask) {
+                    res = Math.min(res, dp(stickers, target, memo, left) + 1);
+                }
+            }
+            memo[mask] = res;
+        }
+        return memo[mask];
+    }
+}
+
+// 其他
+class Solution {
+    public static int minStickers(String[] stickers, String target) {
+        if (stickers == null || stickers.length == 0 || target == null || target.length() == 0) {
+            return 0;
+        }
+        int N = stickers.length;
+        int[][] scount = new int[N][26];
+        for (int i = 0; i < N; i++) {
+            char[] chs = stickers[i].toCharArray();
+            for (char c : chs) {
+                scount[i][c - 'a']++;
+            }
+        }
+        Map<String, Integer> map = new HashMap<>();
+        int res = process(scount, target, map);
+        return res == Integer.MAX_VALUE ? -1 : res;
+    }
+
+    private static int process(int[][] stickers, String target, Map<String,Integer> map) {
+        if (target.length() == 0) {
+            return 0;
+        }
+        if(map.containsKey(target)){
+            return map.get(target);
+        }
+        int[] tcount = new int[26];
+        char[] tchas = target.toCharArray();
+        for (int i = 0; i < tchas.length; i++) {
+            tcount[(tchas[i] - 'a')]++;
+        }
+        int N = stickers.length;
+        int min = Integer.MAX_VALUE;
+        for (int i = 0; i < N; i++) {
+            // 重要优化 减支
+            int[] sticker = stickers[i];
+            if(sticker[tchas[0] - 'a'] > 0){
+                StringBuilder sb = new StringBuilder();
+                for(int j = 0;j < tcount.length;j++){
+                    if(tcount[j] > 0){
+                        int num = tcount[j] - sticker[j];
+                        for(int times = 0; times < num; times++){
+                            sb.append((char)('a' + j));
+                        }
+                    }
+                }
+                String rest = sb.toString();
+                min = Math.min(process(stickers, rest, map), min);
+            }
+        }
+        int res = min + (min == Integer.MAX_VALUE ? 0 : 1);
+        map.put(target, res);
+        return res;
+    }
+}
+```
+
+
+
+### [982. 按位与为零的三元组](https://leetcode.cn/problems/triples-with-bitwise-and-equal-to-zero/)
+
+困难
+
+给你一个整数数组 `nums` ，返回其中 **按位与三元组** 的数目。
+
+**按位与三元组** 是由下标 `(i, j, k)` 组成的三元组，并满足下述全部条件：
+
+- `0 <= i < nums.length`
+- `0 <= j < nums.length`
+- `0 <= k < nums.length`
+- `nums[i] & nums[j] & nums[k] == 0` ，其中 `&` 表示按位与运算符。
+
+**示例 1：**
+
+```
+输入：nums = [2,1,3]
+输出：12
+解释：可以选出如下 i, j, k 三元组：
+(i=0, j=0, k=1) : 2 & 2 & 1
+(i=0, j=1, k=0) : 2 & 1 & 2
+(i=0, j=1, k=1) : 2 & 1 & 1
+(i=0, j=1, k=2) : 2 & 1 & 3
+(i=0, j=2, k=1) : 2 & 3 & 1
+(i=1, j=0, k=0) : 1 & 2 & 2
+(i=1, j=0, k=1) : 1 & 2 & 1
+(i=1, j=0, k=2) : 1 & 2 & 3
+(i=1, j=1, k=0) : 1 & 1 & 2
+(i=1, j=2, k=0) : 1 & 3 & 2
+(i=2, j=0, k=1) : 3 & 2 & 1
+(i=2, j=1, k=0) : 3 & 1 & 2
+```
+
+C++版本
+
+```c++
+// 方法一：枚举
+class Solution {
+public:
+    int countTriplets(vector<int>& nums) {
+        vector<int> cnt(1 << 16);
+        for (int x: nums) {
+            for (int y: nums) {
+                ++cnt[x & y];
+            }
+        }
+        int ans = 0;
+        for (int x: nums) {
+            for (int mask = 0; mask < (1 << 16); ++mask) {
+                if ((x & mask) == 0) {
+                    ans += cnt[mask];
+                }
+            }
+        }
+        return ans;
+    }
+};
+
+// 方法二：枚举 + 子集优化
+class Solution {
+public:
+    int countTriplets(vector<int>& nums) {
+        vector<int> cnt(1 << 16);
+        for (int x: nums) {
+            for (int y: nums) {
+                ++cnt[x & y];
+            }
+        }
+        int ans = 0;
+        for (int x: nums) {
+            x = x ^ 0xffff;
+            for (int sub = x; sub; sub = (sub - 1) & x) {
+                ans += cnt[sub];
+            }
+            ans += cnt[0];
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：枚举
+class Solution {
+    public int countTriplets(int[] nums) {
+        int[] cnt = new int[1 << 16];
+        for (int x : nums) {
+            for (int y : nums) {
+                ++cnt[x & y];
+            }
+        }
+        int ans = 0;
+        for (int x : nums) {
+            for (int mask = 0; mask < (1 << 16); ++mask) {
+                if ((x & mask) == 0) {
+                    ans += cnt[mask];
+                }
+            }
+        }
+        return ans;
+    }
+}
+
+// 方法二：枚举 + 子集优化
+class Solution {
+    public int countTriplets(int[] nums) {
+        int[] cnt = new int[1 << 16];
+        for (int x : nums) {
+            for (int y : nums) {
+                ++cnt[x & y];
+            }
+        }
+        int ans = 0;
+        for (int x : nums) {
+            x = x ^ 0xffff;
+            for (int sub = x; sub != 0; sub = (sub - 1) & x) {
+                ans += cnt[sub];
+            }
+            ans += cnt[0];
+        }
+        return ans;
+    }
+}
+```
+
