@@ -328,3 +328,369 @@ class Solution {
 }
 ```
 
+
+
+### [96. 不同的二叉搜索树](https://leetcode.cn/problems/unique-binary-search-trees/)
+
+中等
+
+给你一个整数 `n` ，求恰由 `n` 个节点组成且节点值从 `1` 到 `n` 互不相同的 **二叉搜索树** 有多少种？返回满足题意的二叉搜索树的种数。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/01/18/uniquebstn3.jpg)
+
+```
+输入：n = 3
+输出：5
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int numTrees(int n) {
+        vector<int> G(n + 1, 0);
+        G[0] = 1;
+        G[1] = 1;
+
+        for (int i = 2; i <= n; ++i) {
+            for (int j = 1; j <= i; ++j) {
+                G[i] += G[j - 1] * G[i - j];
+            }
+        }
+        return G[n];
+    }
+};
+
+// 方法二：数学
+class Solution {
+public:
+    int numTrees(int n) {
+        long long C = 1;
+        for (int i = 0; i < n; ++i) {
+            C = C * 2 * (2 * i + 1) / (i + 2);
+        }
+        return (int)C;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int numTrees(int n) {
+        int[] G = new int[n + 1];
+        G[0] = 1;
+        G[1] = 1;
+
+        for (int i = 2; i <= n; ++i) {
+            for (int j = 1; j <= i; ++j) {
+                G[i] += G[j - 1] * G[i - j];
+            }
+        }
+        return G[n];
+    }
+}
+
+// 方法二：数学
+class Solution {
+    public int numTrees(int n) {
+        // 提示：我们在这里需要用 long 类型防止计算过程中的溢出
+        long C = 1;
+        for (int i = 0; i < n; ++i) {
+            C = C * 2 * (2 * i + 1) / (i + 2);
+        }
+        return (int) C;
+    }
+}
+```
+
+
+
+### [790. 多米诺和托米诺平铺](https://leetcode.cn/problems/domino-and-tromino-tiling/)
+
+中等
+
+有两种形状的瓷砖：一种是 `2 x 1` 的多米诺形，另一种是形如 "L" 的托米诺形。两种形状都可以旋转。
+
+![img](https://assets.leetcode.com/uploads/2021/07/15/lc-domino.jpg)
+
+给定整数 n ，返回可以平铺 `2 x n` 的面板的方法的数量。**返回对** `109 + 7` **取模** 的值。
+
+平铺指的是每个正方形都必须有瓷砖覆盖。两个平铺不同，当且仅当面板上有四个方向上的相邻单元中的两个，使得恰好有一个平铺有一个瓷砖占据两个正方形。
+
+**示例 1:**
+
+![img](https://assets.leetcode.com/uploads/2021/07/15/lc-domino1.jpg)
+
+```
+输入: n = 3
+输出: 5
+解释: 五种不同的方法如上所示。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+const long long mod = 1e9 + 7;
+class Solution {
+public:
+    int numTilings(int n) {
+        vector<vector<long long>> dp(n + 1, vector<long long>(4));
+        dp[0][3] = 1;
+        for (int i = 1; i <= n; i++) {
+            dp[i][0] = dp[i - 1][3];
+            dp[i][1] = (dp[i - 1][0] + dp[i - 1][2]) % mod;
+            dp[i][2] = (dp[i - 1][0] + dp[i - 1][1]) % mod;
+            dp[i][3] = (dp[i - 1][0] + dp[i - 1][1] + dp[i - 1][2] + dp[i - 1][3]) % mod;
+        }
+        return dp[n][3];
+    }
+};
+
+// 方法二：矩阵快速幂
+const long long mod = 1e9 + 7;
+class Solution {
+public:
+    vector<vector<long long>> mulMatrix(const vector<vector<long long>> &m1, const vector<vector<long long>> &m2) {
+        int n1 = m1.size(), n2 = m2.size(), n3 = m2[0].size();
+        vector<vector<long long>> res(n1, vector<long long>(n3));
+        for (int i = 0; i < n1; i++) {
+            for (int k = 0; k < n3; k++) {
+                for (int j = 0; j < n2; j++) {
+                    res[i][k] = (res[i][k] + m1[i][j] * m2[j][k]) % mod;
+                }
+            }
+        }
+        return res;
+    }
+
+    int numTilings(int n) {
+        vector<vector<long long>> mat = {
+            {0, 0, 0, 1},
+            {1, 0, 1, 0},
+            {1, 1, 0, 0},
+            {1, 1, 1, 1}
+        };
+        vector<vector<long long>> matn = {
+            {1, 0, 0, 0},
+            {0, 1, 0, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 1}
+        };
+        while (n) {
+            if (n & 1) {
+                matn = mulMatrix(matn, mat);
+            }
+            mat = mulMatrix(mat, mat);
+            n >>= 1;
+        }
+        return matn[3][3];
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    static final int MOD = 1000000007;
+
+    public int numTilings(int n) {
+        int[][] dp = new int[n + 1][4];
+        dp[0][3] = 1;
+        for (int i = 1; i <= n; i++) {
+            dp[i][0] = dp[i - 1][3];
+            dp[i][1] = (dp[i - 1][0] + dp[i - 1][2]) % MOD;
+            dp[i][2] = (dp[i - 1][0] + dp[i - 1][1]) % MOD;
+            dp[i][3] = (((dp[i - 1][0] + dp[i - 1][1]) % MOD + dp[i - 1][2]) % MOD + dp[i - 1][3]) % MOD;
+        }
+        return dp[n][3];
+    }
+}
+
+// 方法二：矩阵快速幂
+class Solution {
+    static final int MOD = 1000000007;
+
+    public int numTilings(int n) {
+        int[][] mat = {
+            {0, 0, 0, 1},
+            {1, 0, 1, 0},
+            {1, 1, 0, 0},
+            {1, 1, 1, 1}
+        };
+        int[][] matn = {
+            {1, 0, 0, 0},
+            {0, 1, 0, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 1}
+        };
+        while (n > 0) {
+            if ((n & 1) != 0) {
+                matn = mulMatrix(matn, mat);
+            }
+            mat = mulMatrix(mat, mat);
+            n >>= 1;
+        }
+        return matn[3][3];
+    }
+
+    public int[][] mulMatrix(int[][] m1, int[][] m2) {
+        int n1 = m1.length, n2 = m2.length, n3 = m2[0].length;
+        int[][] res = new int[n1][n3];
+        for (int i = 0; i < n1; i++) {
+            for (int k = 0; k < n3; k++) {
+                for (int j = 0; j < n2; j++) {
+                    res[i][k] = (int) ((res[i][k] + (long) m1[i][j] * m2[j][k]) % MOD);
+                }
+            }
+        }
+        return res;
+    }
+}
+```
+
+
+
+### [70. 爬楼梯](https://leetcode.cn/problems/climbing-stairs/)
+
+简单
+
+假设你正在爬楼梯。需要 `n` 阶你才能到达楼顶。
+
+每次你可以爬 `1` 或 `2` 个台阶。你有多少种不同的方法可以爬到楼顶呢？
+
+**示例 1：**
+
+```
+输入：n = 2
+输出：2
+解释：有两种方法可以爬到楼顶。
+1. 1 阶 + 1 阶
+2. 2 阶
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int climbStairs(int n) {
+        int p = 0, q = 0, r = 1;
+        for (int i = 1; i <= n; ++i) {
+            p = q; 
+            q = r; 
+            r = p + q;
+        }
+        return r;
+    }
+};
+
+// 方法二：矩阵快速幂
+public class Solution {
+    public int climbStairs(int n) {
+        int[][] q = {{1, 1}, {1, 0}};
+        int[][] res = pow(q, n);
+        return res[0][0];
+    }
+
+    public int[][] pow(int[][] a, int n) {
+        int[][] ret = {{1, 0}, {0, 1}};
+        while (n > 0) {
+            if ((n & 1) == 1) {
+                ret = multiply(ret, a);
+            }
+            n >>= 1;
+            a = multiply(a, a);
+        }
+        return ret;
+    }
+
+    public int[][] multiply(int[][] a, int[][] b) {
+        int[][] c = new int[2][2];
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                c[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j];
+            }
+        }
+        return c;
+    }
+}
+
+// 方法三：通项公式
+class Solution {
+public:
+    int climbStairs(int n) {
+        double sqrt5 = sqrt(5);
+        double fibn = pow((1 + sqrt5) / 2, n + 1) - pow((1 - sqrt5) / 2, n + 1);
+        return (int)round(fibn / sqrt5);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int climbStairs(int n) {
+        int p = 0, q = 0, r = 1;
+        for (int i = 1; i <= n; ++i) {
+            p = q; 
+            q = r; 
+            r = p + q;
+        }
+        return r;
+    }
+}
+
+// 方法二：矩阵快速幂
+class Solution {
+public:
+    vector<vector<long long>> multiply(vector<vector<long long>> &a, vector<vector<long long>> &b) {
+        vector<vector<long long>> c(2, vector<long long>(2));
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                c[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j];
+            }
+        }
+        return c;
+    }
+
+    vector<vector<long long>> matrixPow(vector<vector<long long>> a, int n) {
+        vector<vector<long long>> ret = {{1, 0}, {0, 1}};
+        while (n > 0) {
+            if ((n & 1) == 1) {
+                ret = multiply(ret, a);
+            }
+            n >>= 1;
+            a = multiply(a, a);
+        }
+        return ret;
+    }
+
+    int climbStairs(int n) {
+        vector<vector<long long>> ret = {{1, 1}, {1, 0}};
+        vector<vector<long long>> res = matrixPow(ret, n);
+        return res[0][0];
+    }
+};
+
+// 方法三：通项公式public class Solution {
+    public int climbStairs(int n) {
+        double sqrt5 = Math.sqrt(5);
+        double fibn = Math.pow((1 + sqrt5) / 2, n + 1) - Math.pow((1 - sqrt5) / 2, n + 1);
+        return (int) Math.round(fibn / sqrt5);
+    }
+}
+```
+
