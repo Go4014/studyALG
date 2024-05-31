@@ -694,3 +694,380 @@ public:
 }
 ```
 
+
+
+### [746. 使用最小花费爬楼梯](https://leetcode.cn/problems/min-cost-climbing-stairs/)
+
+简单
+
+给你一个整数数组 `cost` ，其中 `cost[i]` 是从楼梯第 `i` 个台阶向上爬需要支付的费用。一旦你支付此费用，即可选择向上爬一个或者两个台阶。
+
+你可以选择从下标为 `0` 或下标为 `1` 的台阶开始爬楼梯。
+
+请你计算并返回达到楼梯顶部的最低花费。
+
+**示例 1：**
+
+```
+输入：cost = [10,15,20]
+输出：15
+解释：你将从下标为 1 的台阶开始。
+- 支付 15 ，向上爬两个台阶，到达楼梯顶部。
+总花费为 15 。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int minCostClimbingStairs(vector<int>& cost) {
+        int n = cost.size();
+        vector<int> dp(n + 1);
+        dp[0] = dp[1] = 0;
+        for (int i = 2; i <= n; i++) {
+            dp[i] = min(dp[i - 1] + cost[i - 1], dp[i - 2] + cost[i - 2]);
+        }
+        return dp[n];
+    }
+};
+
+// 优化
+class Solution {
+public:
+    int minCostClimbingStairs(vector<int>& cost) {
+        int n = cost.size();
+        int prev = 0, curr = 0;
+        for (int i = 2; i <= n; i++) {
+            int next = min(curr + cost[i - 1], prev + cost[i - 2]);
+            prev = curr;
+            curr = next;
+        }
+        return curr;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int minCostClimbingStairs(int[] cost) {
+        int n = cost.length;
+        int[] dp = new int[n + 1];
+        dp[0] = dp[1] = 0;
+        for (int i = 2; i <= n; i++) {
+            dp[i] = Math.min(dp[i - 1] + cost[i - 1], dp[i - 2] + cost[i - 2]);
+        }
+        return dp[n];
+    }
+}
+
+// 优化
+class Solution {
+    public int minCostClimbingStairs(int[] cost) {
+        int n = cost.length;
+        int prev = 0, curr = 0;
+        for (int i = 2; i <= n; i++) {
+            int next = Math.min(curr + cost[i - 1], prev + cost[i - 2]);
+            prev = curr;
+            curr = next;
+        }
+        return curr;
+    }
+}
+```
+
+
+
+### [509. 斐波那契数](https://leetcode.cn/problems/fibonacci-number/)
+
+简单
+
+**斐波那契数** （通常用 `F(n)` 表示）形成的序列称为 **斐波那契数列** 。该数列由 `0` 和 `1` 开始，后面的每一项数字都是前面两项数字的和。也就是：`F(0) = 0，F(1) = 1; F(n) = F(n - 1) + F(n - 2)，其中 n > 1; `给定 `n` ，请计算 `F(n)` 。
+
+**示例 1：**
+
+```
+输入：n = 2
+输出：1
+解释：F(2) = F(1) + F(0) = 1 + 0 = 1
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int fib(int n) {
+        if (n < 2) {
+            return n;
+        }
+        int p = 0, q = 0, r = 1;
+        for (int i = 2; i <= n; ++i) {
+            p = q; 
+            q = r; 
+            r = p + q;
+        }
+        return r;
+    }
+};
+
+// 方法二：矩阵快速幂
+class Solution {
+public:
+    int fib(int n) {
+        if (n < 2) {
+            return n;
+        }
+        vector<vector<int>> q{{1, 1}, {1, 0}};
+        vector<vector<int>> res = matrix_pow(q, n - 1);
+        return res[0][0];
+    }
+
+    vector<vector<int>> matrix_pow(vector<vector<int>>& a, int n) {
+        vector<vector<int>> ret{{1, 0}, {0, 1}};
+        while (n > 0) {
+            if (n & 1) {
+                ret = matrix_multiply(ret, a);
+            }
+            n >>= 1;
+            a = matrix_multiply(a, a);
+        }
+        return ret;
+    }
+
+    vector<vector<int>> matrix_multiply(vector<vector<int>>& a, vector<vector<int>>& b) {
+        vector<vector<int>> c{{0, 0}, {0, 0}};
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                c[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j];
+            }
+        }
+        return c;
+    }
+};
+
+// 方法三：通项公式
+class Solution {
+public:
+    int fib(int n) {
+        double sqrt5 = sqrt(5);
+        double fibN = pow((1 + sqrt5) / 2, n) - pow((1 - sqrt5) / 2, n);
+        return round(fibN / sqrt5);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int fib(int n) {
+        if (n < 2) {
+            return n;
+        }
+        int p = 0, q = 0, r = 1;
+        for (int i = 2; i <= n; ++i) {
+            p = q; 
+            q = r; 
+            r = p + q;
+        }
+        return r;
+    }
+}
+
+// 方法二：矩阵快速幂
+class Solution {
+    public int fib(int n) {
+        if (n < 2) {
+            return n;
+        }
+        int[][] q = {{1, 1}, {1, 0}};
+        int[][] res = pow(q, n - 1);
+        return res[0][0];
+    }
+
+    public int[][] pow(int[][] a, int n) {
+        int[][] ret = {{1, 0}, {0, 1}};
+        while (n > 0) {
+            if ((n & 1) == 1) {
+                ret = multiply(ret, a);
+            }
+            n >>= 1;
+            a = multiply(a, a);
+        }
+        return ret;
+    }
+
+    public int[][] multiply(int[][] a, int[][] b) {
+        int[][] c = new int[2][2];
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                c[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j];
+            }
+        }
+        return c;
+    }
+}
+
+// 方法三：通项公式
+class Solution {
+    public int fib(int n) {
+        double sqrt5 = Math.sqrt(5);
+        double fibN = Math.pow((1 + sqrt5) / 2, n) - Math.pow((1 - sqrt5) / 2, n);
+        return (int) Math.round(fibN / sqrt5);
+    }
+}
+```
+
+
+
+### [1137. 第 N 个泰波那契数](https://leetcode.cn/problems/n-th-tribonacci-number/)
+
+简单
+
+泰波那契序列 Tn 定义如下： 
+
+T0 = 0, T1 = 1, T2 = 1, 且在 n >= 0 的条件下 Tn+3 = Tn + Tn+1 + Tn+2
+
+给你整数 `n`，请返回第 n 个泰波那契数 Tn 的值。
+
+**示例 1：**
+
+```
+输入：n = 4
+输出：4
+解释：
+T_3 = 0 + 1 + 1 = 2
+T_4 = 1 + 1 + 2 = 4
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int tribonacci(int n) {
+        if (n == 0) {
+            return 0;
+        }
+        if (n <= 2) {
+            return 1;
+        }
+        int p = 0, q = 0, r = 1, s = 1;
+        for (int i = 3; i <= n; ++i) {
+            p = q;
+            q = r;
+            r = s;
+            s = p + q + r;
+        }
+        return s;
+    }
+};
+
+// 方法二：矩阵快速幂
+class Solution {
+public:
+    int tribonacci(int n) {
+        if (n == 0) {
+            return 0;
+        }
+        if (n <= 2) {
+            return 1;
+        }
+        vector<vector<long>> q = {{1, 1, 1}, {1, 0, 0}, {0, 1, 0}};
+        vector<vector<long>> res = pow(q, n);
+        return res[0][2];
+    }
+
+    vector<vector<long>> pow(vector<vector<long>>& a, long n) {
+        vector<vector<long>> ret = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+        while (n > 0) {
+            if ((n & 1) == 1) {
+                ret = multiply(ret, a);
+            }
+            n >>= 1;
+            a = multiply(a, a);
+        }
+        return ret;
+    }
+
+    vector<vector<long>> multiply(vector<vector<long>>& a, vector<vector<long>>& b) {
+        vector<vector<long>> c(3, vector<long>(3));
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                c[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j] + a[i][2] * b[2][j];
+            }
+        }
+        return c;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int tribonacci(int n) {
+        if (n == 0) {
+            return 0;
+        }
+        if (n <= 2) {
+            return 1;
+        }
+        int p = 0, q = 0, r = 1, s = 1;
+        for (int i = 3; i <= n; ++i) {
+            p = q;
+            q = r;
+            r = s;
+            s = p + q + r;
+        }
+        return s;
+    }
+}
+
+// 方法二：矩阵快速幂
+class Solution {
+    public int tribonacci(int n) {
+        if (n == 0) {
+            return 0;
+        }
+        if (n <= 2) {
+            return 1;
+        }
+        int[][] q = {{1, 1, 1}, {1, 0, 0}, {0, 1, 0}};
+        int[][] res = pow(q, n);
+        return res[0][2];
+    }
+
+    public int[][] pow(int[][] a, int n) {
+        int[][] ret = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+        while (n > 0) {
+            if ((n & 1) == 1) {
+                ret = multiply(ret, a);
+            }
+            n >>= 1;
+            a = multiply(a, a);
+        }
+        return ret;
+    }
+
+    public int[][] multiply(int[][] a, int[][] b) {
+        int[][] c = new int[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                c[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j] + a[i][2] * b[2][j];
+            }
+        }
+        return c;
+    }
+}
+```
+
