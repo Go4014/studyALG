@@ -1,3 +1,12 @@
+# 简要比较
+
+![image-20240516155901072](images\image-20240516155901072.png)
+
+- 均按从小到大排列
+- k代表数值中的"数位"个数
+- n代表数据规模
+- m代表数据的最大值减最小值
+
 # 数组排序
 
 ## 选择排序
@@ -68,6 +77,38 @@ void bubbleSort(vector<int>& arr) {
         }
     }
 }
+
+// 优化
+void bubbleSort(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 0; i < n - 1; ++i) {
+        bool swapped = false;
+        for (int j = 0; j < n - i - 1; ++j) {
+            if (arr[j] > arr[j + 1]) {
+                swap(arr[j], arr[j + 1]);
+                swapped = true;
+            }
+        }
+        if(!swapped) {
+            break;
+        }
+    }
+}
+
+// 再优化
+void bubbleSort(vector<int>& arr) {
+    int n = arr.size() - 1;
+    while(n != 0) {
+        int lastSwapIndex = 0;
+        for (int j = 0; j < n; ++j) {
+            if (arr[j] > arr[j + 1]) {
+                swap(arr[j], arr[j + 1]);
+                lastSwapIndex = j;
+            }
+        }
+        n = lastSwapIndex;
+    }
+}
 ```
 
 Java版本
@@ -91,6 +132,60 @@ public class BubbleSort {
                     arr[j + 1] = temp;
                 }
             }
+        }
+    }
+}
+
+// 优化
+public class BubbleSort {
+    public static void bubbleSort(int[] arr) {
+        if (arr == null || arr.length <= 1) {
+            return;
+        }
+
+        int n = arr.length;
+        // 外层循环控制每一趟排序的次数
+        for (int i = 0; i < n - 1; i++) {
+            boolean swapped = false;
+            // 内层循环将当前最大元素冒泡到末尾
+            for (int j = 0; j < n - 1 - i; j++) {
+                if (arr[j] > arr[j + 1]) {
+                    // 交换相邻的两个元素
+                    int temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+                    swapped = true;
+                }
+            }
+            if(!swapped) {
+                break;
+            }
+        }
+    }
+}
+
+// 再优化
+public class BubbleSort {
+    public static void bubbleSort(int[] arr) {
+        if (arr == null || arr.length <= 1) {
+            return;
+        }
+
+        int n = arr.length - 1;
+        // 外层循环控制每一趟排序的次数
+        while(n != 0) {
+            int lastSwapIndex = 0;
+            // 内层循环将当前最大元素冒泡到末尾
+            for (int j = 0; j < n; j++) {
+                if (arr[j] > arr[j + 1]) {
+                    // 交换相邻的两个元素
+                    int temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+                    lastSwapIndex = j;
+                }
+            }
+            n = lastSwapIndex;
         }
     }
 }
@@ -211,13 +306,13 @@ public:
         if(left >= right) {
             return;
         }
-        int mid = (left + right) / 2;
+        int mid = (left + right) / 2; // (right - left) / 2 + left
         mergeSort(nums, left, mid, temp);
         mergeSort(nums, mid+1, right, temp);
-        merge(nums, left, right, temp);
+        merge(nums, left, mid, right, temp);
     }
 
-    void merge(vector<int>& nums, int left, int right, vector<int>& temp) {
+    void merge(vector<int>& nums, int left, int mid, int right, vector<int>& temp) {
         int i = left; // 左半部分的起始位置
         int j = mid + 1; // 右半部分的起始位置
         int index = left; // 合并后的数组的起始位置
@@ -268,7 +363,7 @@ public class MergeSort {
 
         int mid = left + (right - left) / 2;
         mergeSort(arr, left, mid, temp); // 左半部分递归排序
-        mergeSort(arr, mid + 1, right, temp); // 右半部分递归排序
+        mergeSort(arr, mid+1, right, temp); // 右半部分递归排序
         merge(arr, left, mid, right, temp); // 合并两个有序子数组
     }
 
@@ -369,7 +464,7 @@ public class HeapSort {
     // 构建最大堆
     public void buildMaxHeap(int[] arr) {
         int heapSize = nums.length;
-        for (int i = (heapSize - 2) / 2; i >= 0; --i) {
+        for (int i = (heapSize - 2) / 2; i >= 0; --i) { // (heapSize - 2) / 2 => 表示最后一个非叶子节点
             heapify(arr, i, heapSize - 1);
         } 
     }
