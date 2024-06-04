@@ -656,7 +656,537 @@ class Solution {
 
 
 
+### [600. 不含连续1的非负整数](https://leetcode.cn/problems/non-negative-integers-without-consecutive-ones/)
+
+困难
+
+给定一个正整数 `n` ，请你统计在 `[0, n]` 范围的非负整数中，有多少个整数的二进制表示中不存在 **连续的 1** 。
+
+**示例 1:**
+
+```
+输入: n = 5
+输出: 5
+解释: 
+下面列出范围在 [0, 5] 的非负整数与其对应的二进制表示：
+0 : 0
+1 : 1
+2 : 10
+3 : 11
+4 : 100
+5 : 101
+其中，只有整数 3 违反规则（有两个连续的 1 ），其他 5 个满足规则。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int findIntegers(int n) {
+        vector<int> dp(31);
+        dp[0] = dp[1] = 1;
+        for (int i = 2; i < 31; ++i) {
+            dp[i] = dp[i - 1] + dp[i - 2];
+        }
+
+        int pre = 0, res = 0;
+        for (int i = 29; i >= 0; --i) {
+            int val = 1 << i;
+            if ((n & val) != 0) {
+                res += dp[i + 1];
+                if (pre == 1) {
+                    break;
+                }
+                pre = 1;
+            } else {
+                pre = 0;
+            }
+
+            if (i == 0) {
+                ++res;
+            }
+        }
+
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划
+class Solution {
+    public int findIntegers(int n) {
+        int[] dp = new int[31];
+        dp[0] = dp[1] = 1;
+        for (int i = 2; i < 31; ++i) {
+            dp[i] = dp[i - 1] + dp[i - 2];
+        }
+
+        int pre = 0, res = 0;
+        for (int i = 29; i >= 0; --i) {
+            int val = 1 << i;
+            if ((n & val) != 0) {
+                res += dp[i + 1];
+                if (pre == 1) {
+                    break;
+                }
+                pre = 1;
+            } else {
+                pre = 0;
+            }
+
+            if (i == 0) {
+                ++res;
+            }
+        }
+
+        return res;
+    }
+}
+```
 
 
 
+### [600. 不含连续1的非负整数](https://leetcode.cn/problems/non-negative-integers-without-consecutive-ones/)
+
+困难
+
+给定一个正整数 `n` ，请你统计在 `[0, n]` 范围的非负整数中，有多少个整数的二进制表示中不存在 **连续的 1** 。
+
+**示例 1:**
+
+```
+输入: n = 5
+输出: 5
+解释: 
+下面列出范围在 [0, 5] 的非负整数与其对应的二进制表示：
+0 : 0
+1 : 1
+2 : 10
+3 : 11
+4 : 100
+5 : 101
+其中，只有整数 3 违反规则（有两个连续的 1 ），其他 5 个满足规则。
+```
+
+C++版本
+
+```c++
+// 方法一：动态规划
+class Solution {
+public:
+    int findIntegers(int n) {
+        vector<int> dp(31);
+        dp[0] = dp[1] = 1;
+        for (int i = 2; i < 31; ++i) {
+            dp[i] = dp[i - 1] + dp[i - 2];
+        }
+
+        int pre = 0, res = 0;
+        for (int i = 29; i >= 0; --i) {
+            int val = 1 << i;
+            if ((n & val) != 0) {
+                res += dp[i + 1];
+                if (pre == 1) {
+                    break;
+                }
+                pre = 1;
+            } else {
+                pre = 0;
+            }
+
+            if (i == 0) {
+                ++res;
+            }
+        }
+
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：动态规划、
+class Solution {
+    public int findIntegers(int n) {
+        int[] dp = new int[31];
+        dp[0] = dp[1] = 1;
+        for (int i = 2; i < 31; ++i) {
+            dp[i] = dp[i - 1] + dp[i - 2];
+        }
+
+        int pre = 0, res = 0;
+        for (int i = 29; i >= 0; --i) {
+            int val = 1 << i;
+            if ((n & val) != 0) {
+                res += dp[i + 1];
+                if (pre == 1) {
+                    break;
+                }
+                pre = 1;
+            } else {
+                pre = 0;
+            }
+
+            if (i == 0) {
+                ++res;
+            }
+        }
+
+        return res;
+    }
+}
+```
+
+
+
+### [233. 数字 1 的个数](https://leetcode.cn/problems/number-of-digit-one/)
+
+困难
+
+给定一个整数 `n`，计算所有小于等于 `n` 的非负整数中数字 `1` 出现的个数。
+
+**示例 1：**
+
+```
+输入：n = 13
+输出：6
+```
+
+C++版本
+
+```c++
+// 方法一：枚举每一数位上 1 的个数
+class Solution {
+public:
+    int countDigitOne(int n) {
+        // mulk 表示 10^k
+        // 在下面的代码中，可以发现 k 并没有被直接使用到（都是使用 10^k）
+        // 但为了让代码看起来更加直观，这里保留了 k
+        long long mulk = 1;
+        int ans = 0;
+        for (int k = 0; n >= mulk; ++k) {
+            ans += (n / (mulk * 10)) * mulk + min(max(n % (mulk * 10) - mulk + 1, 0LL), mulk);
+            mulk *= 10;
+        }
+        return ans;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：枚举每一数位上 1 的个数
+class Solution {
+    public int countDigitOne(int n) {
+        // mulk 表示 10^k
+        // 在下面的代码中，可以发现 k 并没有被直接使用到（都是使用 10^k）
+        // 但为了让代码看起来更加直观，这里保留了 k
+        long mulk = 1;
+        int ans = 0;
+        for (int k = 0; n >= mulk; ++k) {
+            ans += (n / (mulk * 10)) * mulk + Math.min(Math.max(n % (mulk * 10) - mulk + 1, 0), mulk);
+            mulk *= 10;
+        }
+        return ans;
+    }
+}
+```
+
+
+
+### [2719. 统计整数数目](https://leetcode.cn/problems/count-of-integers/)
+
+困难
+
+给你两个数字字符串 `num1` 和 `num2` ，以及两个整数 `max_sum` 和 `min_sum` 。如果一个整数 `x` 满足以下条件，我们称它是一个好整数：
+
+- `num1 <= x <= num2`
+- `min_sum <= digit_sum(x) <= max_sum`.
+
+请你返回好整数的数目。答案可能很大，请返回答案对 `109 + 7` 取余后的结果。
+
+注意，`digit_sum(x)` 表示 `x` 各位数字之和。
+
+**示例 1：**
+
+```
+输入：num1 = "1", num2 = "12", min_num = 1, max_num = 8
+输出：11
+解释：总共有 11 个整数的数位和在 1 到 8 之间，分别是 1,2,3,4,5,6,7,8,10,11 和 12 。所以我们返回 11 。
+```
+
+C++版本
+
+```c++
+// 方法一：数位动态规划
+class Solution {
+    static constexpr int N = 23;
+    static constexpr int M = 401;
+    static constexpr int MOD = 1e9 + 7;
+    int d[N][M];
+    string num;
+    int min_sum;
+    int max_sum;
+
+    int dfs(int i, int j, bool limit) {
+        if (j > max_sum) {
+            return 0;
+        }
+        if (i == -1) {
+            return j >= min_sum;
+        }
+        if (!limit && d[i][j] != -1) {
+            return d[i][j];
+        }
+        int res = 0;
+        int up = limit ? num[i] - '0' : 9;
+        for (int x = 0; x <= up; x++) {
+            res = (res + dfs(i - 1, j + x, limit && x == up)) % MOD;
+        }
+        if (!limit) {
+            d[i][j] = res;
+        }
+        return res;
+    }
+
+    int get(string num) {
+        reverse(num.begin(), num.end());
+        this->num = num;
+        return dfs(num.size() - 1, 0, true);
+    }
+
+    // 求解 num - 1，先把最后一个非 0 字符减去 1，再把后面的 0 字符变为 9
+    string sub(string num) {
+        int i = num.size() - 1;
+        while (num[i] == '0') {
+            i--;
+        }
+        num[i]--;
+        i++;
+        while (i < num.size()) {
+            num[i] = '9';
+            i++;
+        }
+        return num;
+    }
+public:
+    int count(string num1, string num2, int min_sum, int max_sum) {
+        memset(d, -1, sizeof d);
+        this->min_sum = min_sum;
+        this->max_sum = max_sum;
+        return (get(num2) - get(sub(num1)) + MOD) % MOD;
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：数位动态规划
+class Solution {
+    static final int N = 23;
+    static final int M = 401;
+    static final int MOD = 1000000007;
+    int[][] d;
+    String num;
+    int min_sum;
+    int max_sum;
+
+    public int count(String num1, String num2, int min_sum, int max_sum) {
+        d = new int[N][M];
+        for (int i = 0; i < N; i++) {
+            Arrays.fill(d[i], -1);
+        }
+        this.min_sum = min_sum;
+        this.max_sum = max_sum;
+        return (get(num2) - get(sub(num1)) + MOD) % MOD;
+    }
+
+    public int get(String num) {
+        this.num = new StringBuffer(num).reverse().toString();
+        return dfs(num.length() - 1, 0, true);
+    }
+
+    // 求解 num - 1，先把最后一个非 0 字符减去 1，再把后面的 0 字符变为 9
+    public String sub(String num) {
+        char[] arr = num.toCharArray();
+        int i = arr.length - 1;
+        while (arr[i] == '0') {
+            i--;
+        }
+        arr[i]--;
+        i++;
+        while (i < arr.length) {
+            arr[i] = '9';
+            i++;
+        }
+        return new String(arr);
+    }
+
+    public int dfs(int i, int j, boolean limit) {
+        if (j > max_sum) {
+            return 0;
+        }
+        if (i == -1) {
+            return j >= min_sum ? 1 : 0;
+        }
+        if (!limit && d[i][j] != -1) {
+            return d[i][j];
+        }
+        int res = 0;
+        int up = limit ? num.charAt(i) - '0' : 9;
+        for (int x = 0; x <= up; x++) {
+            res = (res + dfs(i - 1, j + x, limit && x == up)) % MOD;
+        }
+        if (!limit) {
+            d[i][j] = res;
+        }
+        return res;
+    }
+}
+```
+
+
+
+### [1742. 盒子中小球的最大数量](https://leetcode.cn/problems/maximum-number-of-balls-in-a-box/)
+
+简单
+
+你在一家生产小球的玩具厂工作，有 `n` 个小球，编号从 `lowLimit` 开始，到 `highLimit` 结束（包括 `lowLimit` 和 `highLimit` ，即 `n == highLimit - lowLimit + 1`）。另有无限数量的盒子，编号从 `1` 到 `infinity` 。
+
+你的工作是将每个小球放入盒子中，其中盒子的编号应当等于小球编号上每位数字的和。例如，编号 `321` 的小球应当放入编号 `3 + 2 + 1 = 6` 的盒子，而编号 `10` 的小球应当放入编号 `1 + 0 = 1` 的盒子。
+
+给你两个整数 `lowLimit` 和 `highLimit` ，返回放有最多小球的盒子中的小球数量*。*如果有多个盒子都满足放有最多小球，只需返回其中任一盒子的小球数量。
+
+**示例 1：**
+
+```
+输入：lowLimit = 1, highLimit = 10
+输出：2
+解释：
+盒子编号：1 2 3 4 5 6 7 8 9 10 11 ...
+小球数量：2 1 1 1 1 1 1 1 1 0  0  ...
+编号 1 的盒子放有最多小球，小球数量为 2 。
+```
+
+C++版本
+
+```c++
+//方法一：哈希表
+class Solution {
+public:
+    int countBalls(int lowLimit, int highLimit) {
+        unordered_map<int, int> count;
+        int res = 0;
+        for (int i = lowLimit; i <= highLimit; i++) {
+            int box = 0, x = i;
+            while (x) {
+                box += x % 10;
+                x /= 10;
+            }
+            count[box]++;
+            res = max(res, count[box]);
+        }
+        return res;
+    }
+};
+```
+
+Java版本
+
+```java
+//方法一：哈希表
+class Solution {
+    public int countBalls(int lowLimit, int highLimit) {
+        Map<Integer, Integer> count = new HashMap<Integer, Integer>();
+        int res = 0;
+        for (int i = lowLimit; i <= highLimit; i++) {
+            int box = 0, x = i;
+            while (x != 0) {
+                box += x % 10;
+                x /= 10;
+            }
+            count.put(box, count.getOrDefault(box, 0) + 1);
+            res = Math.max(res, count.get(box));
+        }
+        return res;
+    }
+}
+```
+
+
+
+### [面试题 17.06. 2出现的次数](https://leetcode.cn/problems/number-of-2s-in-range-lcci/)
+
+困难
+
+编写一个方法，计算从 0 到 n (含 n) 中数字 2 出现的次数。
+
+**示例:**
+
+```
+输入: 25
+输出: 9
+解释: (2, 12, 20, 21, 22, 23, 24, 25)(注意 22 应该算作两次)
+```
+
+C++版本
+
+```c++
+// 方法一：数位动态规划
+class Solution {
+public:
+    int numberOf2sInRange(int n) {
+        auto s = to_string(n);
+        int m = s.length(), dp[m][m];
+        memset(dp, -1, sizeof(dp));
+        function<int(int, int, bool)> f = [&](int i, int cnt2, bool is_limit) -> int {
+            if (i == m) return cnt2;
+            if (!is_limit && dp[i][cnt2] >= 0) return dp[i][cnt2];
+            int res = 0;
+            for (int d = 0, up = is_limit ? s[i] - '0' : 9; d <= up; ++d) // 枚举要填入的数字 d
+                res += f(i + 1, cnt2 + (d == 2), is_limit && d == up);
+            if (!is_limit) dp[i][cnt2] = res;
+            return res;
+        };
+        return f(0, 0, true);
+    }
+};
+```
+
+Java版本
+
+```java
+// 方法一：数位动态规划
+class Solution {
+    char s[];
+    int dp[][];
+
+    public int numberOf2sInRange(int n) {
+        s = Integer.toString(n).toCharArray();
+        var m = s.length;
+        dp = new int[m][m];
+        for (var i = 0; i < m; i++) Arrays.fill(dp[i], -1);
+        return f(0, 0, true);
+    }
+
+    int f(int i, int cnt2, boolean isLimit) {
+        if (i == s.length) return cnt2;
+        if (!isLimit && dp[i][cnt2] >= 0) return dp[i][cnt2];
+        var res = 0;
+        for (int d = 0, up = isLimit ? s[i] - '0' : 9; d <= up; ++d) // 枚举要填入的数字 d
+            res += f(i + 1, cnt2 + (d == 2 ? 1 : 0), isLimit && d == up);
+        if (!isLimit) dp[i][cnt2] = res;
+        return res;
+    }
+}
+```
 
