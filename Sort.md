@@ -659,8 +659,8 @@ public class CountingSort {
         // 将待排序数组中的元素根据计数数组的统计信息放入正确的位置，完成排序
         int[] output = new int[arr.length];
         for (int i = arr.length - 1; i >= 0; i--) {
-            output[count[arr[i] - minVal] - 1] = num;
-            count[num - minVal]--;
+            output[count[arr[i] - minVal] - 1] = arr[i];
+            count[arr[i] - minVal]--;
         }
 
         // 将排序结果复制回原数组
