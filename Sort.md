@@ -455,14 +455,14 @@ public class HeapSort {
         buildMaxHeap(nums);
         
         // 堆排序
-        for (int i = 0; i <= nums.length; i++) {
+        for (int i = 0; i < nums.length; i++) {
             swap(nums, 0, heapSize - i - 1);
             heapify(nums, 0, heapSize - i - 2);
         }
     }
 
     // 构建最大堆
-    public void buildMaxHeap(int[] arr) {
+    public void buildMaxHeap(int[] nums) {
         int heapSize = nums.length;
         for (int i = (heapSize - 2) / 2; i >= 0; --i) { // (heapSize - 2) / 2 => 表示最后一个非叶子节点
             heapify(arr, i, heapSize - 1);
@@ -470,7 +470,7 @@ public class HeapSort {
     }
 
     // 调整堆
-    public void heapify(int[] arr, int index, int end) {
+    public void heapify(int[] nums, int index, int end) {
         int left = index * 2 + 1;
         int right = left + 1;
         
@@ -485,7 +485,7 @@ public class HeapSort {
             if(maxIndex == index) {
                 break;
             }
-            swap(nums[index], nums[maxIndex]);
+            swap(nums, index, maxIndex);
             index = maxIndex;
             left = index * 2 + 1;
             right = left + 1;
@@ -493,10 +493,10 @@ public class HeapSort {
     }
 
     // 交换数组中的两个元素
-    public void swap(int[] arr, int i, int j) {
+    public void swap(int[] nums, int i, int j) {
         int temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
+        nums[i] = nums[j];
+        nums[j] = temp;
     }
 }
 ```
